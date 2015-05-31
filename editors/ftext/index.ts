@@ -1,10 +1,11 @@
 import * as async from "async";
 import * as OT from "operational-transform";
-import * as ts from "typescript";
 
-import ScriptAsset from "../../data/ScriptAsset";
+import fTextAsset from "../../data/fTextAsset";
 
 (<any>window).CodeMirror = require("codemirror");
+
+// typescript plugin addons:
 require("codemirror/addon/search/search");
 require("codemirror/addon/search/searchcursor");
 require("codemirror/addon/edit/closebrackets");
@@ -14,11 +15,29 @@ require("codemirror/addon/selection/active-line");
 require("codemirror/keymap/sublime");
 require("codemirror/mode/javascript/javascript");
 
+// ftext plugin addons:
+require("codemirror/addon/search/match-highlighter");
+require("codemirror/addon/edit/matchtags");
+require("codemirror/addon/edit/trailingspace");
+require("codemirror/addon/edit/closetag"); // depends on xml-fol
+
+require("codemirror/addon/fold/xml-fold");
+require("codemirror/addon/selection/active-line");
+require("codemirror/addon/hint/anyword-hint");
+require("codemirror/keymap/sublime");
+require("codemirror/keymap/emacs");
+require("codemirror/keymap/vim");
+require("codemirror/mode/htmlmixed/htmlmixed"); // load js, css, xm
+require("codemirror/mode/jade/jade");
+require("codemirror/mode/markdown/markdown"); // load xm"
+require("codemirror/mode/coffeescript/coffeescript");
+require("codemirror/mode/clike/clike");
+
 let PerfectResize = require("perfect-resize");
 
 let qs = require("querystring").parse(window.location.search.slice(1));
 let info = { projectId: qs.project, assetId: qs.asset, line: qs.line, ch: qs.ch };
-let data: { clientId: number; projectClient?: SupClient.ProjectClient; assetsById?: {[id: string]: ScriptAsset}; asset?: ScriptAsset; };
+let data: { clientId: number; projectClient?: SupClient.ProjectClient; assetsById?: {[id: string]: fTextAsset}; asset?: fTextAsset; };
 let ui: {
   editor?: CodeMirror.EditorFromTextArea;
   tmpCodeMirrorDoc?: CodeMirror.Doc;
@@ -46,11 +65,6 @@ let ui: {
 } = {};
 let socket: SocketIOClient.Socket;
 
-
-let typescriptWorker = new Worker("typescriptWorker.js");
-let fileNames: string[] = [];
-let files: { [name: string]: { id: string; text: string; version: string; } } = {};
-let fileNamesByScriptId: { [name: string]: string } = {};
 
 function start() {
   socket = SupClient.connect(info.projectId);
@@ -87,17 +101,19 @@ function start() {
       socket.emit("edit:assets", info.assetId, "saveText", (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
     },
     "Ctrl-Space": "autocomplete",
-    "Cmd-Space": "autocomplete"
+    "Cmd-Space": "autocomplete",
+    "Cmd-J": "toMatchingTag",
+    "Ctrl-J": "toMatchingTag"
   }
 
   let textArea = <HTMLTextAreaElement>document.querySelector(".code-editor");
   ui.editor = CodeMirror.fromTextArea(textArea, {
     lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
-    gutters: ["line-error-gutter", "CodeMirror-linenumbers"],
+    gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     tabSize: 2, keyMap: "sublime", // , theme: "monokai"
     extraKeys: extraKeys,
     viewportMargin: Infinity,
-    mode: "text/typescript",
+    // mode: "", no default mode
     readOnly: true
   });
 
@@ -117,9 +133,9 @@ function start() {
 
   (<any>ui.editor).on("changes", onEditText);
 
-  (<any>CodeMirror).commands.autocomplete = (cm: CodeMirror.Editor) => { scheduleCompletion(); };
+  // (<any>CodeMirror).commands.autocomplete = (cm: CodeMirror.Editor) => { scheduleCompletion(); };
 
-  (<any>ui.editor).on("keyup", (instance: any, event: any) => {
+  /*(<any>ui.editor).on("keyup", (instance: any, event: any) => {
     clearInfoPopup();
 
     // Ignore Ctrl, Cmd, Escape, Return, Tab, arrow keys
@@ -129,12 +145,12 @@ function start() {
     // call for more autocomplete, so we don't need to do anything here.
     if ((<any>ui.editor).state.completionActive != null && (<any>ui.editor).state.completionActive.active()) return;
     scheduleCompletion();
-  });
+  });*/
 
   ui.infoElement = document.createElement("div");
   ui.infoElement.classList.add("popup-info");
 
-  document.onmouseout = (event) => { clearInfoPopup(); }
+  /*document.onmouseout = (event) => { clearInfoPopup(); }
   document.onmousemove = (event) => {
     clearInfoPopup();
 
@@ -154,7 +170,7 @@ function start() {
         start
       });
     }, 200);
-  };
+  };*/
 
   let nwDispatcher = (<any>window).nwDispatcher;
   if (nwDispatcher != null) {
@@ -204,34 +220,34 @@ function onWelcome(clientId: number) {
 
 var entriesSubscriber = {
   onEntriesReceived: (entries: SupCore.data.Entries) => {
-    entries.walk((entry) => {
-      if (entry.type !== "script") return;
+    entries.walk((entry: any) => {
+      if (entry.type !== "ftext") return;
 
-      var scriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
-      fileNames.push(scriptName);
-      fileNamesByScriptId[entry.id] = scriptName;
-      data.projectClient.subAsset(entry.id, "script", scriptSubscriber);
+      // var scriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
+      // fileNames.push(scriptName);
+      // fileNamesByScriptId[entry.id] = scriptName;
+      data.projectClient.subAsset(entry.id, "ftext", scriptSubscriber);
     })
   },
 
   onEntryAdded: (newEntry: any, parentId: string, index: number) => {
-    if (newEntry.type !== "script") return;
+    if (newEntry.type !== "ftext") return;
 
-    let scriptName = `${data.projectClient.entries.getPathFromId(newEntry.id)}.ts`;
+    /* let scriptName = `${data.projectClient.entries.getPathFromId(newEntry.id)}.ts`;
 
     let i = 0;
     data.projectClient.entries.walk((entry) => {
-      if (entry.type !== "script") return;
+      if (entry.type !== "ftext") return;
       if (entry.id === newEntry.id) fileNames.splice(i, 0, scriptName);
       i++;
     });
-    fileNamesByScriptId[newEntry.id] = scriptName;
-    data.projectClient.subAsset(newEntry.id, "script", scriptSubscriber);
+    fileNamesByScriptId[newEntry.id] = scriptName;*/
+    data.projectClient.subAsset(newEntry.id, "ftext", scriptSubscriber);
   },
 
-  onEntryMoved: (id: string, parentId: string, index: number) => {
+  /*onEntryMoved: (id: string, parentId: string, index: number) => {
     let entry = data.projectClient.entries.byId[id];
-    if (entry.type !== "script") return;
+    if (entry.type !== "ftext") return;
 
     let oldFileName = fileNamesByScriptId[id];
 
@@ -240,7 +256,7 @@ var entriesSubscriber = {
     fileNames.splice(fileNames.indexOf(oldFileName), 1);
     let i = 0;
     data.projectClient.entries.walk((entry) => {
-      if (entry.type !== "script") return;
+      if (entry.type !== "ftext") return;
       if (entry.id === id) fileNames.splice(i, 0, newFileName);
       i++;
     });
@@ -253,11 +269,11 @@ var entriesSubscriber = {
     typescriptWorker.postMessage({ type: "removeFile", fileName: oldFileName });
     typescriptWorker.postMessage({ type: "addFile", fileName: newFileName, index: fileNames.indexOf(newFileName), file });
     scheduleErrorCheck();
-  },
+  },*/
 
-  onSetEntryProperty: (id: string, key: string, value: any) => {
+  /*onSetEntryProperty: (id: string, key: string, value: any) => {
     let entry = data.projectClient.entries.byId[id];
-    if (entry.type !== "script" || key !== "name") return;
+    if (entry.type !== "ftext" || key !== "name") return;
 
     let oldScriptName = fileNamesByScriptId[id];
     let newScriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
@@ -268,9 +284,9 @@ var entriesSubscriber = {
     fileNamesByScriptId[id] = newScriptName;
     files[newScriptName] = files[oldScriptName];
     delete files[oldScriptName];
-  },
+  },*/
 
-  onEntryTrashed: (id: string) => {
+  /*onEntryTrashed: (id: string) => {
     let fileName = fileNamesByScriptId[id];
     if (fileName == null) return;
 
@@ -280,17 +296,17 @@ var entriesSubscriber = {
 
     typescriptWorker.postMessage({ type: "removeFile", fileName });
     scheduleErrorCheck();
-  },
+  },*/
 }
 
 let allScriptsReceived = false;
 
 var scriptSubscriber = {
-  onAssetReceived: (err: string, asset: ScriptAsset) => {
+  onAssetReceived: (err: string, asset: fTextAsset) => {
     data.assetsById[asset.id] = asset;
-    let fileName = `${data.projectClient.entries.getPathFromId(asset.id)}.ts`;
+    /*let fileName = `${data.projectClient.entries.getPathFromId(asset.id)}.ts`;
     let file = { id: asset.id, text: asset.pub.text, version: asset.pub.revisionId.toString() }
-    files[fileName] = file;
+    files[fileName] = file;*/
 
     if (asset.id === info.assetId) {
       data.asset = asset;
@@ -299,24 +315,18 @@ var scriptSubscriber = {
       ui.editor.getDoc().clearHistory();
       ui.editor.setOption("readOnly", false);
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
-    }
 
-    if (!allScriptsReceived) {
-      if (Object.keys(files).length === fileNames.length) {
-        allScriptsReceived = true;
-        typescriptWorker.postMessage({ type: "setup", fileNames, files });
-        scheduleErrorCheck();
-      }
-    } else {
-      // All scripts have been received so this must be a newly created script
-      typescriptWorker.postMessage({ type: "addFile", fileName, index: fileNames.indexOf(fileName), file });
-      scheduleErrorCheck();
+      // fText specific settings
+      let editorSettings = data.asset.pub.editorSettings;
+      ui.editor.setOption("theme", editorSettings.theme)
+      // TODO : do other settings
+      // read file for mode (syntax) to use
     }
   },
 
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
     if (id !== info.assetId) {
-      if (command === "saveText") {
+      /*if (command === "saveText") {
         let fileName = `${data.projectClient.entries.getPathFromId(id)}.ts`;
         let asset = data.assetsById[id];
         let file = files[fileName];
@@ -325,7 +335,7 @@ var scriptSubscriber = {
 
         typescriptWorker.postMessage({ type: "updateFile", fileName, text: file.text, version: file.version });
         scheduleErrorCheck();
-      }
+      }*/
       return
     }
 
@@ -336,8 +346,8 @@ var scriptSubscriber = {
     if (id !== info.assetId) return;
 
     if (ui.undoTimeout != null) clearTimeout(ui.undoTimeout);
-    if (ui.errorCheckTimeout != null) clearTimeout(ui.errorCheckTimeout);
-    if (ui.completionTimeout != null) clearTimeout(ui.completionTimeout);
+    // if (ui.errorCheckTimeout != null) clearTimeout(ui.errorCheckTimeout);
+    // if (ui.completionTimeout != null) clearTimeout(ui.completionTimeout);
     SupClient.onAssetTrashed();
   },
 }
@@ -441,7 +451,7 @@ function applyOperation(operation: OT.TextOperation, origin: string, moveCursor:
   }
 }
 
-function clearInfoPopup() {
+/*function clearInfoPopup() {
   if (ui.infoElement.parentElement != null) ui.infoElement.parentElement.removeChild(ui.infoElement);
   if (ui.infoTimeout != null) clearTimeout(ui.infoTimeout);
 }
@@ -511,9 +521,9 @@ typescriptWorker.onmessage = (event: MessageEvent) => {
         ui.infoElement.textContent = event.data.text;
         ui.editor.addWidget(ui.infoPosition, ui.infoElement, false)
       }
-      /*if (token.string !== "" && token.string !== " ") {
+      //if (token.string !== "" && token.string !== " ") {
 
-      }*/
+      //}
       break;
   }
 };
@@ -548,7 +558,7 @@ function startAutocomplete() {
     start: activeCompletion.start
   });
 }
-
+*/
 // User interface
 function refreshErrors(errors: Array<{file: string; position: {line: number; character: number;}; length: number; message: string}>) {
   // Remove all previous erros
@@ -575,7 +585,7 @@ function refreshErrors(errors: Array<{file: string; position: {line: number; cha
   // Display new ones
   for (let error of errors) {
     let errorRow = document.createElement("tr");
-    (<any>errorRow.dataset).assetId = files[error.file].id;
+    //(<any>errorRow.dataset).assetId = files[error.file].id;
     (<any>errorRow.dataset).line = error.position.line;
     (<any>errorRow.dataset).character = error.position.character;
 
@@ -591,10 +601,10 @@ function refreshErrors(errors: Array<{file: string; position: {line: number; cha
     scriptCell.textContent = error.file.substring(0, error.file.length - 3);
     errorRow.appendChild(scriptCell);
 
-    if (error.file !== fileNamesByScriptId[info.assetId]) {
+    /*if (error.file !== fileNamesByScriptId[info.assetId]) {
       ui.errorsTBody.appendChild(errorRow);
       continue;
-    }
+    }*/
 
     ui.errorsTBody.insertBefore(errorRow, (lastSelfErrorRow != null) ? lastSelfErrorRow.nextElementSibling : ui.errorsTBody.firstChild);
     lastSelfErrorRow = errorRow;
@@ -645,17 +655,17 @@ function onErrorTBodyClick(event: MouseEvent) {
 
 let localVersionNumber = 0;
 function onEditText(instance: CodeMirror.Editor, changes: CodeMirror.EditorChange[]) {
-  let localFileName = fileNamesByScriptId[info.assetId];
-  let localFile = files[localFileName];
-  localFile.text = ui.editor.getDoc().getValue();
+  // let localFileName = fileNamesByScriptId[info.assetId];
+  // let localFile = files[localFileName];
+  // localFile.text = ui.editor.getDoc().getValue();
   localVersionNumber++;
-  localFile.version = `l${localVersionNumber}`;
+  // localFile.version = `l${localVersionNumber}`;
 
   // We ignore the initial setValue
-  if ((<any>changes[0]).origin !== "setValue") {
+  /*if ((<any>changes[0]).origin !== "setValue") {
     typescriptWorker.postMessage({ type: "updateFile", fileName: localFileName, text: localFile.text, version: localFile.version });
     scheduleErrorCheck();
-  }
+  }*/
 
   let undoRedo = false;
   let operationToSend: OT.TextOperation;
@@ -746,8 +756,8 @@ function hint(instance: any, callback: any) {
   for (let i = 0; i < cursor.line; i++) start += ui.editor.getDoc().getLine(i).length + 1;
   start += cursor.ch;
 
-  nextCompletion = { callback, cursor, token, start };
-  if(activeCompletion == null) startAutocomplete();
+  // nextCompletion = { callback, cursor, token, start };
+  // if(activeCompletion == null) startAutocomplete();
 }
 (<any>hint).async = true;
 
@@ -816,7 +826,7 @@ function onRedo() {
 }
 
 // Load plugins
-async.each(SupClient.pluginPaths.all, (pluginName, pluginCallback) => {
+/*async.each(SupClient.pluginPaths.all, (pluginName, pluginCallback) => {
   if (pluginName === "sparklinlabs/typescript") { pluginCallback(); return; }
 
   let apiScript = document.createElement('script');
@@ -841,4 +851,4 @@ async.each(SupClient.pluginPaths.all, (pluginName, pluginCallback) => {
 
   // Start
   start();
-});
+});*/

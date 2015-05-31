@@ -1,7 +1,5 @@
-import BehaviorPropertiesResource from "./BehaviorPropertiesResource";
-import ScriptAsset from "./ScriptAsset";
-import BehaviorConfig from "./BehaviorConfig";
+import fTextSettingsResource from "./fTextSettingsResource";
+import fTextAsset from "./fTextAsset";
 
-SupCore.data.registerResource("behaviorProperties", BehaviorPropertiesResource);
-SupCore.data.registerAssetClass("script", ScriptAsset);
-SupCore.data.registerComponentConfigClass("Behavior", BehaviorConfig);
+SupCore.data.registerResource("fTextSettings", fTextSettingsResource);
+SupCore.data.registerAssetClass("ftext", fTextAsset);
