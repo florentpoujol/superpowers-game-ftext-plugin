@@ -1,0 +1,125 @@
+@import "nib"
+
+@require '../../node_modules/codemirror/lib/codemirror.css'
+@require '../../node_modules/codemirror/addon/dialog/dialog.css'
+@require '../../node_modules/codemirror/addon/hint/show-hint.css'
+// @require '../../node_modules/codemirror/theme/monokai.css'
+
+body
+  display flex
+  flex-direction column
+  flex 1
+
+.code-editor-container
+  position relative
+  flex 1
+  min-height 100px
+
+  textarea
+    opacity 0
+
+.code-editor + .CodeMirror
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+  height auto
+  font-size 14px
+
+.code-editor + .CodeMirror, .CodeMirror-hints
+  font-family "Consolas", monospace
+
+.popup-info
+  position absolute
+  z-index 10
+  background-color rgba(86, 232, 86, 1)
+  padding 0.2em
+
+.line-error
+  background-color rgba(232, 86, 86, 0.5)
+
+.line-error-gutter
+  color #ec5050
+  font-size 16px
+  padding-left 5px
+  margin-top -2px
+
+.error-pane
+  display flex
+  flex-flow column
+  min-height 200px
+  height 200px
+
+  .status
+    cursor pointer
+    background-color #444
+    color #fff
+    display flex
+    align-items center
+
+    &.has-errors
+      background-color #a44
+
+    .info
+      flex 1
+      padding 0.5em
+
+    button
+      width 30px
+      background transparent
+      border none
+      opacity 0.5
+      font-size 20px
+      font-weight bold
+      cursor pointer
+      color #fff
+
+      &:hover
+        opacity 1
+        background-color rgba(0,0,0,0.1)
+
+      &:active
+        background-color #fff
+        color #444
+
+      &:disabled
+        opacity 0.2
+        cursor default
+
+  .errors
+    flex 1
+    overflow-y scroll
+
+    table
+      width 100%
+      border-collapse collapse
+
+    tbody tr
+      cursor pointer
+
+      &:hover { background: #eee; }
+      &:active { background-color: #444; color: #ccc; }
+
+    th
+      font-weight normal
+      color #666
+
+    td, th
+      text-align left
+      border 1px solid #ccc
+      padding 0.4em
+
+    td:first-child, th:first-child
+      text-align right
+
+    td:nth-child(2), th:nth-child(2)
+      width 100%
+
+    td:last-child
+      white-space nowrap
+
+  &.collapsed
+    min-height 0
+    height auto !important
+    .errors { display: none; }
