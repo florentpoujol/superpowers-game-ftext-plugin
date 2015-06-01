@@ -3,5 +3,13 @@
     "module": "commonjs",
     "target": "es5",
     "noImplicitAny": true
-  }
+  },
+  "files": [
+    "index.d.ts",
+    "data/fTextAsset.ts", 
+    "data/fTextSettingsResource.ts",
+    "editors/fText/index.ts",
+    "runtime/fText.ts",
+    "settingsEditors/fTextSettingsEditor.ts"
+  ]
 }

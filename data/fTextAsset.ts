@@ -12,14 +12,16 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },
-    editorSettings: { type: "hash" },
+    // editorSettings: { type: "hash" },
+    theme: { type: "string" },
   };
 
   pub: {
     text: string;
     draft: string;
     revisionId: number;
-    editorSettings: any;
+    // editorSettings: any;
+    theme: string;
   }
 
   document: OT.Document;
@@ -40,13 +42,15 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
       text: defaultContent,
       draft: defaultContent,
       revisionId: 0,
-      editorSettings: {},
+      // editorSettings: { theme: "monokai from asset class" },
+      theme: "monokai from asset class"
     }
 
     // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
-    this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsRessource) => {
+    this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
       // add the editor settings to all asset instance so that they can be retrieved from the editor
-      this.pub.editorSettings = fTextSettings.pub.editorSettings;
+      // this.pub.editorSettings = fTextSettings.pub.editorSettings;
+      this.pub.theme = fTextSettings.pub.theme;
       
       this.serverData.resources.release("fTextSettings", null);
       super.init(options, callback);
@@ -65,7 +69,7 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
   }
 
   destroy(callback: Function) {
-    /*this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsRessource) => {
+    /*this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
       // nothing to do here
       this.serverData.resources.release("fTextSettings", null);
       callback();

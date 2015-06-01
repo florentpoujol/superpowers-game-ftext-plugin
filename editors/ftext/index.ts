@@ -245,11 +245,11 @@ var entriesSubscriber = {
     data.projectClient.subAsset(newEntry.id, "ftext", scriptSubscriber);
   },
 
-  /*onEntryMoved: (id: string, parentId: string, index: number) => {
+  onEntryMoved: (id: string, parentId: string, index: number) => {
     let entry = data.projectClient.entries.byId[id];
     if (entry.type !== "ftext") return;
 
-    let oldFileName = fileNamesByScriptId[id];
+    /*let oldFileName = fileNamesByScriptId[id];
 
     let newFileName = `${data.projectClient.entries.getPathFromId(id)}.ts`;
 
@@ -268,14 +268,14 @@ var entriesSubscriber = {
 
     typescriptWorker.postMessage({ type: "removeFile", fileName: oldFileName });
     typescriptWorker.postMessage({ type: "addFile", fileName: newFileName, index: fileNames.indexOf(newFileName), file });
-    scheduleErrorCheck();
-  },*/
+    scheduleErrorCheck();*/
+  },
 
-  /*onSetEntryProperty: (id: string, key: string, value: any) => {
+  onSetEntryProperty: (id: string, key: string, value: any) => {
     let entry = data.projectClient.entries.byId[id];
     if (entry.type !== "ftext" || key !== "name") return;
 
-    let oldScriptName = fileNamesByScriptId[id];
+    /*let oldScriptName = fileNamesByScriptId[id];
     let newScriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
     if (newScriptName === oldScriptName) return;
 
@@ -283,20 +283,20 @@ var entriesSubscriber = {
     fileNames[scriptIndex] = newScriptName;
     fileNamesByScriptId[id] = newScriptName;
     files[newScriptName] = files[oldScriptName];
-    delete files[oldScriptName];
-  },*/
+    delete files[oldScriptName];*/
+  },
 
-  /*onEntryTrashed: (id: string) => {
-    let fileName = fileNamesByScriptId[id];
-    if (fileName == null) return;
+  onEntryTrashed: (id: string) => {
+    // let fileName = fileNamesByScriptId[id];
+    // if (fileName == null) return;
 
-    fileNames.splice(fileNames.indexOf(fileName), 1);
+    /*fileNames.splice(fileNames.indexOf(fileName), 1);
     delete files[fileName];
     delete fileNamesByScriptId[id];
 
     typescriptWorker.postMessage({ type: "removeFile", fileName });
-    scheduleErrorCheck();
-  },*/
+    scheduleErrorCheck();*/
+  },
 }
 
 let allScriptsReceived = false;
@@ -317,8 +317,10 @@ var scriptSubscriber = {
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
 
       // fText specific settings
-      let editorSettings = data.asset.pub.editorSettings;
-      ui.editor.setOption("theme", editorSettings.theme)
+      // let editorSettings = data.asset.pub.editorSettings;
+      ui.editor.setOption("theme", data.asset.pub.theme)
+      // TODO: dynamically load theme css
+
       // TODO : do other settings
       // read file for mode (syntax) to use
     }

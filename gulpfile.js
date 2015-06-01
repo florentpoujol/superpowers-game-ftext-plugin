@@ -31,7 +31,7 @@ function makeBrowserify(source, destination, output, compileTs) {
 makeBrowserify("./api/index.js", "./public", "api");
 makeBrowserify("./data/index.js", "./public", "data", true);
 makeBrowserify("./runtime/index.js", "./public", "runtime");
-makeBrowserify("./editors/text/index.js", "./public/editors", "text/index", true);
+makeBrowserify("./editors/ftext/index.js", "./public/editors", "ftext/index", true);
 
 // watch
 gulp.task("watch", function() {
@@ -40,7 +40,7 @@ gulp.task("watch", function() {
   gulp.watch("./api/*", ["api-browserify"]);
   gulp.watch("./data/*", ["data-browserify"]);
   gulp.watch("./runtime/*", ["runtime-browserify"]);
-  gulp.watch("./editors/text/*.coffee", ["text/index-browserify"]);
+  gulp.watch("./editors/ftext/*.coffee", ["ftext/index-browserify"]);
 });
 
 // All

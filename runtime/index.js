@@ -1,2 +1,2 @@
-import * as fText from "./fText";
+var fText = require("./fText");
 SupRuntime.registerPlugin("fText", fText);
