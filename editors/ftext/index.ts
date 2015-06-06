@@ -19,17 +19,16 @@ require("codemirror/mode/javascript/javascript");
 require("codemirror/addon/search/match-highlighter");
 require("codemirror/addon/edit/matchtags");
 require("codemirror/addon/edit/trailingspace");
-require("codemirror/addon/edit/closetag"); // depends on xml-fol
-
 require("codemirror/addon/fold/xml-fold");
+require("codemirror/addon/edit/closetag"); // depends on xml-fold
+
 require("codemirror/addon/selection/active-line");
 require("codemirror/addon/hint/anyword-hint");
-require("codemirror/keymap/sublime");
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");
-require("codemirror/mode/htmlmixed/htmlmixed"); // load js, css, xm
+require("codemirror/mode/htmlmixed/htmlmixed"); // load js, css, xml
 require("codemirror/mode/jade/jade");
-require("codemirror/mode/markdown/markdown"); // load xm"
+require("codemirror/mode/markdown/markdown"); // load xml
 require("codemirror/mode/coffeescript/coffeescript");
 require("codemirror/mode/clike/clike");
 
@@ -37,7 +36,15 @@ let PerfectResize = require("perfect-resize");
 
 let qs = require("querystring").parse(window.location.search.slice(1));
 let info = { projectId: qs.project, assetId: qs.asset, line: qs.line, ch: qs.ch };
-let data: { clientId: number; projectClient?: SupClient.ProjectClient; assetsById?: {[id: string]: fTextAsset}; asset?: fTextAsset; };
+
+let data: { 
+  clientId: number;
+  projectClient?: SupClient.ProjectClient;
+  assetsById?: {[id: string]: fTextAsset};
+  asset?: fTextAsset;
+  assetInstructions?: { [key: string]: any }
+};
+
 let ui: {
   editor?: CodeMirror.EditorFromTextArea;
   tmpCodeMirrorDoc?: CodeMirror.Doc;
@@ -135,42 +142,8 @@ function start() {
 
   // (<any>CodeMirror).commands.autocomplete = (cm: CodeMirror.Editor) => { scheduleCompletion(); };
 
-  /*(<any>ui.editor).on("keyup", (instance: any, event: any) => {
-    clearInfoPopup();
-
-    // Ignore Ctrl, Cmd, Escape, Return, Tab, arrow keys
-    if (event.ctrlKey || event.metaKey || [27, 9, 13, 37, 38, 39, 40, 16].indexOf(event.keyCode) !== -1) return;
-
-    // If the completion popup is active, the hint() method will automatically
-    // call for more autocomplete, so we don't need to do anything here.
-    if ((<any>ui.editor).state.completionActive != null && (<any>ui.editor).state.completionActive.active()) return;
-    scheduleCompletion();
-  });*/
-
   ui.infoElement = document.createElement("div");
   ui.infoElement.classList.add("popup-info");
-
-  /*document.onmouseout = (event) => { clearInfoPopup(); }
-  document.onmousemove = (event) => {
-    clearInfoPopup();
-
-    ui.infoTimeout = window.setTimeout(() => {
-      ui.infoPosition = ui.editor.coordsChar({ left: event.clientX, top: event.clientY });
-      if ((<any>ui.infoPosition).outside) return;
-
-      let token = ui.editor.getTokenAt(ui.infoPosition);
-      let start = 0;
-      for (let i = 0; i < ui.infoPosition.line; i++) start += ui.editor.getDoc().getLine(i).length + 1;
-      start += ui.infoPosition.ch;
-
-      ui.infoTimeout = null;
-      typescriptWorker.postMessage({
-        type: "getQuickInfoAt",
-        name: fileNamesByScriptId[info.assetId],
-        start
-      });
-    }, 200);
-  };*/
 
   let nwDispatcher = (<any>window).nwDispatcher;
   if (nwDispatcher != null) {
@@ -190,7 +163,9 @@ function start() {
 
   // Error pane
   ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
-  ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
+  ui.errorPane.style.display = "none"; // temp, completely hide error panel
+
+  /*ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
   ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
   ui.errorsTBody = <HTMLTableSectionElement>ui.errorPane.querySelector(".errors tbody");
@@ -203,13 +178,42 @@ function start() {
 
   ui.errorPaneStatus.addEventListener("click", () => {
     let collapsed = ui.errorPane.classList.toggle("collapsed");
+    console.log("collapse client", collapsed);
     errorPaneToggleButton.textContent = collapsed ? "+" : "–";
     errorPaneResizeHandle.handleElt.classList.toggle("disabled", collapsed);
     ui.editor.refresh();
-  });
+  });*/
 
   ui.editor.focus();
 }
+
+
+// read the asset's content then return a list of instructions and their values
+// used to populate data.localEditorSettings
+// called from onAssetReceived()
+function parsefTextAssetInstructions() {
+  let text = ui.editor.getDoc().getValue();
+  let instructions: any = {};
+  let regex = /@ftextasset\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\/+-]+))?/ig
+  let match: any;
+  let i = ui.editor.getDoc().lineCount(); // make sure the loop does not run more than the number of lines
+  
+  do {
+    match = regex.exec(text);
+    if (match != null && match[1] != undefined) {
+      let name = match[1].trim().toLowerCase();
+      let value = match[3];
+      if (value !== undefined) value = value.trim();
+      else value = "";
+      instructions[name] = value;
+    }
+    i--;
+  }
+  while (match != null && i > 0);
+
+  return instructions;
+}
+
 
 // Network callbacks
 function onWelcome(clientId: number) {
@@ -222,80 +226,22 @@ var entriesSubscriber = {
   onEntriesReceived: (entries: SupCore.data.Entries) => {
     entries.walk((entry: any) => {
       if (entry.type !== "ftext") return;
-
-      // var scriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
-      // fileNames.push(scriptName);
-      // fileNamesByScriptId[entry.id] = scriptName;
       data.projectClient.subAsset(entry.id, "ftext", scriptSubscriber);
     })
   },
 
   onEntryAdded: (newEntry: any, parentId: string, index: number) => {
     if (newEntry.type !== "ftext") return;
-
-    /* let scriptName = `${data.projectClient.entries.getPathFromId(newEntry.id)}.ts`;
-
-    let i = 0;
-    data.projectClient.entries.walk((entry) => {
-      if (entry.type !== "ftext") return;
-      if (entry.id === newEntry.id) fileNames.splice(i, 0, scriptName);
-      i++;
-    });
-    fileNamesByScriptId[newEntry.id] = scriptName;*/
     data.projectClient.subAsset(newEntry.id, "ftext", scriptSubscriber);
   },
 
   onEntryMoved: (id: string, parentId: string, index: number) => {
-    let entry = data.projectClient.entries.byId[id];
-    if (entry.type !== "ftext") return;
-
-    /*let oldFileName = fileNamesByScriptId[id];
-
-    let newFileName = `${data.projectClient.entries.getPathFromId(id)}.ts`;
-
-    fileNames.splice(fileNames.indexOf(oldFileName), 1);
-    let i = 0;
-    data.projectClient.entries.walk((entry) => {
-      if (entry.type !== "ftext") return;
-      if (entry.id === id) fileNames.splice(i, 0, newFileName);
-      i++;
-    });
-
-    fileNamesByScriptId[id] = newFileName;
-    let file = files[oldFileName];
-    files[newFileName] = file;
-    if (newFileName !== oldFileName) delete files[oldFileName];
-
-    typescriptWorker.postMessage({ type: "removeFile", fileName: oldFileName });
-    typescriptWorker.postMessage({ type: "addFile", fileName: newFileName, index: fileNames.indexOf(newFileName), file });
-    scheduleErrorCheck();*/
   },
 
   onSetEntryProperty: (id: string, key: string, value: any) => {
-    let entry = data.projectClient.entries.byId[id];
-    if (entry.type !== "ftext" || key !== "name") return;
-
-    /*let oldScriptName = fileNamesByScriptId[id];
-    let newScriptName = `${data.projectClient.entries.getPathFromId(entry.id)}.ts`;
-    if (newScriptName === oldScriptName) return;
-
-    let scriptIndex = fileNames.indexOf(oldScriptName);
-    fileNames[scriptIndex] = newScriptName;
-    fileNamesByScriptId[id] = newScriptName;
-    files[newScriptName] = files[oldScriptName];
-    delete files[oldScriptName];*/
   },
 
   onEntryTrashed: (id: string) => {
-    // let fileName = fileNamesByScriptId[id];
-    // if (fileName == null) return;
-
-    /*fileNames.splice(fileNames.indexOf(fileName), 1);
-    delete files[fileName];
-    delete fileNamesByScriptId[id];
-
-    typescriptWorker.postMessage({ type: "removeFile", fileName });
-    scheduleErrorCheck();*/
   },
 }
 
@@ -304,9 +250,6 @@ let allScriptsReceived = false;
 var scriptSubscriber = {
   onAssetReceived: (err: string, asset: fTextAsset) => {
     data.assetsById[asset.id] = asset;
-    /*let fileName = `${data.projectClient.entries.getPathFromId(asset.id)}.ts`;
-    let file = { id: asset.id, text: asset.pub.text, version: asset.pub.revisionId.toString() }
-    files[fileName] = file;*/
 
     if (asset.id === info.assetId) {
       data.asset = asset;
@@ -317,9 +260,33 @@ var scriptSubscriber = {
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
 
       // fText specific settings
-      // let editorSettings = data.asset.pub.editorSettings;
-      ui.editor.setOption("theme", data.asset.pub.theme)
-      // TODO: dynamically load theme css
+      let editorSettings = data.asset.pub.editorSettings;
+      data.assetInstructions = parsefTextAssetInstructions();
+
+      let mode: string = data.assetInstructions["syntax"];
+      if (mode != null) {
+        let shortcuts: { [key: string]: string } = {
+          html: "htmlmixed",
+          less: "text/x-less",
+          json: "application/json",
+          cson: "coffeescript",
+          shader: "x-shader/x-fragment"
+        };
+        mode = shortcuts[mode] || mode;
+        ui.editor.setOption("mode", mode);
+        console.log("mode", mode);
+      }
+
+      let theme = data.assetInstructions["theme"] || editorSettings.theme;
+      if (theme != null) {
+        let link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `codemirror-themes/${theme}.css`;
+        document.head.appendChild(link);
+        ui.editor.setOption("theme", theme);
+        console.log("theme", theme);
+      }
+
 
       // TODO : do other settings
       // read file for mode (syntax) to use
@@ -854,3 +821,6 @@ function onRedo() {
   // Start
   start();
 });*/
+
+// Start
+start();

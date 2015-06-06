@@ -12,16 +12,14 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },
-    // editorSettings: { type: "hash" },
-    theme: { type: "string" },
+    editorSettings: { type: "hash" }
   };
 
   pub: {
     text: string;
     draft: string;
     revisionId: number;
-    // editorSettings: any;
-    theme: string;
+    editorSettings: any;
   }
 
   document: OT.Document;
@@ -37,20 +35,19 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
   // options contain the asset's name
   init(options: any, callback: Function) {
     let defaultContent = "";
-
+    
     this.pub = {
       text: defaultContent,
       draft: defaultContent,
       revisionId: 0,
-      // editorSettings: { theme: "monokai from asset class" },
-      theme: "monokai from asset class"
+      editorSettings: { defaultSettingsObject: true }, // overidden below with the actual resource content
     }
 
     // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
     this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
       // add the editor settings to all asset instance so that they can be retrieved from the editor
-      // this.pub.editorSettings = fTextSettings.pub.editorSettings;
-      this.pub.theme = fTextSettings.pub.theme;
+      if (fTextSettings.pub != null)
+        this.pub.editorSettings = fTextSettings.pub;
       
       this.serverData.resources.release("fTextSettings", null);
       super.init(options, callback);
@@ -101,11 +98,13 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
   save(assetPath: string, callback: (err: Error) => any) {
     let text = this.pub.text; delete this.pub.text;
     let draft = this.pub.draft; delete this.pub.draft;
+    let editorSettings = this.pub.editorSettings; delete this.pub.editorSettings;
 
     let json = JSON.stringify(this.pub, null, 2);
 
     this.pub.text = text;
     this.pub.draft = draft;
+    this.pub.editorSettings = editorSettings;
 
     fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, (err) => {
       if (err != null) { callback(err); return; }

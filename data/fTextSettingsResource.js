@@ -12,16 +12,11 @@ var fTextSettingsResource = (function (_super) {
     fTextSettingsResource.prototype.init = function (callback) {
         // default values
         this.pub = {
-            // theme: "monokai",
-            // editorSettings: {
-            // theme: "monokai"
-            // },
-            theme: "monokai from ressource class"
+            theme: "monokai"
         };
         _super.prototype.init.call(this, callback);
     };
     fTextSettingsResource.schema = {
-        // editorSettings: { type: "hash", mutable: true },
         theme: { type: "string?", mutable: true },
     };
     return fTextSettingsResource;

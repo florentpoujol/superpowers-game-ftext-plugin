@@ -1,9 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var fTextSettingsResource = require("./fTextSettingsResource").default;
-var fTextAsset = require("./fTextAsset").default;
+var fTextSettingsResource = require("./fTextSettingsResource");
+var fTextAsset = require("./fTextAsset");
 
-SupCore.data.registerResource("fTextSettings", fTextSettingsResource);
-SupCore.data.registerAssetClass("ftext", fTextAsset);
+SupCore.data.registerResource("fTextSettings", fTextSettingsResource.default);
+SupCore.data.registerAssetClass("ftext", fTextAsset.default);
 
 },{"./fTextAsset":4,"./fTextSettingsResource":5}],2:[function(require,module,exports){
 (function (process){
@@ -320,14 +320,13 @@ var ScriptAsset = (function (_super) {
             text: defaultContent,
             draft: defaultContent,
             revisionId: 0,
-            // editorSettings: { theme: "monokai from asset class" },
-            theme: "monokai from asset class"
+            editorSettings: { defaultSettingsObject: true },
         };
         // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
         this.serverData.resources.acquire("fTextSettings", null, function (err, fTextSettings) {
             // add the editor settings to all asset instance so that they can be retrieved from the editor
-            // this.pub.editorSettings = fTextSettings.pub.editorSettings;
-            _this.pub.theme = fTextSettings.pub.theme;
+            if (fTextSettings.pub != null)
+                _this.pub.editorSettings = fTextSettings.pub;
             _this.serverData.resources.release("fTextSettings", null);
             _super.prototype.init.call(_this, options, callback);
         });
@@ -374,9 +373,12 @@ var ScriptAsset = (function (_super) {
         delete this.pub.text;
         var draft = this.pub.draft;
         delete this.pub.draft;
+        var editorSettings = this.pub.editorSettings;
+        delete this.pub.editorSettings;
         var json = JSON.stringify(this.pub, null, 2);
         this.pub.text = text;
         this.pub.draft = draft;
+        this.pub.editorSettings = editorSettings;
         fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, function (err) {
             if (err != null) {
                 callback(err);
@@ -438,8 +440,7 @@ var ScriptAsset = (function (_super) {
         text: { type: "string" },
         draft: { type: "string" },
         revisionId: { type: "integer" },
-        // editorSettings: { type: "hash" },
-        theme: { type: "string" },
+        editorSettings: { type: "hash" }
     };
     return ScriptAsset;
 })(SupCore.data.base.Asset);
@@ -460,16 +461,11 @@ var fTextSettingsResource = (function (_super) {
     fTextSettingsResource.prototype.init = function (callback) {
         // default values
         this.pub = {
-            // theme: "monokai",
-            // editorSettings: {
-            // theme: "monokai"
-            // },
-            theme: "monokai from ressource class"
+            theme: "monokai"
         };
         _super.prototype.init.call(this, callback);
     };
     fTextSettingsResource.schema = {
-        // editorSettings: { type: "hash", mutable: true },
         theme: { type: "string?", mutable: true },
     };
     return fTextSettingsResource;

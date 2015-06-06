@@ -4,8 +4,10 @@
 @require '../../node_modules/codemirror/addon/dialog/dialog.css'
 @require '../../node_modules/codemirror/addon/hint/show-hint.css'
 
-@require '../../node_modules/codemirror/theme/monokai.css'
-@require '../../node_modules/codemirror/theme/paraiso-dark.css'
+@require '../../node_modules/codemirror/addon/fold/foldgutter.css'
+
+// @require '../../node_modules/codemirror/theme/monokai.css'
+// styles at loaded when the editor loads (see onAssetReceived() in index.ts)
 
 body
   display flex

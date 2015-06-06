@@ -1,10 +1,6 @@
 export default class fTextSettingsResource extends SupCore.data.base.Resource {
   static schema = {
-    // editorSettings: { type: "hash", mutable: true },
     theme: { type: "string?", mutable: true },
-    // framesPerSecond: { type: "integer", mutable: true },
-    // ratioNumerator: { type: "integer?", mutable: true },
-    // ratioDenominator: { type: "integer?", mutable: true }
   }
 
   constructor(pub: any, serverData?: any) {
@@ -14,14 +10,7 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
   init(callback: Function) {
     // default values
     this.pub = { 
-      // theme: "monokai",
-      // editorSettings: {
-        // theme: "monokai"
-      // },
-      theme: "monokai from ressource class"
-      // framesPerSecond: 60,
-      // ratioNumerator: null,
-      // ratioDenominator: null
+      theme: "monokai"
     };
     super.init(callback);
   }

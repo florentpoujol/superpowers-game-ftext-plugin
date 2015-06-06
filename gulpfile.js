@@ -29,18 +29,20 @@ function makeBrowserify(source, destination, output, compileTs) {
 }
 
 makeBrowserify("./api/index.js", "./public", "api");
-makeBrowserify("./data/index.js", "./public", "data", true);
+makeBrowserify("./data/index.js", "./public", "data");
 makeBrowserify("./runtime/index.js", "./public", "runtime");
-makeBrowserify("./editors/ftext/index.js", "./public/editors", "ftext/index", true);
+makeBrowserify("./editors/ftext/index.js", "./public/editors", "ftext/index");
+makeBrowserify("./settingsEditors/index.js", "./public", "settingsEditors");
 
 // watch
 gulp.task("watch", function() {
   gulp.watch("./**/index.jade", ["jade"]);
   gulp.watch("./**/index.styl", ["stylus"]);
-  gulp.watch("./api/*", ["api-browserify"]);
-  gulp.watch("./data/*", ["data-browserify"]);
-  gulp.watch("./runtime/*", ["runtime-browserify"]);
-  gulp.watch("./editors/ftext/*.coffee", ["ftext/index-browserify"]);
+  gulp.watch("./api/*.js", ["api-browserify"]);
+  gulp.watch("./data/*.js", ["data-browserify"]);
+  gulp.watch("./runtime/*.js", ["runtime-browserify"]);
+  gulp.watch("./editors/ftext/*.js", ["ftext/index-browserify"]);
+  gulp.watch("./settingsEditors/*.js", ["settingsEditors-browserify"]);
 });
 
 // All

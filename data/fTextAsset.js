@@ -24,14 +24,13 @@ var ScriptAsset = (function (_super) {
             text: defaultContent,
             draft: defaultContent,
             revisionId: 0,
-            // editorSettings: { theme: "monokai from asset class" },
-            theme: "monokai from asset class"
+            editorSettings: { defaultSettingsObject: true },
         };
         // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
         this.serverData.resources.acquire("fTextSettings", null, function (err, fTextSettings) {
             // add the editor settings to all asset instance so that they can be retrieved from the editor
-            // this.pub.editorSettings = fTextSettings.pub.editorSettings;
-            _this.pub.theme = fTextSettings.pub.theme;
+            if (fTextSettings.pub != null)
+                _this.pub.editorSettings = fTextSettings.pub;
             _this.serverData.resources.release("fTextSettings", null);
             _super.prototype.init.call(_this, options, callback);
         });
@@ -78,9 +77,12 @@ var ScriptAsset = (function (_super) {
         delete this.pub.text;
         var draft = this.pub.draft;
         delete this.pub.draft;
+        var editorSettings = this.pub.editorSettings;
+        delete this.pub.editorSettings;
         var json = JSON.stringify(this.pub, null, 2);
         this.pub.text = text;
         this.pub.draft = draft;
+        this.pub.editorSettings = editorSettings;
         fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, function (err) {
             if (err != null) {
                 callback(err);
@@ -142,8 +144,7 @@ var ScriptAsset = (function (_super) {
         text: { type: "string" },
         draft: { type: "string" },
         revisionId: { type: "integer" },
-        // editorSettings: { type: "hash" },
-        theme: { type: "string" },
+        editorSettings: { type: "hash" }
     };
     return ScriptAsset;
 })(SupCore.data.base.Asset);

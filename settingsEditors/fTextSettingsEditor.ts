@@ -1,4 +1,5 @@
 import fTextSettingsResource from "../data/fTextSettingsResource";
+import * as fs from "fs";
 
 export default class fTextSettingsEditor {
 
@@ -14,12 +15,33 @@ export default class fTextSettingsEditor {
   constructor(container: HTMLDivElement, projectClient: SupClient.ProjectClient) {
     this.projectClient = projectClient;
 
-    let tbody = SupClient.table.createTable(container).tbody;
-    // let { tbody } = SupClient.table.createTable(container);
+    let title = document.createElement("h2");
+    title.textContent = "Default editor settings";
+    container.appendChild( title );
+
+
+    let { tbody } = SupClient.table.createTable(container);
+    // let tbody = SupClient.table.createTable(container).tbody;
 
     this.themeRow = SupClient.table.appendRow(tbody, "Theme");
-    this.fields["theme"] = SupClient.table.appendTextField(this.themeRow.valueCell, "monokai default");
-    // TODO: get list of all available themes (how ? should be able to read the public folder) then enable HTML5 autocompletion
+    this.fields["theme"] = SupClient.table.appendTextField(this.themeRow.valueCell, "monokai");
+
+    // get list of all available themes then enable HTML5 autocompletion
+    fs.readdir("public/editors/ftext/codemirror-themes", (err: Error, files?: any) => {
+      if (files != null && files.length > 0) {
+        this.fields["theme"].setAttribute("list", "themes-list"); // this.fields["theme"].list =   would throw an error
+
+        let datalist = document.createElement("datalist");
+        datalist.id = "themes-list";
+        this.themeRow.valueCell.appendChild(datalist);
+
+        for (let theme of files) {
+          let option = document.createElement("option");
+          option.value = theme.replace(".css", "");
+          datalist.appendChild(option);
+        }
+      }
+    });
 
     this.fields["theme"].addEventListener("change", (event: any) => {
       let theme = (event.target.value !== "") ? event.target.value : null;
