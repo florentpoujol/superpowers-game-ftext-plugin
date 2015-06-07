@@ -162,25 +162,32 @@ function parsefTextAssetInstructions() {
     } while (match != null && i > 0);
     return instructions;
 }
+function loadThemeStyle(theme) {
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "codemirror-themes/" + theme + ".css";
+    document.head.appendChild(link);
+    console.log("loadThemeStyle", theme);
+}
 // Network callbacks
 function onWelcome(clientId) {
     data = { clientId: clientId, assetsById: {} };
     data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
-    data.projectClient.subEntries(entriesSubscriber);
-    data.projectClient.subResource("fTextSettings", fTextSettingsSubscriber);
+    data.projectClient.subEntries(entriesHandlers);
+    data.projectClient.subResource("fTextSettings", resourceHandlers);
 }
-var entriesSubscriber = {
+var entriesHandlers = {
     onEntriesReceived: function (entries) {
         entries.walk(function (entry) {
             if (entry.type !== "ftext")
                 return;
-            data.projectClient.subAsset(entry.id, "ftext", scriptSubscriber);
+            data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
         });
     },
     onEntryAdded: function (newEntry, parentId, index) {
         if (newEntry.type !== "ftext")
             return;
-        data.projectClient.subAsset(newEntry.id, "ftext", scriptSubscriber);
+        data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
     },
     onEntryMoved: function (id, parentId, index) {
     },
@@ -189,8 +196,7 @@ var entriesSubscriber = {
     onEntryTrashed: function (id) {
     },
 };
-// resource handlers
-var fTextSettingsSubscriber = {
+var resourceHandlers = {
     onResourceReceived: function (resourceId, resource) {
         data.fTextSettingsResource = resource.pub;
         if (ui.editor != null) {
@@ -202,26 +208,19 @@ var fTextSettingsSubscriber = {
         }
     },
     onResourceEdited: function (resourceId, command, propertyName) {
-        // edit the editor config
         if (ui.editor != null) {
-            // ui.editor.setOption("theme", resource.pub.theme);
-            console.log("onResourceEdited", resourceId, command, propertyName, data.fTextSettingsResource.theme);
+            var theme = data.fTextSettingsResource.theme;
+            if (theme != null && theme != ui.editor.getOption("theme")) {
+                loadThemeStyle(theme);
+                ui.editor.setOption("theme", theme);
+            }
         }
-        else
-            console.log("onResourceEdited, no editor set");
     }
 };
-var allScriptsReceived = false;
-function loadThemeStyle(theme) {
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "codemirror-themes/" + theme + ".css";
-    document.head.appendChild(link);
-    console.log("loadThemeStyle", theme);
-}
-var scriptSubscriber = {
+var assetHandlers = {
     onAssetReceived: function (err, asset) {
         data.assetsById[asset.id] = asset;
+        console.log("asser received", asset);
         if (asset.id === info.assetId) {
             data.asset = asset;
             ui.editor.getDoc().setValue(data.asset.pub.draft);
@@ -230,9 +229,16 @@ var scriptSubscriber = {
             if (info.line != null)
                 ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
             // fText specific settings
-            // let editorSettings = data.asset.pub.syntax;
             data.assetInstructions = parsefTextAssetInstructions();
             var mode = data.assetInstructions["syntax"];
+            if (mode == null) {
+                var path = data.projectClient.entries.getPathFromId(asset.id);
+                var match = /\.([a-z]+)$/ig.exec(path);
+                if (match != null && match[1] != null) {
+                    mode = match[1];
+                    console.log("match", mode);
+                }
+            }
             if (mode != null) {
                 var shortcuts = {
                     html: "htmlmixed",
@@ -244,12 +250,6 @@ var scriptSubscriber = {
                 mode = shortcuts[mode] || mode;
                 ui.editor.setOption("mode", mode);
                 console.log("mode", mode);
-            }
-            // set theme
-            var theme = data.assetInstructions["theme"];
-            if (theme != null && theme != ui.editor.getOption("theme")) {
-                loadThemeStyle(theme);
-                ui.editor.setOption("theme", theme);
             }
         }
     },

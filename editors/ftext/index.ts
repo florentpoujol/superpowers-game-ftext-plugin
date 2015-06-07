@@ -27,11 +27,13 @@ require("codemirror/addon/selection/active-line");
 require("codemirror/addon/hint/anyword-hint");
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");
+
 require("codemirror/mode/htmlmixed/htmlmixed"); // load js, css, xml
 require("codemirror/mode/jade/jade");
 require("codemirror/mode/markdown/markdown"); // load xml
 require("codemirror/mode/coffeescript/coffeescript");
 require("codemirror/mode/clike/clike");
+require("codemirror/mode/stylus/stylus");
 
 let PerfectResize = require("perfect-resize");
 
@@ -216,28 +218,37 @@ function parsefTextAssetInstructions() {
   return instructions;
 }
 
+function loadThemeStyle(theme: string) {
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `codemirror-themes/${theme}.css`;
+  document.head.appendChild(link);
+  console.log("loadThemeStyle", theme);
+}
+
+
 
 // Network callbacks
 function onWelcome(clientId: number) {
   data = { clientId, assetsById: {} }
   data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
   
-  data.projectClient.subEntries(entriesSubscriber);
+  data.projectClient.subEntries(entriesHandlers);
 
-  data.projectClient.subResource("fTextSettings", fTextSettingsSubscriber);
+  data.projectClient.subResource("fTextSettings", resourceHandlers);
 }
 
-var entriesSubscriber = {
+var entriesHandlers = {
   onEntriesReceived: (entries: SupCore.data.Entries) => {
     entries.walk((entry: any) => {
       if (entry.type !== "ftext") return;
-      data.projectClient.subAsset(entry.id, "ftext", scriptSubscriber);
+      data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
     })
   },
 
   onEntryAdded: (newEntry: any, parentId: string, index: number) => {
     if (newEntry.type !== "ftext") return;
-    data.projectClient.subAsset(newEntry.id, "ftext", scriptSubscriber);
+    data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
   },
 
   onEntryMoved: (id: string, parentId: string, index: number) => {
@@ -250,9 +261,7 @@ var entriesSubscriber = {
   },
 }
 
-// resource handlers
-
-var fTextSettingsSubscriber = {
+var resourceHandlers = {
   onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
     data.fTextSettingsResource = resource.pub;
 
@@ -266,28 +275,17 @@ var fTextSettingsSubscriber = {
   },
 
   onResourceEdited: (resourceId: string, command: string, propertyName: string) => {
-    // edit the editor config
     if (ui.editor != null) {
-      // ui.editor.setOption("theme", resource.pub.theme);
-      console.log("onResourceEdited", resourceId, command, propertyName, data.fTextSettingsResource.theme);
-
+      let theme = data.fTextSettingsResource.theme
+      if (theme != null && theme != ui.editor.getOption("theme")) {
+        loadThemeStyle(theme);
+        ui.editor.setOption("theme", theme);
+      }
     }
-    else
-      console.log("onResourceEdited, no editor set");
   }
 }
 
-let allScriptsReceived = false;
-
-function loadThemeStyle(theme: string) {
-  let link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = `codemirror-themes/${theme}.css`;
-  document.head.appendChild(link);
-  console.log("loadThemeStyle", theme);
-}
-
-var scriptSubscriber = {
+var assetHandlers = {
   onAssetReceived: (err: string, asset: fTextAsset) => {
     data.assetsById[asset.id] = asset;
 
@@ -300,45 +298,38 @@ var scriptSubscriber = {
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
 
       // fText specific settings
-      // let editorSettings = data.asset.pub.syntax;
       data.assetInstructions = parsefTextAssetInstructions();
 
       let mode: string = data.assetInstructions["syntax"];
+      
+      if (mode == null) { // check the extension of the asset name
+        let path = data.projectClient.entries.getPathFromId(asset.id);
+        let match = /\.([a-z]+)$/ig.exec(path);
+        if (match != null && match[1] != null)
+          mode = match[1];
+      }
+
       if (mode != null) {
         let shortcuts: { [key: string]: string } = {
-          html: "htmlmixed",
-          less: "text/x-less",
-          json: "application/json",
+          coffee: "coffeescript",
           cson: "coffeescript",
-          shader: "x-shader/x-fragment"
+          html: "htmlmixed",
+          js: "javascript",
+          json: "application/json",
+          less: "text/x-less",
+          md: "markdown",
+          shader: "x-shader/x-fragment",
+          styl: "stylus",
         };
         mode = shortcuts[mode] || mode;
         ui.editor.setOption("mode", mode);
-        console.log("mode", mode);
       }
-
-      // set theme
-      let theme = data.assetInstructions["theme"];
-      if (theme != null && theme != ui.editor.getOption("theme")) {
-        loadThemeStyle(theme);
-        ui.editor.setOption("theme", theme);
-      }
-
-
     }
   },
 
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
     if (id !== info.assetId) {
       /*if (command === "saveText") {
-        let fileName = `${data.projectClient.entries.getPathFromId(id)}.ts`;
-        let asset = data.assetsById[id];
-        let file = files[fileName];
-        file.text = asset.pub.text;
-        file.version = asset.pub.revisionId.toString();
-
-        typescriptWorker.postMessage({ type: "updateFile", fileName, text: file.text, version: file.version });
-        scheduleErrorCheck();
       }*/
       return
     }
