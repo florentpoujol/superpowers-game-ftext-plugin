@@ -18,22 +18,13 @@ var ScriptAsset = (function (_super) {
     // called on asset creation
     // options contain the asset's name
     ScriptAsset.prototype.init = function (options, callback) {
-        var _this = this;
         var defaultContent = "";
         this.pub = {
             text: defaultContent,
             draft: defaultContent,
             revisionId: 0,
-            editorSettings: { defaultSettingsObject: true },
         };
-        // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
-        this.serverData.resources.acquire("fTextSettings", null, function (err, fTextSettings) {
-            // add the editor settings to all asset instance so that they can be retrieved from the editor
-            if (fTextSettings.pub != null)
-                _this.pub.editorSettings = fTextSettings.pub;
-            _this.serverData.resources.release("fTextSettings", null);
-            _super.prototype.init.call(_this, options, callback);
-        });
+        _super.prototype.init.call(this, options, callback);
     };
     ScriptAsset.prototype.setup = function () {
         this.document.text = this.pub.draft;
@@ -77,12 +68,11 @@ var ScriptAsset = (function (_super) {
         delete this.pub.text;
         var draft = this.pub.draft;
         delete this.pub.draft;
-        var editorSettings = this.pub.editorSettings;
-        delete this.pub.editorSettings;
+        // let editorSettings = this.pub.editorSettings; delete this.pub.editorSettings;
         var json = JSON.stringify(this.pub, null, 2);
         this.pub.text = text;
         this.pub.draft = draft;
-        this.pub.editorSettings = editorSettings;
+        // this.pub.editorSettings = editorSettings;
         fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, function (err) {
             if (err != null) {
                 callback(err);
@@ -144,7 +134,6 @@ var ScriptAsset = (function (_super) {
         text: { type: "string" },
         draft: { type: "string" },
         revisionId: { type: "integer" },
-        editorSettings: { type: "hash" }
     };
     return ScriptAsset;
 })(SupCore.data.base.Asset);

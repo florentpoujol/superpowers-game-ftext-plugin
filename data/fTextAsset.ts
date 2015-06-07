@@ -12,14 +12,14 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },
-    editorSettings: { type: "hash" }
+    // syntax: { type: "string" }
   };
 
   pub: {
     text: string;
     draft: string;
     revisionId: number;
-    editorSettings: any;
+    // sytax: string;
   }
 
   document: OT.Document;
@@ -40,18 +40,10 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
       text: defaultContent,
       draft: defaultContent,
       revisionId: 0,
-      editorSettings: { defaultSettingsObject: true }, // overidden below with the actual resource content
+      // syntax: "", // no default syntax (codemirror mode)
     }
-
-    // the name of the ressource here "fTextSettings" must be the one set in registerResource() in index.ts
-    this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
-      // add the editor settings to all asset instance so that they can be retrieved from the editor
-      if (fTextSettings.pub != null)
-        this.pub.editorSettings = fTextSettings.pub;
-      
-      this.serverData.resources.release("fTextSettings", null);
-      super.init(options, callback);
-    });
+    
+    super.init(options, callback);
   }
 
   setup() {
@@ -98,13 +90,13 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
   save(assetPath: string, callback: (err: Error) => any) {
     let text = this.pub.text; delete this.pub.text;
     let draft = this.pub.draft; delete this.pub.draft;
-    let editorSettings = this.pub.editorSettings; delete this.pub.editorSettings;
+    // let editorSettings = this.pub.editorSettings; delete this.pub.editorSettings;
 
     let json = JSON.stringify(this.pub, null, 2);
 
     this.pub.text = text;
     this.pub.draft = draft;
-    this.pub.editorSettings = editorSettings;
+    // this.pub.editorSettings = editorSettings;
 
     fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, (err) => {
       if (err != null) { callback(err); return; }

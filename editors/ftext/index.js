@@ -76,13 +76,13 @@ function start() {
         "Ctrl-J": "toMatchingTag"
     };
     var textArea = document.querySelector(".code-editor");
+    console.log("editor start");
     ui.editor = CodeMirror.fromTextArea(textArea, {
         lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
         gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
         tabSize: 2, keyMap: "sublime",
         extraKeys: extraKeys,
         viewportMargin: Infinity,
-        // mode: "", no default mode
         readOnly: true
     });
     ui.tmpCodeMirrorDoc = new CodeMirror.Doc("");
@@ -165,8 +165,9 @@ function parsefTextAssetInstructions() {
 // Network callbacks
 function onWelcome(clientId) {
     data = { clientId: clientId, assetsById: {} };
-    data.projectClient = new SupClient.ProjectClient(socket);
+    data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
     data.projectClient.subEntries(entriesSubscriber);
+    data.projectClient.subResource("fTextSettings", fTextSettingsSubscriber);
 }
 var entriesSubscriber = {
     onEntriesReceived: function (entries) {
@@ -188,7 +189,36 @@ var entriesSubscriber = {
     onEntryTrashed: function (id) {
     },
 };
+// resource handlers
+var fTextSettingsSubscriber = {
+    onResourceReceived: function (resourceId, resource) {
+        data.fTextSettingsResource = resource.pub;
+        if (ui.editor != null) {
+            var theme = resource.pub.theme;
+            if (theme != null && theme != ui.editor.getOption("theme")) {
+                loadThemeStyle(theme);
+                ui.editor.setOption("theme", theme);
+            }
+        }
+    },
+    onResourceEdited: function (resourceId, command, propertyName) {
+        // edit the editor config
+        if (ui.editor != null) {
+            // ui.editor.setOption("theme", resource.pub.theme);
+            console.log("onResourceEdited", resourceId, command, propertyName, data.fTextSettingsResource.theme);
+        }
+        else
+            console.log("onResourceEdited, no editor set");
+    }
+};
 var allScriptsReceived = false;
+function loadThemeStyle(theme) {
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "codemirror-themes/" + theme + ".css";
+    document.head.appendChild(link);
+    console.log("loadThemeStyle", theme);
+}
 var scriptSubscriber = {
     onAssetReceived: function (err, asset) {
         data.assetsById[asset.id] = asset;
@@ -200,7 +230,7 @@ var scriptSubscriber = {
             if (info.line != null)
                 ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
             // fText specific settings
-            var editorSettings = data.asset.pub.editorSettings;
+            // let editorSettings = data.asset.pub.syntax;
             data.assetInstructions = parsefTextAssetInstructions();
             var mode = data.assetInstructions["syntax"];
             if (mode != null) {
@@ -215,14 +245,11 @@ var scriptSubscriber = {
                 ui.editor.setOption("mode", mode);
                 console.log("mode", mode);
             }
-            var theme = data.assetInstructions["theme"] || editorSettings.theme;
-            if (theme != null) {
-                var link = document.createElement("link");
-                link.rel = "stylesheet";
-                link.href = "codemirror-themes/" + theme + ".css";
-                document.head.appendChild(link);
+            // set theme
+            var theme = data.assetInstructions["theme"];
+            if (theme != null && theme != ui.editor.getOption("theme")) {
+                loadThemeStyle(theme);
                 ui.editor.setOption("theme", theme);
-                console.log("theme", theme);
             }
         }
     },

@@ -10,7 +10,7 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
   init(callback: Function) {
     // default values
     this.pub = { 
-      theme: "monokai"
+      theme: "default"
     };
     super.init(callback);
   }

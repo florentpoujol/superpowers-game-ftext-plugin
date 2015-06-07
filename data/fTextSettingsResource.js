@@ -12,7 +12,7 @@ var fTextSettingsResource = (function (_super) {
     fTextSettingsResource.prototype.init = function (callback) {
         // default values
         this.pub = {
-            theme: "monokai"
+            theme: "default"
         };
         _super.prototype.init.call(this, callback);
     };

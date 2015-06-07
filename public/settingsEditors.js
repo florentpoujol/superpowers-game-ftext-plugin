@@ -86,27 +86,25 @@ var fTextSettingsEditor = (function () {
         var tbody = (SupClient.table.createTable(container)).tbody;
         // let tbody = SupClient.table.createTable(container).tbody;
         this.themeRow = SupClient.table.appendRow(tbody, "Theme");
-        this.fields["theme"] = SupClient.table.appendTextField(this.themeRow.valueCell, "monokai");
+        // this.fields["theme"] = SupClient.table.appendSelectBox(this.themeRow.valueCell, "monokai");
         // get list of all available themes then enable HTML5 autocompletion
         process.nextTick(function(){(function (err, files) {
     if (files != null && files.length > 0) {
-        _this.fields['theme'].setAttribute('list', 'themes-list');
-        var datalist = document.createElement('datalist');
-        datalist.id = 'themes-list';
-        _this.themeRow.valueCell.appendChild(datalist);
-        for (var _i = 0; _i < files.length; _i++) {
-            var theme = files[_i];
-            var option = document.createElement('option');
-            option.value = theme.replace('.css', '');
-            datalist.appendChild(option);
+        var options = {};
+        for (var i in files) {
+            var file = files[i].replace('.css', '');
+            options[file] = file;
         }
+        _this.fields['theme'] = SupClient.table.appendSelectBox(_this.themeRow.valueCell, options, 'default');
+        _this.fields['theme'].addEventListener('change', function (event) {
+            var theme = event.target.value !== '' ? event.target.value : 'default';
+            _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
+                if (err != null)
+                    alert(err);
+            });
+        });
     }
 })(null,["3024-day.css","3024-night.css","ambiance-mobile.css","ambiance.css","base16-dark.css","base16-light.css","blackboard.css","cobalt.css","colorforth.css","default.css","eclipse.css","elegant.css","erlang-dark.css","lesser-dark.css","mbo.css","mdn-like.css","midnight.css","monokai.css","neat.css","neo.css","night.css","paraiso-dark.css","paraiso-light.css","pastel-on-dark.css","rubyblue.css","solarized.css","the-matrix.css","tomorrow-night-bright.css","tomorrow-night-eighties.css","twilight.css","vibrant-ink.css","xq-dark.css","xq-light.css","zenburn.css"])});
-        this.fields["theme"].addEventListener("change", function (event) {
-            var theme = (event.target.value !== "") ? event.target.value : null;
-            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, function (err) { if (err != null)
-                alert(err); });
-        });
         this.projectClient.subResource("fTextSettings", this);
     }
     return fTextSettingsEditor;

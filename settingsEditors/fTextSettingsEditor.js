@@ -19,26 +19,23 @@ var fTextSettingsEditor = (function () {
         var tbody = (SupClient.table.createTable(container)).tbody;
         // let tbody = SupClient.table.createTable(container).tbody;
         this.themeRow = SupClient.table.appendRow(tbody, "Theme");
-        this.fields["theme"] = SupClient.table.appendTextField(this.themeRow.valueCell, "monokai");
+        // this.fields["theme"] = SupClient.table.appendSelectBox(this.themeRow.valueCell, "monokai");
         // get list of all available themes then enable HTML5 autocompletion
         fs.readdir("public/editors/ftext/codemirror-themes", function (err, files) {
             if (files != null && files.length > 0) {
-                _this.fields["theme"].setAttribute("list", "themes-list"); // this.fields["theme"].list =   would throw an error
-                var datalist = document.createElement("datalist");
-                datalist.id = "themes-list";
-                _this.themeRow.valueCell.appendChild(datalist);
-                for (var _i = 0; _i < files.length; _i++) {
-                    var theme = files[_i];
-                    var option = document.createElement("option");
-                    option.value = theme.replace(".css", "");
-                    datalist.appendChild(option);
+                var options = {};
+                for (var i in files) {
+                    var file = files[i].replace(".css", "");
+                    options[file] = file;
                 }
+                _this.fields["theme"] = SupClient.table.appendSelectBox(_this.themeRow.valueCell, options, "default");
+                _this.fields["theme"].addEventListener("change", function (event) {
+                    var theme = (event.target.value !== "") ? event.target.value : "default";
+                    _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, function (err) { if (err != null)
+                        alert(err); });
+                    // call onResourceEdited methods that have subscribed to resources via project client
+                });
             }
-        });
-        this.fields["theme"].addEventListener("change", function (event) {
-            var theme = (event.target.value !== "") ? event.target.value : null;
-            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, function (err) { if (err != null)
-                alert(err); });
         });
         this.projectClient.subResource("fTextSettings", this);
     }

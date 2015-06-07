@@ -2,6 +2,7 @@ import * as async from "async";
 import * as OT from "operational-transform";
 
 import fTextAsset from "../../data/fTextAsset";
+import fTextSettingsResource from "../../data/fTextSettingsResource";
 
 (<any>window).CodeMirror = require("codemirror");
 
@@ -42,7 +43,8 @@ let data: {
   projectClient?: SupClient.ProjectClient;
   assetsById?: {[id: string]: fTextAsset};
   asset?: fTextAsset;
-  assetInstructions?: { [key: string]: any }
+  assetInstructions?: { [key: string]: any },
+  fTextSettingsResource?: any,
 };
 
 let ui: {
@@ -114,13 +116,13 @@ function start() {
   }
 
   let textArea = <HTMLTextAreaElement>document.querySelector(".code-editor");
+  console.log("editor start");
   ui.editor = CodeMirror.fromTextArea(textArea, {
     lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
     gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-    tabSize: 2, keyMap: "sublime", // , theme: "monokai"
+    tabSize: 2, keyMap: "sublime", 
     extraKeys: extraKeys,
     viewportMargin: Infinity,
-    // mode: "", no default mode
     readOnly: true
   });
 
@@ -218,8 +220,11 @@ function parsefTextAssetInstructions() {
 // Network callbacks
 function onWelcome(clientId: number) {
   data = { clientId, assetsById: {} }
-  data.projectClient = new SupClient.ProjectClient(socket);
+  data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
+  
   data.projectClient.subEntries(entriesSubscriber);
+
+  data.projectClient.subResource("fTextSettings", fTextSettingsSubscriber);
 }
 
 var entriesSubscriber = {
@@ -245,7 +250,42 @@ var entriesSubscriber = {
   },
 }
 
+// resource handlers
+
+var fTextSettingsSubscriber = {
+  onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
+    data.fTextSettingsResource = resource.pub;
+
+    if (ui.editor != null) {
+      let theme = resource.pub.theme
+      if (theme != null && theme != ui.editor.getOption("theme")) {
+        loadThemeStyle(theme);
+        ui.editor.setOption("theme", theme);
+      }
+    }
+  },
+
+  onResourceEdited: (resourceId: string, command: string, propertyName: string) => {
+    // edit the editor config
+    if (ui.editor != null) {
+      // ui.editor.setOption("theme", resource.pub.theme);
+      console.log("onResourceEdited", resourceId, command, propertyName, data.fTextSettingsResource.theme);
+
+    }
+    else
+      console.log("onResourceEdited, no editor set");
+  }
+}
+
 let allScriptsReceived = false;
+
+function loadThemeStyle(theme: string) {
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `codemirror-themes/${theme}.css`;
+  document.head.appendChild(link);
+  console.log("loadThemeStyle", theme);
+}
 
 var scriptSubscriber = {
   onAssetReceived: (err: string, asset: fTextAsset) => {
@@ -260,7 +300,7 @@ var scriptSubscriber = {
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
 
       // fText specific settings
-      let editorSettings = data.asset.pub.editorSettings;
+      // let editorSettings = data.asset.pub.syntax;
       data.assetInstructions = parsefTextAssetInstructions();
 
       let mode: string = data.assetInstructions["syntax"];
@@ -277,19 +317,14 @@ var scriptSubscriber = {
         console.log("mode", mode);
       }
 
-      let theme = data.assetInstructions["theme"] || editorSettings.theme;
-      if (theme != null) {
-        let link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = `codemirror-themes/${theme}.css`;
-        document.head.appendChild(link);
+      // set theme
+      let theme = data.assetInstructions["theme"];
+      if (theme != null && theme != ui.editor.getOption("theme")) {
+        loadThemeStyle(theme);
         ui.editor.setOption("theme", theme);
-        console.log("theme", theme);
       }
 
 
-      // TODO : do other settings
-      // read file for mode (syntax) to use
     }
   },
 
