@@ -8,16 +8,16 @@ var __extends = this.__extends || function (d, b) {
 var OT = require("operational-transform");
 var fs = require("fs");
 var path = require("path");
-var ScriptAsset = (function (_super) {
-    __extends(ScriptAsset, _super);
+var fTextAsset = (function (_super) {
+    __extends(fTextAsset, _super);
     // called from the editor onAssetReceived() as well as on server startup
-    function ScriptAsset(id, pub, serverData) {
+    function fTextAsset(id, pub, serverData) {
         this.document = new OT.Document();
-        _super.call(this, id, pub, ScriptAsset.schema, serverData);
+        _super.call(this, id, pub, fTextAsset.schema, serverData);
     }
     // called on asset creation
     // options contain the asset's name
-    ScriptAsset.prototype.init = function (options, callback) {
+    fTextAsset.prototype.init = function (options, callback) {
         var defaultContent = "";
         this.pub = {
             text: defaultContent,
@@ -26,17 +26,17 @@ var ScriptAsset = (function (_super) {
         };
         _super.prototype.init.call(this, options, callback);
     };
-    ScriptAsset.prototype.setup = function () {
+    fTextAsset.prototype.setup = function () {
         this.document.text = this.pub.draft;
         for (var i = 0; i < this.pub.revisionId; i++)
             this.document.operations.push(0);
         this.hasDraft = this.pub.text !== this.pub.draft;
     };
-    ScriptAsset.prototype.restore = function () {
+    fTextAsset.prototype.restore = function () {
         if (this.hasDraft)
             this.emit("setDiagnostic", "draft", "info");
     };
-    ScriptAsset.prototype.destroy = function (callback) {
+    fTextAsset.prototype.destroy = function (callback) {
         /*this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
           // nothing to do here
           this.serverData.resources.release("fTextSettings", null);
@@ -46,7 +46,7 @@ var ScriptAsset = (function (_super) {
         callback();
     };
     // called on server startup
-    ScriptAsset.prototype.load = function (assetPath) {
+    fTextAsset.prototype.load = function (assetPath) {
         var _this = this;
         fs.readFile(path.join(assetPath, "asset.json"), { encoding: "utf8" }, function (err, json) {
             _this.pub = JSON.parse(json);
@@ -63,7 +63,7 @@ var ScriptAsset = (function (_super) {
             });
         });
     };
-    ScriptAsset.prototype.save = function (assetPath, callback) {
+    fTextAsset.prototype.save = function (assetPath, callback) {
         var text = this.pub.text;
         delete this.pub.text;
         var draft = this.pub.draft;
@@ -87,7 +87,7 @@ var ScriptAsset = (function (_super) {
             });
         });
     };
-    ScriptAsset.prototype.server_editText = function (client, operationData, revisionIndex, callback) {
+    fTextAsset.prototype.server_editText = function (client, operationData, revisionIndex, callback) {
         if (operationData.userId !== client.id) {
             callback("Invalid client id");
             return;
@@ -113,14 +113,14 @@ var ScriptAsset = (function (_super) {
         }
         this.emit("change");
     };
-    ScriptAsset.prototype.client_editText = function (operationData, revisionIndex) {
+    fTextAsset.prototype.client_editText = function (operationData, revisionIndex) {
         var operation = new OT.TextOperation();
         operation.deserialize(operationData);
         this.document.apply(operation, revisionIndex);
         this.pub.draft = this.document.text;
         this.pub.revisionId++;
     };
-    ScriptAsset.prototype.server_saveText = function (client, callback) {
+    fTextAsset.prototype.server_saveText = function (client, callback) {
         this.pub.text = this.pub.draft;
         callback(null);
         if (this.hasDraft) {
@@ -129,12 +129,12 @@ var ScriptAsset = (function (_super) {
         }
         this.emit("change");
     };
-    ScriptAsset.prototype.client_saveText = function () { this.pub.text = this.pub.draft; };
-    ScriptAsset.schema = {
+    fTextAsset.prototype.client_saveText = function () { this.pub.text = this.pub.draft; };
+    fTextAsset.schema = {
         text: { type: "string" },
         draft: { type: "string" },
         revisionId: { type: "integer" },
     };
-    return ScriptAsset;
+    return fTextAsset;
 })(SupCore.data.base.Asset);
-exports.default = ScriptAsset;
+exports.default = fTextAsset;

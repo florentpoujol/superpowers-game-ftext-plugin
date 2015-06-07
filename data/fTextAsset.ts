@@ -6,7 +6,7 @@ import * as path from "path";
 
 import fTextSettingsResource from "./fTextSettingsResource";
 
-export default class ScriptAsset extends SupCore.data.base.Asset {
+export default class fTextAsset extends SupCore.data.base.Asset {
 
   static schema = {
     text: { type: "string" },
@@ -28,7 +28,7 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
   // called from the editor onAssetReceived() as well as on server startup
   constructor(id: string, pub: any, serverData?: any) {
     this.document = new OT.Document();
-    super(id, pub, ScriptAsset.schema, serverData);
+    super(id, pub, fTextAsset.schema, serverData);
   }
 
   // called on asset creation
@@ -42,7 +42,7 @@ export default class ScriptAsset extends SupCore.data.base.Asset {
       revisionId: 0,
       // syntax: "", // no default syntax (codemirror mode)
     }
-    
+
     super.init(options, callback);
   }
 
