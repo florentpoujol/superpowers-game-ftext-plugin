@@ -1,0 +1,37 @@
+// @ftextasset: load: head
+
+doctype html
+html
+  head
+    link(rel="stylesheet",href="/client/styles/reset.css")
+    link(rel="stylesheet",href="/client/styles/perfectResize.css")
+    link(rel="stylesheet",href="index.css")
+    style
+      // @ftextasset: include: style.styl
+    
+  body
+    .code-editor-container
+      textarea(disabled).code-editor
+
+    .error-pane
+      .status
+        .info Loading...
+        button.toggle –
+
+      .errors(disabled)
+        table
+          thead
+            tr
+              th Line
+              th Message
+              th Script
+          tbody
+
+    script(src="/core/SupCore.js")
+    script(src="../../data.js")
+    script(src="/api/SupAPI.js")
+    script(src="../../api.js")
+    script(src="/system/SupEngine.js")
+    script(src="../../components.js")
+    script(src="/client/SupClient.js")
+    script(src="index.js")

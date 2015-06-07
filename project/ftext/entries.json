@@ -1,7 +1,24 @@
 [
   {
     "id": "0",
-    "name": "asset1",
+    "name": "cson",
+    "type": "ftext"
+  },
+  {
+    "id": "3",
+    "name": "afolder",
+    "type": null,
+    "children": [
+      {
+        "id": "1",
+        "name": "file.jade",
+        "type": "ftext"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "style.styl",
     "type": "ftext"
   }
 ]
