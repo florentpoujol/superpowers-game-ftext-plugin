@@ -450,12 +450,16 @@ var fTextSettingsResource = (function (_super) {
     fTextSettingsResource.prototype.init = function (callback) {
         // default values
         this.pub = {
-            theme: "default"
+            theme: "default",
+            tabSize: 2,
+            keyMap: "sublime"
         };
         _super.prototype.init.call(this, callback);
     };
     fTextSettingsResource.schema = {
-        theme: { type: "string?", mutable: true },
+        theme: { type: "string", mutable: true },
+        tabSize: { type: "number", min: 1, max: 8, mutable: true },
+        keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
     };
     return fTextSettingsResource;
 })(SupCore.data.base.Resource);

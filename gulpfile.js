@@ -4,7 +4,8 @@ var tasks = [ "jade", "stylus" ];
 // Jade
 var jade = require("gulp-jade");
 gulp.task("jade", function() {
-  return gulp.src("./editors/**/index.jade").pipe(jade()).pipe(gulp.dest("./public/editors"));
+  gulp.src("./editors/**/index.jade").pipe(jade()).pipe(gulp.dest("./public/editors"));
+  gulp.src("./settingsEditors/*.jade").pipe(jade()).pipe(gulp.dest("./public"));
 });
 
 // Stylus
@@ -34,10 +35,12 @@ makeBrowserify("./runtime/index.js", "./public", "runtime");
 makeBrowserify("./editors/ftext/index.js", "./public/editors", "ftext/index");
 makeBrowserify("./settingsEditors/index.js", "./public", "settingsEditors");
 
+// settings Editor
+
 // watch
 gulp.task("watch", function() {
-  gulp.watch("./**/index.jade", ["jade"]);
-  gulp.watch("./**/index.styl", ["stylus"]);
+  gulp.watch("./**/*.jade", ["jade"]);
+  gulp.watch("./**/*.styl", ["stylus"]);
   gulp.watch("./api/*.js", ["api-browserify"]);
   gulp.watch("./data/*.js", ["data-browserify"]);
   gulp.watch("./runtime/*.js", ["runtime-browserify"]);

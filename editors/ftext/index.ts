@@ -223,7 +223,6 @@ function loadThemeStyle(theme: string) {
   link.rel = "stylesheet";
   link.href = `codemirror-themes/${theme}.css`;
   document.head.appendChild(link);
-  console.log("loadThemeStyle", theme);
 }
 
 

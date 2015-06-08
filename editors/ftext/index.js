@@ -24,6 +24,7 @@ require("codemirror/mode/jade/jade");
 require("codemirror/mode/markdown/markdown"); // load xml
 require("codemirror/mode/coffeescript/coffeescript");
 require("codemirror/mode/clike/clike");
+require("codemirror/mode/stylus/stylus");
 var PerfectResize = require("perfect-resize");
 var qs = require("querystring").parse(window.location.search.slice(1));
 var info = { projectId: qs.project, assetId: qs.asset, line: qs.line, ch: qs.ch };
@@ -167,7 +168,6 @@ function loadThemeStyle(theme) {
     link.rel = "stylesheet";
     link.href = "codemirror-themes/" + theme + ".css";
     document.head.appendChild(link);
-    console.log("loadThemeStyle", theme);
 }
 // Network callbacks
 function onWelcome(clientId) {
@@ -220,7 +220,6 @@ var resourceHandlers = {
 var assetHandlers = {
     onAssetReceived: function (err, asset) {
         data.assetsById[asset.id] = asset;
-        console.log("asser received", asset);
         if (asset.id === info.assetId) {
             data.asset = asset;
             ui.editor.getDoc().setValue(data.asset.pub.draft);
@@ -234,22 +233,23 @@ var assetHandlers = {
             if (mode == null) {
                 var path = data.projectClient.entries.getPathFromId(asset.id);
                 var match = /\.([a-z]+)$/ig.exec(path);
-                if (match != null && match[1] != null) {
+                if (match != null && match[1] != null)
                     mode = match[1];
-                    console.log("match", mode);
-                }
             }
             if (mode != null) {
                 var shortcuts = {
-                    html: "htmlmixed",
-                    less: "text/x-less",
-                    json: "application/json",
+                    coffee: "coffeescript",
                     cson: "coffeescript",
-                    shader: "x-shader/x-fragment"
+                    html: "htmlmixed",
+                    js: "javascript",
+                    json: "application/json",
+                    less: "text/x-less",
+                    md: "markdown",
+                    shader: "x-shader/x-fragment",
+                    styl: "stylus",
                 };
                 mode = shortcuts[mode] || mode;
                 ui.editor.setOption("mode", mode);
-                console.log("mode", mode);
             }
         }
     },
@@ -260,14 +260,6 @@ var assetHandlers = {
         }
         if (id !== info.assetId) {
             /*if (command === "saveText") {
-              let fileName = `${data.projectClient.entries.getPathFromId(id)}.ts`;
-              let asset = data.assetsById[id];
-              let file = files[fileName];
-              file.text = asset.pub.text;
-              file.version = asset.pub.revisionId.toString();
-      
-              typescriptWorker.postMessage({ type: "updateFile", fileName, text: file.text, version: file.version });
-              scheduleErrorCheck();
             }*/
             return;
         }

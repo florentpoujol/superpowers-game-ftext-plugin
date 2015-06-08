@@ -1,4 +1,9 @@
 var fs = require("fs");
+var domify = require("domify");
+// definitions are index.d.ts
+// IMPORTANT: domify has been modified so that the module expose an object that contains the parse function
+// instead of exposing the function directly.
+// Typescript would let met import the module and use it as a function at the same time.
 var fTextSettingsEditor = (function () {
     function fTextSettingsEditor(container, projectClient) {
         var _this = this;
@@ -14,30 +19,37 @@ var fTextSettingsEditor = (function () {
         };
         this.projectClient = projectClient;
         var title = document.createElement("h2");
-        title.textContent = "Default editor settings";
+        title.textContent = "Editor settings";
         container.appendChild(title);
-        var tbody = (SupClient.table.createTable(container)).tbody;
-        // let tbody = SupClient.table.createTable(container).tbody;
-        this.themeRow = SupClient.table.appendRow(tbody, "Theme");
-        // this.fields["theme"] = SupClient.table.appendSelectBox(this.themeRow.valueCell, "monokai");
-        // get list of all available themes then enable HTML5 autocompletion
-        fs.readdir("public/editors/ftext/codemirror-themes", function (err, files) {
-            if (files != null && files.length > 0) {
-                var options = {};
-                for (var i in files) {
-                    var file = files[i].replace(".css", "");
-                    options[file] = file;
+        fs.readFile("public/fTextSettingsEditor.html", { encoding: "utf8" }, function (err, text) {
+            if (err)
+                throw err;
+            container.appendChild(domify.parse(text));
+            // get list of all available themes then enable HTML5 autocompletion
+            var themesCallback = function (err, files) {
+                if (err)
+                    throw err;
+                if (files != null && files.length > 0) {
+                    var themeSelect = document.querySelector("#theme-select");
+                    for (var i in files) {
+                        var file = files[i].replace(".css", "");
+                        var option = document.createElement("option");
+                        option.value = file;
+                        option.textContent = file;
+                        themeSelect.appendChild(option);
+                    }
+                    themeSelect.addEventListener("change", function (event) {
+                        var theme = (event.target.value !== "") ? event.target.value : "default";
+                        // call onResourceEdited methods that have subscribed to resources via project client
+                        _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, function (err) { if (err != null)
+                            alert(err); });
+                    });
                 }
-                _this.fields["theme"] = SupClient.table.appendSelectBox(_this.themeRow.valueCell, options, "default");
-                _this.fields["theme"].addEventListener("change", function (event) {
-                    var theme = (event.target.value !== "") ? event.target.value : "default";
-                    _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, function (err) { if (err != null)
-                        alert(err); });
-                    // call onResourceEdited methods that have subscribed to resources via project client
-                });
-            }
+            };
+            // for some reason, gulp would give me an "Unexpected token" error if I define the callback inside the readdir parameters
+            fs.readdir("public/editors/ftext/codemirror-themes", themesCallback);
+            _this.projectClient.subResource("fTextSettings", _this);
         });
-        this.projectClient.subResource("fTextSettings", this);
     }
     return fTextSettingsEditor;
 })();

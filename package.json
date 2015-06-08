@@ -22,8 +22,10 @@
     "system": "^0.1.0"
   },
   "keywords": [
-    "superpowers", "plugin",
-    "text", "asset",
+    "superpowers",
+    "plugin",
+    "text",
+    "asset",
     "json",
     "cson",
     "html",
@@ -39,15 +41,16 @@
   "scripts": {
     "compilets": "tsc api/fText.ts --out /gitignore/fText.js --target ES6",
     "gendoc": "typedoc --out public/docs/ api/fText.ts --mode file --target ES6 --name \"fText plugin\" --readme tutorial.md --theme minimal",
-
     "linksrcdev": "mklink /j \"../../app/plugins/florentpoujol/fText\" \"./\"",
     "linksrcrelease": "mklink /j \"../../../release/app/plugins/florentpoujol/fText\" \"./\"",
-
     "linkprojdev": "mklink /j \"../../data/projects/fText\" \"./project/fText\"",
     "linkprojrelease": "mklink /j \"../../../localprojects/fText\" \"./project/fText\""
   },
   "maintainers": [
     "Florent Poujol <florent.poujol@gmail.com>"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.0"
+  }
 }

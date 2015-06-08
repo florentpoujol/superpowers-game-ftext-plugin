@@ -3,7 +3,7 @@ var fTextSettingsEditor = require("./fTextSettingsEditor");
 
 SupClient.registerSettingsEditorClass("fText", fTextSettingsEditor.default);
 
-},{"./fTextSettingsEditor":3}],2:[function(require,module,exports){
+},{"./fTextSettingsEditor":4}],2:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -64,8 +64,123 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
+
+/**
+ * Expose `parse`.
+ */
+
+module.exports = {parse: parse};
+
+/**
+ * Tests for browser support.
+ */
+
+var div = document.createElement('div');
+// Setup
+div.innerHTML = '  <link/><table></table><a href="/a">a</a><input type="checkbox"/>';
+// Make sure that link elements get serialized correctly by innerHTML
+// This requires a wrapper element in IE
+var innerHTMLBug = !div.getElementsByTagName('link').length;
+div = undefined;
+
+/**
+ * Wrap map from jquery.
+ */
+
+var map = {
+  legend: [1, '<fieldset>', '</fieldset>'],
+  tr: [2, '<table><tbody>', '</tbody></table>'],
+  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
+  // for script/link/style tags to work in IE6-8, you have to wrap
+  // in a div with a non-whitespace character in front, ha!
+  _default: innerHTMLBug ? [1, 'X<div>', '</div>'] : [0, '', '']
+};
+
+map.td =
+map.th = [3, '<table><tbody><tr>', '</tr></tbody></table>'];
+
+map.option =
+map.optgroup = [1, '<select multiple="multiple">', '</select>'];
+
+map.thead =
+map.tbody =
+map.colgroup =
+map.caption =
+map.tfoot = [1, '<table>', '</table>'];
+
+map.polyline =
+map.ellipse =
+map.polygon =
+map.circle =
+map.text =
+map.line =
+map.path =
+map.rect =
+map.g = [1, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">','</svg>'];
+
+/**
+ * Parse `html` and return a DOM Node instance, which could be a TextNode,
+ * HTML DOM Node of some kind (<div> for example), or a DocumentFragment
+ * instance, depending on the contents of the `html` string.
+ *
+ * @param {String} html - HTML string to "domify"
+ * @param {Document} doc - The `document` instance to create the Node for
+ * @return {DOMNode} the TextNode, DOM Node, or DocumentFragment instance
+ * @api private
+ */
+
+function parse(html, doc) {
+  if ('string' != typeof html) throw new TypeError('String expected');
+
+  // default to the global `document` object
+  if (!doc) doc = document;
+
+  // tag name
+  var m = /<([\w:]+)/.exec(html);
+  if (!m) return doc.createTextNode(html);
+
+  html = html.replace(/^\s+|\s+$/g, ''); // Remove leading/trailing whitespace
+
+  var tag = m[1];
+
+  // body support
+  if (tag == 'body') {
+    var el = doc.createElement('html');
+    el.innerHTML = html;
+    return el.removeChild(el.lastChild);
+  }
+
+  // wrap map
+  var wrap = map[tag] || map._default;
+  var depth = wrap[0];
+  var prefix = wrap[1];
+  var suffix = wrap[2];
+  var el = doc.createElement('div');
+  el.innerHTML = prefix + html + suffix;
+  while (depth--) el = el.lastChild;
+
+  // one element
+  if (el.firstChild == el.lastChild) {
+    return el.removeChild(el.firstChild);
+  }
+
+  // several elements
+  var fragment = doc.createDocumentFragment();
+  while (el.firstChild) {
+    fragment.appendChild(el.removeChild(el.firstChild));
+  }
+
+  return fragment;
+}
+
+},{}],4:[function(require,module,exports){
 (function (process){
 
+var domify = require("domify");
+// definitions are index.d.ts
+// IMPORTANT: domify has been modified so that the module expose an object that contains the parse function
+// instead of exposing the function directly.
+// Typescript would let met import the module and use it as a function at the same time.
 var fTextSettingsEditor = (function () {
     function fTextSettingsEditor(container, projectClient) {
         var _this = this;
@@ -81,35 +196,40 @@ var fTextSettingsEditor = (function () {
         };
         this.projectClient = projectClient;
         var title = document.createElement("h2");
-        title.textContent = "Default editor settings";
+        title.textContent = "Editor settings";
         container.appendChild(title);
-        var tbody = (SupClient.table.createTable(container)).tbody;
-        // let tbody = SupClient.table.createTable(container).tbody;
-        this.themeRow = SupClient.table.appendRow(tbody, "Theme");
-        // this.fields["theme"] = SupClient.table.appendSelectBox(this.themeRow.valueCell, "monokai");
-        // get list of all available themes then enable HTML5 autocompletion
-        process.nextTick(function(){(function (err, files) {
-    if (files != null && files.length > 0) {
-        var options = {};
-        for (var i in files) {
-            var file = files[i].replace('.css', '');
-            options[file] = file;
-        }
-        _this.fields['theme'] = SupClient.table.appendSelectBox(_this.themeRow.valueCell, options, 'default');
-        _this.fields['theme'].addEventListener('change', function (event) {
-            var theme = event.target.value !== '' ? event.target.value : 'default';
-            _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
-                if (err != null)
-                    alert(err);
+        process.nextTick(function(){(function (err, text) {
+    if (err)
+        throw err;
+    container.appendChild(domify.parse(text));
+    var themesCallback = function (err, files) {
+        if (err)
+            throw err;
+        if (files != null && files.length > 0) {
+            var themeSelect = document.querySelector('#theme-select');
+            for (var i in files) {
+                var file = files[i].replace('.css', '');
+                var option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                themeSelect.appendChild(option);
+            }
+            themeSelect.addEventListener('change', function (event) {
+                var theme = event.target.value !== '' ? event.target.value : 'default';
+                _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
+                    if (err != null)
+                        alert(err);
+                });
             });
-        });
-    }
-})(null,["3024-day.css","3024-night.css","ambiance-mobile.css","ambiance.css","base16-dark.css","base16-light.css","blackboard.css","cobalt.css","colorforth.css","default.css","eclipse.css","elegant.css","erlang-dark.css","lesser-dark.css","mbo.css","mdn-like.css","midnight.css","monokai.css","neat.css","neo.css","night.css","paraiso-dark.css","paraiso-light.css","pastel-on-dark.css","rubyblue.css","solarized.css","the-matrix.css","tomorrow-night-bright.css","tomorrow-night-eighties.css","twilight.css","vibrant-ink.css","xq-dark.css","xq-light.css","zenburn.css"])});
-        this.projectClient.subResource("fTextSettings", this);
+        }
+    };
+    fs.readdir('public/editors/ftext/codemirror-themes', themesCallback);
+    _this.projectClient.subResource('fTextSettings', _this);
+})(null,"<table><tr><th>Theme</th><td><select id=\"theme-select\"> </select></td></tr><tr><th>Tab Size</th><td> <input type=\"number\" min=\"1\" max=\"8\"/></td></tr><tr><th>Key map</th><td> <select><option value=\"sublime\">sublime</option><option value=\"vim\">vim</option><option value=\"emacs\">emacs</option></select></td></tr></table>")});
     }
     return fTextSettingsEditor;
 })();
 exports.default = fTextSettingsEditor;
 
 }).call(this,require('_process'))
-},{"_process":2}]},{},[1]);
+},{"_process":2,"domify":3}]},{},[1]);
