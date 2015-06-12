@@ -180,7 +180,7 @@ var domify = require("domify");
 // definitions are index.d.ts
 // IMPORTANT: domify has been modified so that the module expose an object that contains the parse function
 // instead of exposing the function directly.
-// Typescript would let met import the module and use it as a function at the same time.
+// Typescript wouldn't let met import the module and use it as a function at the same time.
 var fTextSettingsEditor = (function () {
     function fTextSettingsEditor(container, projectClient) {
         var _this = this;
@@ -188,44 +188,86 @@ var fTextSettingsEditor = (function () {
         this.onResourceReceived = function (resourceId, resource) {
             _this.resource = resource;
             for (var setting in resource.pub) {
-                _this.fields[setting].value = resource.pub[setting];
+                if (_this.booleanFields.indexOf(setting) !== -1)
+                    _this.fields[setting].checked = resource.pub[setting];
+                else {
+                    if (_this.fields[setting] != null)
+                        _this.fields[setting].value = resource.pub[setting];
+                    else
+                        console.error("fTextSettingsEditor.onResourceReceived(): unknow setting", setting, resource.pub[setting]);
+                }
             }
         };
-        this.onResourceEdited = function (resourceId, command, propertyName) {
-            _this.fields[propertyName].value = _this.resource.pub[propertyName];
+        this.onResourceEdited = function (resourceId, command, setting) {
+            if (_this.booleanFields.indexOf(setting) !== -1)
+                _this.fields[setting].checked = _this.resource.pub[setting];
+            else {
+                if (_this.fields[setting] != null)
+                    _this.fields[setting].value = _this.resource.pub[setting];
+                else
+                    console.error("fTextSettingsEditor.onResourceEdited(): unknow setting", setting, _this.resource.pub[setting]);
+            }
         };
         this.projectClient = projectClient;
-        var title = document.createElement("h2");
-        title.textContent = "Editor settings";
-        container.appendChild(title);
-        process.nextTick(function(){(function (err, text) {
+        // build the form from the html file
+        var html = "<div><h2>Global editor Settings</h2><table><tr><th>Theme</th><td><select id=\"theme-select\"> </select></td></tr><tr><th>Indent Unit</th><td> <input id=\"indentUnit-input\" type=\"number\" min=\"1\" max=\"8\" value=\"2\"/></td></tr><tr><th>Key map</th><td> <select id=\"keyMap-select\"><option value=\"sublime\">sublime</option><option value=\"vim\">vim</option><option value=\"emacs\">emacs</option></select></td></tr><tr><th>Style active line</th><td> <input id=\"styleActiveLine\" type=\"checkbox\" checked=\"checked\"/></td></tr><tr><th>Auto close brackets</th><td> <input id=\"autoCloseBrackets\" type=\"checkbox\" checked=\"checked\"/></td></tr><tr><th>Show trailing spaces</th><td> <input id=\"showTrailingSpace\" type=\"checkbox\"/></td></tr></table></div>";
+        container.appendChild(domify.parse(html));
+        // register fields
+        this.fields["theme"] = document.querySelector("#theme-select");
+        // get list of all available themes
+        process.nextTick(function(){(function (err, themes) {
     if (err)
         throw err;
-    container.appendChild(domify.parse(text));
-    var themesCallback = function (err, files) {
-        if (err)
-            throw err;
-        if (files != null && files.length > 0) {
-            var themeSelect = document.querySelector('#theme-select');
-            for (var i in files) {
-                var file = files[i].replace('.css', '');
-                var option = document.createElement('option');
-                option.value = file;
-                option.textContent = file;
-                themeSelect.appendChild(option);
+    if (themes != null && themes.length > 0) {
+        var themeSelect = _this.fields['theme'];
+        for (var i in themes) {
+            var file = themes[i].replace('.css', '');
+            var option = document.createElement('option');
+            option.value = file;
+            option.textContent = file;
+            if (_this.resource != null && _this.resource.pub.theme === file) {
             }
-            themeSelect.addEventListener('change', function (event) {
-                var theme = event.target.value !== '' ? event.target.value : 'default';
-                _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
-                    if (err != null)
-                        alert(err);
-                });
-            });
+            themeSelect.appendChild(option);
         }
-    };
-    fs.readdir('public/editors/ftext/codemirror-themes', themesCallback);
-    _this.projectClient.subResource('fTextSettings', _this);
-})(null,"<table><tr><th>Theme</th><td><select id=\"theme-select\"> </select></td></tr><tr><th>Tab Size</th><td> <input type=\"number\" min=\"1\" max=\"8\"/></td></tr><tr><th>Key map</th><td> <select><option value=\"sublime\">sublime</option><option value=\"vim\">vim</option><option value=\"emacs\">emacs</option></select></td></tr></table>")});
+        themeSelect.addEventListener('change', function (event) {
+            var theme = event.target.value !== '' ? event.target.value : 'default';
+            _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
+                if (err != null)
+                    alert(err);
+            });
+        });
+    }
+})(null,["3024-day.css","3024-night.css","ambiance-mobile.css","ambiance.css","base16-dark.css","base16-light.css","blackboard.css","cobalt.css","colorforth.css","default.css","eclipse.css","elegant.css","erlang-dark.css","lesser-dark.css","mbo.css","mdn-like.css","midnight.css","monokai.css","neat.css","neo.css","night.css","paraiso-dark.css","paraiso-light.css","pastel-on-dark.css","rubyblue.css","solarized.css","the-matrix.css","tomorrow-night-bright.css","tomorrow-night-eighties.css","twilight.css","vibrant-ink.css","xq-dark.css","xq-light.css","zenburn.css"])});
+        this.fields["indentUnit"] = document.querySelector("#indentUnit-input");
+        this.fields["indentUnit"].addEventListener("change", function (event) {
+            var size = (event.target.value !== "") ? event.target.value : 2;
+            // call onResourceEdited methods that have subscribed to resources via project client
+            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "indentUnit", parseInt(size), function (err) { if (err != null)
+                console.error(err); });
+        });
+        this.fields["keyMap"] = document.querySelector("#keyMap-select");
+        this.fields["keyMap"].addEventListener("change", function (event) {
+            var map = (event.target.value !== "") ? event.target.value : "sublime";
+            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "keyMap", map, function (err) { if (err != null)
+                console.error(err); });
+        });
+        this.booleanFields = ["styleActiveLine", "showTrailingSpace", "autoCloseBrackets"];
+        this.fields["styleActiveLine"] = document.querySelector("#styleActiveLine");
+        this.fields["styleActiveLine"].addEventListener("click", function (event) {
+            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "styleActiveLine", event.target.checked, function (err) { if (err != null)
+                console.error(err); });
+        });
+        this.fields["showTrailingSpace"] = document.querySelector("#showTrailingSpace");
+        this.fields["showTrailingSpace"].addEventListener("click", function (event) {
+            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "showTrailingSpace", event.target.checked, function (err) { if (err != null)
+                console.error(err); });
+        });
+        this.fields["autoCloseBrackets"] = document.querySelector("#autoCloseBrackets");
+        this.fields["autoCloseBrackets"].addEventListener("click", function (event) {
+            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "autoCloseBrackets", event.target.checked, function (err) { if (err != null)
+                console.error(err); });
+        });
+        this.projectClient.subResource("fTextSettings", this);
     }
     return fTextSettingsEditor;
 })();

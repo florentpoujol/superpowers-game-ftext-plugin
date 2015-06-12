@@ -5,9 +5,15 @@
 @require '../../node_modules/codemirror/addon/hint/show-hint.css'
 
 @require '../../node_modules/codemirror/addon/fold/foldgutter.css'
+// styles are loaded when the editor loads (see onAssetReceived() in index.ts)
 
-// @require '../../node_modules/codemirror/theme/monokai.css'
-// styles at loaded when the editor loads (see onAssetReceived() in index.ts)
+// for the trailing space addon
+.cm-trailingspace
+  background-color rgba(255,0,0,0.7)
+
+.cm-matchhighlight
+  background-color rgba(200,200,200,0.5)
+  
 
 body
   display flex

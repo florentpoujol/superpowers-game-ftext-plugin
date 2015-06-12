@@ -448,18 +448,28 @@ var fTextSettingsResource = (function (_super) {
         _super.call(this, pub, fTextSettingsResource.schema, serverData);
     }
     fTextSettingsResource.prototype.init = function (callback) {
-        // default values
-        this.pub = {
-            theme: "default",
-            tabSize: 2,
-            keyMap: "sublime"
-        };
+        var pub = {};
+        for (var name_1 in fTextSettingsResource.defaultValues) {
+            pub[name_1] = fTextSettingsResource.defaultValues[name_1];
+        }
+        this.pub = pub;
         _super.prototype.init.call(this, callback);
     };
     fTextSettingsResource.schema = {
         theme: { type: "string", mutable: true },
-        tabSize: { type: "number", min: 1, max: 8, mutable: true },
+        indentUnit: { type: "number", min: 1, max: 8, mutable: true },
         keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
+        styleActiveLine: { type: "boolean", mutable: true },
+        showTrailingSpace: { type: "boolean", mutable: true },
+        autoCloseBrackets: { type: "boolean", mutable: true },
+    };
+    fTextSettingsResource.defaultValues = {
+        theme: "default",
+        indentUnit: 2,
+        keyMap: "sublime",
+        styleActiveLine: true,
+        autoCloseBrackets: true,
+        showTrailingSpace: false,
     };
     return fTextSettingsResource;
 })(SupCore.data.base.Resource);

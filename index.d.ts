@@ -6,7 +6,8 @@
 ///<reference path="../../app/system/SupEngine/SupEngine.d.ts"/>
 ///<reference path="../../app/system/SupRuntime/SupRuntime.d.ts"/>
 
+// IMPORTANT
+// see comment at the top of fTextSettignsEditor
 declare module "domify" {
   export function parse(html: string): HTMLElement;
-  // export = domify;
 }

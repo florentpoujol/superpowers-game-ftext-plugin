@@ -10,7 +10,7 @@ body
   position relative
   flex 1
   min-height 100px
-
+      
   textarea
     opacity 0
 
@@ -20,9 +20,9 @@ body
   left 0
   right 0
   bottom 0
-  height auto
+  height auto     
   font-size 14px
-
+    
 .code-editor + .CodeMirror, .CodeMirror-hints
   font-family "Consolas", monospace
 

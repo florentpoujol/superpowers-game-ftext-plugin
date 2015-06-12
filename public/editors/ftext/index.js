@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var OT = require("operational-transform");
+var fTextSettingsResource_1 = require("../../data/fTextSettingsResource");
 window.CodeMirror = require("codemirror");
 // typescript plugin addons:
 require("codemirror/addon/search/search");
@@ -80,9 +81,10 @@ function start() {
     var textArea = document.querySelector(".code-editor");
     console.log("editor start");
     ui.editor = CodeMirror.fromTextArea(textArea, {
-        lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
+        lineNumbers: true, matchBrackets: true, styleActiveLine: false, autoCloseBrackets: true,
         gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        tabSize: 2, keyMap: "sublime",
+        indentUnit: 2,
+        keyMap: "sublime",
         extraKeys: extraKeys,
         viewportMargin: Infinity,
         readOnly: true
@@ -170,54 +172,40 @@ function loadThemeStyle(theme) {
     link.href = "codemirror-themes/" + theme + ".css";
     document.head.appendChild(link);
 }
+// --------------------------------------------------------------------------------
 // Network callbacks
-function onWelcome(clientId) {
-    data = { clientId: clientId, assetsById: {} };
-    data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
-    data.projectClient.subEntries(entriesHandlers);
-    data.projectClient.subResource("fTextSettings", resourceHandlers);
-}
-var entriesHandlers = {
-    onEntriesReceived: function (entries) {
-        entries.walk(function (entry) {
-            if (entry.type !== "ftext")
-                return;
-            data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
-        });
-    },
-    onEntryAdded: function (newEntry, parentId, index) {
-        if (newEntry.type !== "ftext")
+var onAssetCommands = {
+    editText: function (operationData) {
+        if (data.clientId === operationData.userId) {
+            if (ui.pendingOperation != null) {
+                socket.emit("edit:assets", info.assetId, "editText", ui.pendingOperation.serialize(), data.asset.document.operations.length, function (err) {
+                    if (err != null) {
+                        alert(err);
+                        SupClient.onDisconnected();
+                    }
+                });
+                ui.sentOperation = ui.pendingOperation;
+                ui.pendingOperation = null;
+            }
+            else
+                ui.sentOperation = null;
             return;
-        data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
-    },
-    onEntryMoved: function (id, parentId, index) {
-    },
-    onSetEntryProperty: function (id, key, value) {
-    },
-    onEntryTrashed: function (id) {
-    },
-};
-var resourceHandlers = {
-    onResourceReceived: function (resourceId, resource) {
-        data.fTextSettingsResource = resource.pub;
-        if (ui.editor != null) {
-            var theme = resource.pub.theme;
-            if (theme != null && theme != ui.editor.getOption("theme")) {
-                loadThemeStyle(theme);
-                ui.editor.setOption("theme", theme);
-            }
         }
-    },
-    onResourceEdited: function (resourceId, command, propertyName) {
-        if (ui.editor != null) {
-            var theme = data.fTextSettingsResource.theme;
-            if (theme != null && theme != ui.editor.getOption("theme")) {
-                loadThemeStyle(theme);
-                ui.editor.setOption("theme", theme);
-            }
+        // Transform operation and local changes
+        var operation = new OT.TextOperation();
+        operation.deserialize(operationData);
+        if (ui.sentOperation != null) {
+            _a = ui.sentOperation.transform(operation), ui.sentOperation = _a[0], operation = _a[1];
+            if (ui.pendingOperation != null)
+                _b = ui.pendingOperation.transform(operation), ui.pendingOperation = _b[0], operation = _b[1];
         }
+        ui.undoStack = transformStack(ui.undoStack, operation);
+        ui.redoStack = transformStack(ui.redoStack, operation);
+        applyOperation(operation.clone(), "network", false);
+        var _a, _b;
     }
 };
+// ----------------------------------------
 var assetHandlers = {
     onAssetReceived: function (err, asset) {
         data.assetsById[asset.id] = asset;
@@ -277,36 +265,61 @@ var assetHandlers = {
         SupClient.onAssetTrashed();
     },
 };
-var onAssetCommands = {};
-onAssetCommands.editText = function (operationData) {
-    if (data.clientId === operationData.userId) {
-        if (ui.pendingOperation != null) {
-            socket.emit("edit:assets", info.assetId, "editText", ui.pendingOperation.serialize(), data.asset.document.operations.length, function (err) {
-                if (err != null) {
-                    alert(err);
-                    SupClient.onDisconnected();
-                }
-            });
-            ui.sentOperation = ui.pendingOperation;
-            ui.pendingOperation = null;
-        }
-        else
-            ui.sentOperation = null;
-        return;
-    }
-    // Transform operation and local changes
-    var operation = new OT.TextOperation();
-    operation.deserialize(operationData);
-    if (ui.sentOperation != null) {
-        _a = ui.sentOperation.transform(operation), ui.sentOperation = _a[0], operation = _a[1];
-        if (ui.pendingOperation != null)
-            _b = ui.pendingOperation.transform(operation), ui.pendingOperation = _b[0], operation = _b[1];
-    }
-    ui.undoStack = transformStack(ui.undoStack, operation);
-    ui.redoStack = transformStack(ui.redoStack, operation);
-    applyOperation(operation.clone(), "network", false);
-    var _a, _b;
+// ----------------------------------------
+var entriesHandlers = {
+    onEntriesReceived: function (entries) {
+        entries.walk(function (entry) {
+            if (entry.type !== "ftext")
+                return;
+            data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
+        });
+    },
+    onEntryAdded: function (newEntry, parentId, index) {
+        if (newEntry.type !== "ftext")
+            return;
+        data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
+    },
+    onEntryMoved: function (id, parentId, index) {
+    },
+    onSetEntryProperty: function (id, key, value) {
+    },
+    onEntryTrashed: function (id) {
+    },
 };
+// ----------------------------------------
+// updates the editor whe the resource is received or edited
+// called from the resources handlers
+var onfTextSettingsUpdated = function (resourcePub) {
+    var pub = data.fTextSettingsResourcePub;
+    if (ui.editor != null) {
+        var settings = fTextSettingsResource_1.default.defaultValues;
+        for (var name_2 in settings) {
+            var value = (pub[name_2] != null) ? pub[name_2] : settings[name_2];
+            // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
+            if (value != ui.editor.getOption(name_2)) {
+                ui.editor.setOption(name_2, value);
+                if (name_2 === "theme")
+                    loadThemeStyle(value);
+            }
+        }
+    }
+};
+var resourceHandlers = {
+    onResourceReceived: function (resourceId, resource) {
+        data.fTextSettingsResourcePub = resource.pub;
+        onfTextSettingsUpdated();
+    },
+    onResourceEdited: function (resourceId, command, propertyName) {
+        onfTextSettingsUpdated();
+    }
+};
+function onWelcome(clientId) {
+    data = { clientId: clientId, assetsById: {} };
+    data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
+    data.projectClient.subEntries(entriesHandlers);
+    data.projectClient.subResource("fTextSettings", resourceHandlers);
+}
+// --------------------------------------------------------------------------------
 function transformStack(stack, operation) {
     if (stack.length === 0)
         return stack;
@@ -752,7 +765,7 @@ function onRedo() {
 // Start
 start();
 
-},{"codemirror":23,"codemirror/addon/comment/comment":6,"codemirror/addon/edit/closebrackets":8,"codemirror/addon/edit/closetag":9,"codemirror/addon/edit/matchtags":11,"codemirror/addon/edit/trailingspace":12,"codemirror/addon/fold/xml-fold":13,"codemirror/addon/hint/anyword-hint":14,"codemirror/addon/hint/show-hint":15,"codemirror/addon/search/match-highlighter":16,"codemirror/addon/search/search":17,"codemirror/addon/search/searchcursor":18,"codemirror/addon/selection/active-line":19,"codemirror/keymap/emacs":20,"codemirror/keymap/sublime":21,"codemirror/keymap/vim":22,"codemirror/mode/clike/clike":24,"codemirror/mode/coffeescript/coffeescript":25,"codemirror/mode/htmlmixed/htmlmixed":27,"codemirror/mode/jade/jade":28,"codemirror/mode/javascript/javascript":29,"codemirror/mode/markdown/markdown":30,"codemirror/mode/stylus/stylus":32,"operational-transform":37,"perfect-resize":38,"querystring":5}],2:[function(require,module,exports){
+},{"../../data/fTextSettingsResource":6,"codemirror":24,"codemirror/addon/comment/comment":7,"codemirror/addon/edit/closebrackets":9,"codemirror/addon/edit/closetag":10,"codemirror/addon/edit/matchtags":12,"codemirror/addon/edit/trailingspace":13,"codemirror/addon/fold/xml-fold":14,"codemirror/addon/hint/anyword-hint":15,"codemirror/addon/hint/show-hint":16,"codemirror/addon/search/match-highlighter":17,"codemirror/addon/search/search":18,"codemirror/addon/search/searchcursor":19,"codemirror/addon/selection/active-line":20,"codemirror/keymap/emacs":21,"codemirror/keymap/sublime":22,"codemirror/keymap/vim":23,"codemirror/mode/clike/clike":25,"codemirror/mode/coffeescript/coffeescript":26,"codemirror/mode/htmlmixed/htmlmixed":28,"codemirror/mode/jade/jade":29,"codemirror/mode/javascript/javascript":30,"codemirror/mode/markdown/markdown":31,"codemirror/mode/stylus/stylus":33,"operational-transform":38,"perfect-resize":39,"querystring":5}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1235,6 +1248,46 @@ exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
 },{"./decode":3,"./encode":4}],6:[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var fTextSettingsResource = (function (_super) {
+    __extends(fTextSettingsResource, _super);
+    function fTextSettingsResource(pub, serverData) {
+        _super.call(this, pub, fTextSettingsResource.schema, serverData);
+    }
+    fTextSettingsResource.prototype.init = function (callback) {
+        var pub = {};
+        for (var name_1 in fTextSettingsResource.defaultValues) {
+            pub[name_1] = fTextSettingsResource.defaultValues[name_1];
+        }
+        this.pub = pub;
+        _super.prototype.init.call(this, callback);
+    };
+    fTextSettingsResource.schema = {
+        theme: { type: "string", mutable: true },
+        indentUnit: { type: "number", min: 1, max: 8, mutable: true },
+        keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
+        styleActiveLine: { type: "boolean", mutable: true },
+        showTrailingSpace: { type: "boolean", mutable: true },
+        autoCloseBrackets: { type: "boolean", mutable: true },
+    };
+    fTextSettingsResource.defaultValues = {
+        theme: "default",
+        indentUnit: 2,
+        keyMap: "sublime",
+        styleActiveLine: true,
+        autoCloseBrackets: true,
+        showTrailingSpace: false,
+    };
+    return fTextSettingsResource;
+})(SupCore.data.base.Resource);
+exports.default = fTextSettingsResource;
+
+},{}],7:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1419,7 +1472,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],7:[function(require,module,exports){
+},{"../../lib/codemirror":24}],8:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1578,7 +1631,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],8:[function(require,module,exports){
+},{"../../lib/codemirror":24}],9:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1764,7 +1817,7 @@ exports.encode = exports.stringify = require('./encode');
   }
 });
 
-},{"../../lib/codemirror":23}],9:[function(require,module,exports){
+},{"../../lib/codemirror":24}],10:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1932,7 +1985,7 @@ exports.encode = exports.stringify = require('./encode');
   }
 });
 
-},{"../../lib/codemirror":23,"../fold/xml-fold":13}],10:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../fold/xml-fold":14}],11:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2054,7 +2107,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],11:[function(require,module,exports){
+},{"../../lib/codemirror":24}],12:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2122,7 +2175,7 @@ exports.encode = exports.stringify = require('./encode');
   };
 });
 
-},{"../../lib/codemirror":23,"../fold/xml-fold":13}],12:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../fold/xml-fold":14}],13:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2151,7 +2204,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],13:[function(require,module,exports){
+},{"../../lib/codemirror":24}],14:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2335,7 +2388,7 @@ exports.encode = exports.stringify = require('./encode');
   };
 });
 
-},{"../../lib/codemirror":23}],14:[function(require,module,exports){
+},{"../../lib/codemirror":24}],15:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2378,7 +2431,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],15:[function(require,module,exports){
+},{"../../lib/codemirror":24}],16:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2774,7 +2827,7 @@ exports.encode = exports.stringify = require('./encode');
   CodeMirror.defineOption("hintOptions", null);
 });
 
-},{"../../lib/codemirror":23}],16:[function(require,module,exports){
+},{"../../lib/codemirror":24}],17:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -2904,7 +2957,7 @@ exports.encode = exports.stringify = require('./encode');
   }
 });
 
-},{"../../lib/codemirror":23}],17:[function(require,module,exports){
+},{"../../lib/codemirror":24}],18:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -3070,7 +3123,7 @@ exports.encode = exports.stringify = require('./encode');
   CodeMirror.commands.replaceAll = function(cm) {replace(cm, true);};
 });
 
-},{"../../lib/codemirror":23,"../dialog/dialog":7,"./searchcursor":18}],18:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../dialog/dialog":8,"./searchcursor":19}],19:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -3261,7 +3314,7 @@ exports.encode = exports.stringify = require('./encode');
   });
 });
 
-},{"../../lib/codemirror":23}],19:[function(require,module,exports){
+},{"../../lib/codemirror":24}],20:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -3334,7 +3387,7 @@ exports.encode = exports.stringify = require('./encode');
   }
 });
 
-},{"../../lib/codemirror":23}],20:[function(require,module,exports){
+},{"../../lib/codemirror":24}],21:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -3748,7 +3801,7 @@ exports.encode = exports.stringify = require('./encode');
   regPrefix("-");
 });
 
-},{"../lib/codemirror":23}],21:[function(require,module,exports){
+},{"../lib/codemirror":24}],22:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -4303,7 +4356,7 @@ exports.encode = exports.stringify = require('./encode');
   CodeMirror.normalizeKeyMap(map);
 });
 
-},{"../addon/edit/matchbrackets":10,"../addon/search/searchcursor":18,"../lib/codemirror":23}],22:[function(require,module,exports){
+},{"../addon/edit/matchbrackets":11,"../addon/search/searchcursor":19,"../lib/codemirror":24}],23:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -9253,7 +9306,7 @@ exports.encode = exports.stringify = require('./encode');
   CodeMirror.Vim = Vim();
 });
 
-},{"../addon/dialog/dialog":7,"../addon/edit/matchbrackets.js":10,"../addon/search/searchcursor":18,"../lib/codemirror":23}],23:[function(require,module,exports){
+},{"../addon/dialog/dialog":8,"../addon/edit/matchbrackets.js":11,"../addon/search/searchcursor":19,"../lib/codemirror":24}],24:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -17940,7 +17993,7 @@ exports.encode = exports.stringify = require('./encode');
   return CodeMirror;
 });
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -18436,7 +18489,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
 });
 
-},{"../../lib/codemirror":23}],25:[function(require,module,exports){
+},{"../../lib/codemirror":24}],26:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -18807,7 +18860,7 @@ CodeMirror.defineMIME("text/x-coffeescript", "coffeescript");
 
 });
 
-},{"../../lib/codemirror":23}],26:[function(require,module,exports){
+},{"../../lib/codemirror":24}],27:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -19576,7 +19629,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
 
 });
 
-},{"../../lib/codemirror":23}],27:[function(require,module,exports){
+},{"../../lib/codemirror":24}],28:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -19699,7 +19752,7 @@ CodeMirror.defineMIME("text/html", "htmlmixed");
 
 });
 
-},{"../../lib/codemirror":23,"../css/css":26,"../javascript/javascript":29,"../xml/xml":33}],28:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../css/css":27,"../javascript/javascript":30,"../xml/xml":34}],29:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -20291,7 +20344,7 @@ CodeMirror.defineMIME('text/x-jade', 'jade');
 
 });
 
-},{"../../lib/codemirror":23,"../css/css":26,"../htmlmixed/htmlmixed":27,"../javascript/javascript":29}],29:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../css/css":27,"../htmlmixed/htmlmixed":28,"../javascript/javascript":30}],30:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -20990,7 +21043,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"../../lib/codemirror":23}],30:[function(require,module,exports){
+},{"../../lib/codemirror":24}],31:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -21757,7 +21810,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
 
 });
 
-},{"../../lib/codemirror":23,"../meta":31,"../xml/xml":33}],31:[function(require,module,exports){
+},{"../../lib/codemirror":24,"../meta":32,"../xml/xml":34}],32:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -21938,7 +21991,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
   };
 });
 
-},{"../lib/codemirror":23}],32:[function(require,module,exports){
+},{"../lib/codemirror":24}],33:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -22703,7 +22756,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
   CodeMirror.defineMIME("text/x-styl", "stylus");
 });
 
-},{"../../lib/codemirror":23}],33:[function(require,module,exports){
+},{"../../lib/codemirror":24}],34:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -23089,7 +23142,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 });
 
-},{"../../lib/codemirror":23}],34:[function(require,module,exports){
+},{"../../lib/codemirror":24}],35:[function(require,module,exports){
 var OT = require("./index");
 var Document = (function () {
     function Document() {
@@ -23116,7 +23169,7 @@ var Document = (function () {
 })();
 module.exports = Document;
 
-},{"./index":37}],35:[function(require,module,exports){
+},{"./index":38}],36:[function(require,module,exports){
 var TextOp = (function () {
     function TextOp(type, attributes) {
         this.type = type;
@@ -23126,7 +23179,7 @@ var TextOp = (function () {
 })();
 module.exports = TextOp;
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var OT = require("./index");
 var TextOperation = (function () {
     function TextOperation(userId) {
@@ -23560,7 +23613,7 @@ var TextOperation = (function () {
 })();
 module.exports = TextOperation;
 
-},{"./index":37}],37:[function(require,module,exports){
+},{"./index":38}],38:[function(require,module,exports){
 var TextOp = require("./TextOp");
 exports.TextOp = TextOp;
 var Document = require("./Document");
@@ -23568,7 +23621,7 @@ exports.Document = Document;
 var TextOperation = require("./TextOperation");
 exports.TextOperation = TextOperation;
 
-},{"./Document":34,"./TextOp":35,"./TextOperation":36}],38:[function(require,module,exports){
+},{"./Document":35,"./TextOp":36,"./TextOperation":37}],39:[function(require,module,exports){
 (function (global){
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.PerfectResize = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.

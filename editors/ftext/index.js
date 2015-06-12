@@ -1,4 +1,5 @@
 var OT = require("operational-transform");
+var fTextSettingsResource_1 = require("../../data/fTextSettingsResource");
 window.CodeMirror = require("codemirror");
 // typescript plugin addons:
 require("codemirror/addon/search/search");
@@ -79,9 +80,10 @@ function start() {
     var textArea = document.querySelector(".code-editor");
     console.log("editor start");
     ui.editor = CodeMirror.fromTextArea(textArea, {
-        lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
+        lineNumbers: true, matchBrackets: true, styleActiveLine: false, autoCloseBrackets: true,
         gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        tabSize: 2, keyMap: "sublime",
+        indentUnit: 2,
+        keyMap: "sublime",
         extraKeys: extraKeys,
         viewportMargin: Infinity,
         readOnly: true
@@ -169,54 +171,40 @@ function loadThemeStyle(theme) {
     link.href = "codemirror-themes/" + theme + ".css";
     document.head.appendChild(link);
 }
+// --------------------------------------------------------------------------------
 // Network callbacks
-function onWelcome(clientId) {
-    data = { clientId: clientId, assetsById: {} };
-    data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
-    data.projectClient.subEntries(entriesHandlers);
-    data.projectClient.subResource("fTextSettings", resourceHandlers);
-}
-var entriesHandlers = {
-    onEntriesReceived: function (entries) {
-        entries.walk(function (entry) {
-            if (entry.type !== "ftext")
-                return;
-            data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
-        });
-    },
-    onEntryAdded: function (newEntry, parentId, index) {
-        if (newEntry.type !== "ftext")
+var onAssetCommands = {
+    editText: function (operationData) {
+        if (data.clientId === operationData.userId) {
+            if (ui.pendingOperation != null) {
+                socket.emit("edit:assets", info.assetId, "editText", ui.pendingOperation.serialize(), data.asset.document.operations.length, function (err) {
+                    if (err != null) {
+                        alert(err);
+                        SupClient.onDisconnected();
+                    }
+                });
+                ui.sentOperation = ui.pendingOperation;
+                ui.pendingOperation = null;
+            }
+            else
+                ui.sentOperation = null;
             return;
-        data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
-    },
-    onEntryMoved: function (id, parentId, index) {
-    },
-    onSetEntryProperty: function (id, key, value) {
-    },
-    onEntryTrashed: function (id) {
-    },
-};
-var resourceHandlers = {
-    onResourceReceived: function (resourceId, resource) {
-        data.fTextSettingsResource = resource.pub;
-        if (ui.editor != null) {
-            var theme = resource.pub.theme;
-            if (theme != null && theme != ui.editor.getOption("theme")) {
-                loadThemeStyle(theme);
-                ui.editor.setOption("theme", theme);
-            }
         }
-    },
-    onResourceEdited: function (resourceId, command, propertyName) {
-        if (ui.editor != null) {
-            var theme = data.fTextSettingsResource.theme;
-            if (theme != null && theme != ui.editor.getOption("theme")) {
-                loadThemeStyle(theme);
-                ui.editor.setOption("theme", theme);
-            }
+        // Transform operation and local changes
+        var operation = new OT.TextOperation();
+        operation.deserialize(operationData);
+        if (ui.sentOperation != null) {
+            _a = ui.sentOperation.transform(operation), ui.sentOperation = _a[0], operation = _a[1];
+            if (ui.pendingOperation != null)
+                _b = ui.pendingOperation.transform(operation), ui.pendingOperation = _b[0], operation = _b[1];
         }
+        ui.undoStack = transformStack(ui.undoStack, operation);
+        ui.redoStack = transformStack(ui.redoStack, operation);
+        applyOperation(operation.clone(), "network", false);
+        var _a, _b;
     }
 };
+// ----------------------------------------
 var assetHandlers = {
     onAssetReceived: function (err, asset) {
         data.assetsById[asset.id] = asset;
@@ -276,36 +264,61 @@ var assetHandlers = {
         SupClient.onAssetTrashed();
     },
 };
-var onAssetCommands = {};
-onAssetCommands.editText = function (operationData) {
-    if (data.clientId === operationData.userId) {
-        if (ui.pendingOperation != null) {
-            socket.emit("edit:assets", info.assetId, "editText", ui.pendingOperation.serialize(), data.asset.document.operations.length, function (err) {
-                if (err != null) {
-                    alert(err);
-                    SupClient.onDisconnected();
-                }
-            });
-            ui.sentOperation = ui.pendingOperation;
-            ui.pendingOperation = null;
-        }
-        else
-            ui.sentOperation = null;
-        return;
-    }
-    // Transform operation and local changes
-    var operation = new OT.TextOperation();
-    operation.deserialize(operationData);
-    if (ui.sentOperation != null) {
-        _a = ui.sentOperation.transform(operation), ui.sentOperation = _a[0], operation = _a[1];
-        if (ui.pendingOperation != null)
-            _b = ui.pendingOperation.transform(operation), ui.pendingOperation = _b[0], operation = _b[1];
-    }
-    ui.undoStack = transformStack(ui.undoStack, operation);
-    ui.redoStack = transformStack(ui.redoStack, operation);
-    applyOperation(operation.clone(), "network", false);
-    var _a, _b;
+// ----------------------------------------
+var entriesHandlers = {
+    onEntriesReceived: function (entries) {
+        entries.walk(function (entry) {
+            if (entry.type !== "ftext")
+                return;
+            data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
+        });
+    },
+    onEntryAdded: function (newEntry, parentId, index) {
+        if (newEntry.type !== "ftext")
+            return;
+        data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
+    },
+    onEntryMoved: function (id, parentId, index) {
+    },
+    onSetEntryProperty: function (id, key, value) {
+    },
+    onEntryTrashed: function (id) {
+    },
 };
+// ----------------------------------------
+// updates the editor whe the resource is received or edited
+// called from the resources handlers
+var onfTextSettingsUpdated = function (resourcePub) {
+    var pub = data.fTextSettingsResourcePub;
+    if (ui.editor != null) {
+        var settings = fTextSettingsResource_1.default.defaultValues;
+        for (var name_2 in settings) {
+            var value = (pub[name_2] != null) ? pub[name_2] : settings[name_2];
+            // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
+            if (value != ui.editor.getOption(name_2)) {
+                ui.editor.setOption(name_2, value);
+                if (name_2 === "theme")
+                    loadThemeStyle(value);
+            }
+        }
+    }
+};
+var resourceHandlers = {
+    onResourceReceived: function (resourceId, resource) {
+        data.fTextSettingsResourcePub = resource.pub;
+        onfTextSettingsUpdated();
+    },
+    onResourceEdited: function (resourceId, command, propertyName) {
+        onfTextSettingsUpdated();
+    }
+};
+function onWelcome(clientId) {
+    data = { clientId: clientId, assetsById: {} };
+    data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
+    data.projectClient.subEntries(entriesHandlers);
+    data.projectClient.subResource("fTextSettings", resourceHandlers);
+}
+// --------------------------------------------------------------------------------
 function transformStack(stack, operation) {
     if (stack.length === 0)
         return stack;

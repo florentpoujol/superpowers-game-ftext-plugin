@@ -1,16 +1,31 @@
-table
-  tr
-    th Theme
-    td
-      select(id="theme-select") 
-  tr
-    th Tab Size
-    td 
-      input(type="number",min=1,max=8)
-  tr
-    th Key map
-    td 
-      select
-        option(value="sublime") sublime
-        option(value="vim") vim
-        option(value="emacs") emacs
+div
+  h2 Global editor Settings
+
+  table
+    tr
+      th Theme
+      td
+        select(id="theme-select") 
+    tr
+      th Indent Unit
+      td 
+        input(id="indentUnit-input",type="number",min=1,max=8,value=2)
+    tr
+      th Key map
+      td 
+        select(id="keyMap-select")
+          option(value="sublime") sublime
+          option(value="vim") vim
+          option(value="emacs") emacs
+    tr
+      th Style active line
+      td 
+        input(id="styleActiveLine",type="checkbox",checked)
+    tr
+      th Auto close brackets
+      td 
+        input(id="autoCloseBrackets",type="checkbox",checked)
+    tr
+      th Show trailing spaces
+      td 
+        input(id="showTrailingSpace",type="checkbox")

@@ -1,3 +1,8 @@
 {
-  "theme": "monokai"
+  "theme": "monokai",
+  "keyMap": "sublime",
+  "showTrailingSpace": true,
+  "indentUnit": 3,
+  "styleActiveLine": true,
+  "autoCloseBrackets": true
 }

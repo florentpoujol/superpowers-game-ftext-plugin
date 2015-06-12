@@ -415,6 +415,12 @@ li.CodeMirror-hint-active {
   content: "\25B8";
 }
 
+.cm-trailingspace {
+  background-color: rgba(255,0,0,0.7);
+}
+.cm-matchhighlight {
+  background-color: rgba(200,200,200,0.5);
+}
 body {
   display: -webkit-box;
   display: -moz-box;
