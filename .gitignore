@@ -5,17 +5,19 @@ project/*/builds/
 project/*/internals.json
 project/*/members.json
 
-public/*.js
-public/**/*.js
+public/*
+public/editors/ftext
+!public/editors/ftext/icon.svg
+!public/editors/ftext/codemirror-themes
+!public/editors/ftext/locale
 
-data/**/*.js
+data/*.js
 !data/index.js
 
 editors/**/*.js
-!editors/ftext/index.js
 
-runtime/**/*.js
+runtime/*.js
 !runtime/index.js
 
-settingsEditors/**/*.js
+settingsEditors/*.js
 !settingsEditors/index.js
