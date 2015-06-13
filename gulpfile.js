@@ -29,13 +29,14 @@ gulp.task("typescript", function() {
   }))
   .js.pipe(gulp.dest("./"));
 });
+tasks.push("typescript");
 
 // Browserify
 var browserify = require("browserify");
 var vinylSourceStream = require("vinyl-source-stream");
 function makeBrowserify(sourcePath, destinationPath, outputName) {
   gulp.task(outputName + "-browserify", function() {
-    gulp.src(sourcePath).
+    browserify(sourcePath).
     transform("brfs"). // for reading the code and defs .ts files in api folder and the html in settingsEditors
     bundle().
     pipe(vinylSourceStream(outputName + ".js")).
