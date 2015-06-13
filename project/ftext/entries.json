@@ -2,17 +2,17 @@
   {
     "id": "0",
     "name": "cson",
-    "type": "ftext"
+    "type": "fText"
   },
   {
     "id": "5",
     "name": "script.js",
-    "type": "ftext"
+    "type": "fText"
   },
   {
     "id": "6",
     "name": "md.md",
-    "type": "ftext"
+    "type": "fText"
   },
   {
     "id": "3",
@@ -21,19 +21,24 @@
     "children": [
       {
         "id": "1",
-        "name": "file.jade",
-        "type": "ftext"
+        "name": "include.jade",
+        "type": "fText"
       }
     ]
   },
   {
     "id": "2",
     "name": "style.styl",
-    "type": "ftext"
+    "type": "fText"
   },
   {
     "id": "4",
-    "name": "html.html",
-    "type": "ftext"
+    "name": "main.jade",
+    "type": "fText"
+  },
+  {
+    "id": "7",
+    "name": "script",
+    "type": "script"
   }
 ]

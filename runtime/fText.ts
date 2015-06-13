@@ -1,9 +1,33 @@
 
-/*export function createOuterAsset(player: SupRuntime.Player, asset: any) {
+import * as jade from "jade";
+import * as markdown from "markdown";
+import * as domify from "domify";
+import * as stylus from "stylus";
+import * as CSON from "cson-parser";
+import * as jsonlint from "jsonlint";
+
+(<any>window).fTextParsers = {
+  jade: jade,
+  markdown: markdown.markdown,
+  domify: domify,
+  stylus: stylus,
+  CSON: CSON,
+  jsonlint: jsonlint,
+}
+
+
+export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
-  console.log("create outer asset");
-  return new window.Sup.Text(asset);
-};*/
+  return new (<any>window).fText.fText(asset);
+}
+
+export function init(player: any, callback: Function) {
+  callback();
+}
+
+export function start(player: any, callback: Function) {
+  callback();
+}
 
 export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err: Error, asset?: any) => any) {
   player.getAssetData("assets/"+entry.id+"/text.txt", "text", (err: Error, text: string) => {
@@ -12,7 +36,7 @@ export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err:
     // in case the content is valid JSON, text is a JS object instead of a string
     if (text === Object(text))
       text = JSON.stringify(text);
-
+    
     callback(null, text);
     /*
     var result = /codemirror-mode\s*:\s*(css|less)/gi.exec(text);

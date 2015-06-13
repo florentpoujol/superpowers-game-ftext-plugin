@@ -1,4 +1,0 @@
-declare module fText {
-  class fTextAsset {
-  }
-}

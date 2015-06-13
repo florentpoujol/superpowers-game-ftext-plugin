@@ -18,7 +18,7 @@ export default class fTextSettingsEditor {
     this.projectClient = projectClient;
 
     // build the form from the html file
-    let html = fs.readFileSync("public/fTextSettingsEditor.html", {encoding: "utf8"});
+    let html = fs.readFileSync("settingsEditors/fTextSettingsEditor.html", {encoding: "utf8"});
     container.appendChild(domify.parse(html));
 
     // register fields

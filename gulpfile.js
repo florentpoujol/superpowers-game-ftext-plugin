@@ -5,7 +5,6 @@ var tasks = [ "jade", "stylus" ];
 var jade = require("gulp-jade");
 gulp.task("jade", function() {
   gulp.src("./editors/**/index.jade").pipe(jade()).pipe(gulp.dest("./public/editors"));
-  gulp.src("./settingsEditors/*.jade").pipe(jade()).pipe(gulp.dest("./public"));
 });
 
 // Stylus
@@ -18,51 +17,53 @@ gulp.task("stylus", function() {
 
 // TypeScript
 var ts = require("gulp-typescript");
+var tsProject = ts.createProject({
+  typescript: require("typescript"),
+  noImplicitAny: true,
+  declarationFiles: false,
+  module: "commonjs",
+  target: "ES5"
+});
+
 gulp.task("typescript", function() {
-  gulp.src([ "**/*.ts", "!node_modules/**", "!api/**", "!gitignore/**" ]).
-  pipe(ts({
-    typescript: require("typescript"),
-    declarationFiles: false,
-    module: "commonjs",
-    target: "ES5",
-    noImplicitAny: true
-  }))
-  .js.pipe(gulp.dest("./"));
+  var js = gulp.src([ "**/*.ts", "!node_modules/**", "!api/**", "!gitignore/**" ]).
+  pipe(ts(tsProject)).js.
+  pipe(gulp.dest("./"));
 });
 tasks.push("typescript");
 
 // Browserify
 var browserify = require("browserify");
 var vinylSourceStream = require("vinyl-source-stream");
-function makeBrowserify(sourcePath, destinationPath, outputName) {
-  gulp.task(outputName + "-browserify", function() {
-    browserify(sourcePath).
-    transform("brfs"). // for reading the code and defs .ts files in api folder and the html in settingsEditors
+function makeBrowserify(sourcePath, destPath, outputName, fn) {
+  gulp.task(outputName + "-browserify", function() {   
+    browserify(sourcePath+"index.js").
+    transform("brfs").
     bundle().
     pipe(vinylSourceStream(outputName + ".js")).
-    pipe(gulp.dest(destinationPath));
+    pipe(gulp.dest(destPath));
   });
   tasks.push(outputName + "-browserify");
 }
 
-makeBrowserify("./api/index.js", "./public", "api");
-makeBrowserify("./data/index.js", "./public", "data");
-makeBrowserify("./runtime/index.js", "./public", "runtime");
-makeBrowserify("./editors/ftext/index.js", "./public/editors", "ftext/index");
-makeBrowserify("./settingsEditors/index.js", "./public", "settingsEditors");
-
-// settings Editor
+makeBrowserify("./api/", "./public", "api");
+makeBrowserify("./data/", "./public", "data");
+makeBrowserify("./editors/fText/", "./public/editors", "fText/index");
+makeBrowserify("./runtime/", "./public", "runtime");
+makeBrowserify("./settingsEditors/", "./public", "settingsEditors");
 
 // watch
 gulp.task("watch", function() {
   gulp.watch("./**/*.jade", ["jade"]);
   gulp.watch("./**/*.styl", ["stylus"]);
-  gulp.watch("./api/*.js", ["api-browserify"]);
+
+  gulp.watch(["./api/*.js", "./api/*.ts"], ["api-browserify"]);
   gulp.watch("./data/*.js", ["data-browserify"]);
+  gulp.watch("./editors/fText/*.js", ["fText/index-browserify"]); 
   gulp.watch("./runtime/*.js", ["runtime-browserify"]);
-  gulp.watch("./editors/ftext/*.js", ["ftext/index-browserify"]);
-  gulp.watch("./settingsEditors/*.js", ["settingsEditors-browserify"]);
-  gulp.watch("./**/*.ts", ["typescript"]);
+  gulp.watch(["./settingsEditors/*.js", "./settingsEditors/*.html"], ["settingsEditors-browserify"]);
+  
+  gulp.watch(["./**/*.ts", "!./api/*.ts"], ["typescript"]);
 });
 
 // All

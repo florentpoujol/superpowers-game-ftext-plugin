@@ -208,10 +208,10 @@ function start() {
 // read the asset's content then return a list of instructions and their values
 // used to populate data.localEditorSettings
 // called from onAssetReceived()
-function parsefTextAssetInstructions() {
+function parseInstructions() {
   let text = ui.editor.getDoc().getValue();
   let instructions: any = {};
-  let regex = /@ftextasset\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\/+-]+))?/ig
+  let regex = /@ftextasset\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?/ig
   let match: any;
   let i = ui.editor.getDoc().lineCount(); // make sure the loop does not run more than the number of lines
   
@@ -286,7 +286,7 @@ let assetHandlers: any = {
       if (info.line != null) ui.editor.getDoc().setCursor({ line: parseInt(info.line), ch: parseInt(info.ch) });
 
       // fText specific settings
-      data.assetInstructions = parsefTextAssetInstructions();
+      data.assetInstructions = parseInstructions();
 
       let mode: string = data.assetInstructions["syntax"];
       
@@ -341,14 +341,14 @@ let assetHandlers: any = {
 let entriesHandlers: any = {
   onEntriesReceived: (entries: SupCore.data.Entries) => {
     entries.walk((entry: any) => {
-      if (entry.type !== "ftext") return;
-      data.projectClient.subAsset(entry.id, "ftext", assetHandlers);
+      if (entry.type !== "fText") return;
+      data.projectClient.subAsset(entry.id, "fText", assetHandlers);
     })
   },
 
   onEntryAdded: (newEntry: any, parentId: string, index: number) => {
-    if (newEntry.type !== "ftext") return;
-    data.projectClient.subAsset(newEntry.id, "ftext", assetHandlers);
+    if (newEntry.type !== "fText") return;
+    data.projectClient.subAsset(newEntry.id, "fText", assetHandlers);
   },
 
   onEntryMoved: (id: string, parentId: string, index: number) => {

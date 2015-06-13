@@ -3,7 +3,7 @@
   "keyMap": "sublime",
   "showTrailingSpace": true,
   "indentUnit": 3,
-  "styleActiveLine": true,
+  "styleActiveLine": false,
   "autoCloseBrackets": true,
   "matchTags": true,
   "highlightSelectionMatches": true

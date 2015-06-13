@@ -1,11 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>bmla</title>
-</head>
-<body>
-  <div>
-    florent
-  </div>
-</body>
-</html>
+html
+   head
+     title bla
+
+   body
+      #include-div
+         //@ftextasset: include: afolder/include.jade
+
+         hr
+
+         //@ftextasset: include: afolder/include.jade
