@@ -3,7 +3,7 @@ var fTextSettingsEditor = require("./fTextSettingsEditor");
 
 SupClient.registerSettingsEditorClass("fText", fTextSettingsEditor.default);
 
-},{"./fTextSettingsEditor":4}],2:[function(require,module,exports){
+},{"./fTextSettingsEditor":5}],2:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -64,6 +64,50 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var fTextSettingsResource = (function (_super) {
+    __extends(fTextSettingsResource, _super);
+    function fTextSettingsResource(pub, serverData) {
+        _super.call(this, pub, fTextSettingsResource.schema, serverData);
+    }
+    fTextSettingsResource.prototype.init = function (callback) {
+        var pub = {};
+        for (var name_1 in fTextSettingsResource.defaultValues) {
+            pub[name_1] = fTextSettingsResource.defaultValues[name_1];
+        }
+        this.pub = pub;
+        _super.prototype.init.call(this, callback);
+    };
+    fTextSettingsResource.schema = {
+        theme: { type: "string", mutable: true },
+        indentUnit: { type: "number", min: 1, max: 8, mutable: true },
+        keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
+        styleActiveLine: { type: "boolean", mutable: true },
+        showTrailingSpace: { type: "boolean", mutable: true },
+        autoCloseBrackets: { type: "boolean", mutable: true },
+        matchTags: { type: "boolean", mutable: true },
+        highlightSelectionMatches: { type: "boolean", mutable: true },
+    };
+    fTextSettingsResource.defaultValues = {
+        theme: "default",
+        indentUnit: 2,
+        keyMap: "sublime",
+        styleActiveLine: true,
+        autoCloseBrackets: true,
+        showTrailingSpace: false,
+        matchTags: true,
+        highlightSelectionMatches: true,
+    };
+    return fTextSettingsResource;
+})(SupCore.data.base.Resource);
+exports.default = fTextSettingsResource;
+
+},{}],4:[function(require,module,exports){
 
 /**
  * Expose `parse`.
@@ -173,8 +217,9 @@ function parse(html, doc) {
   return fragment;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (process){
+var fTextSettingsResource_1 = require("../data/fTextSettingsResource");
 
 var domify = require("domify");
 // definitions are index.d.ts
@@ -185,6 +230,7 @@ var fTextSettingsEditor = (function () {
     function fTextSettingsEditor(container, projectClient) {
         var _this = this;
         this.fields = {};
+        this.booleanFields = [];
         this.onResourceReceived = function (resourceId, resource) {
             _this.resource = resource;
             for (var setting in resource.pub) {
@@ -210,26 +256,23 @@ var fTextSettingsEditor = (function () {
         };
         this.projectClient = projectClient;
         // build the form from the html file
-        var html = "<div><h2>Global editor Settings</h2><table><tr><th>Theme</th><td><select id=\"theme-select\"> </select></td></tr><tr><th>Indent Unit</th><td> <input id=\"indentUnit-input\" type=\"number\" min=\"1\" max=\"8\" value=\"2\"/></td></tr><tr><th>Key map</th><td> <select id=\"keyMap-select\"><option value=\"sublime\">sublime</option><option value=\"vim\">vim</option><option value=\"emacs\">emacs</option></select></td></tr><tr><th>Style active line</th><td> <input id=\"styleActiveLine\" type=\"checkbox\" checked=\"checked\"/></td></tr><tr><th>Auto close brackets</th><td> <input id=\"autoCloseBrackets\" type=\"checkbox\" checked=\"checked\"/></td></tr><tr><th>Show trailing spaces</th><td> <input id=\"showTrailingSpace\" type=\"checkbox\"/></td></tr></table></div>";
+        var html = "<div><h2>Global editor Settings</h2><table><tr><th>Theme</th><td><select id=\"theme\"></select></td></tr><tr><th>Indent Unit</th><td> <input id=\"indentUnit\" type=\"number\" min=\"1\" max=\"8\" value=\"2\"/></td></tr><tr><th>Key map</th><td> <select id=\"keyMap\"><option value=\"sublime\">sublime</option><option value=\"vim\">vim</option><option value=\"emacs\">emacs</option></select></td></tr><tr><th>Auto close brackets</th><td> <input id=\"autoCloseBrackets\" type=\"checkbox\"/></td></tr><tr><th>Highlight active line</th><td> <input id=\"styleActiveLine\" type=\"checkbox\"/></td></tr><tr><th>Highlight trailing spaces</th><td> <input id=\"showTrailingSpace\" type=\"checkbox\"/></td></tr><tr><th>Highlight matching tag</th><td> <input id=\"matchTags\" type=\"checkbox\"/></td></tr><tr><th>Highlight matching words</th><td> <input id=\"highlightSelectionMatches\" type=\"checkbox\"/></td></tr></table></div>";
         container.appendChild(domify.parse(html));
         // register fields
-        this.fields["theme"] = document.querySelector("#theme-select");
+        this.fields["theme"] = document.querySelector("#theme");
         // get list of all available themes
         process.nextTick(function(){(function (err, themes) {
     if (err)
         throw err;
     if (themes != null && themes.length > 0) {
-        var themeSelect = _this.fields['theme'];
         for (var i in themes) {
             var file = themes[i].replace('.css', '');
             var option = document.createElement('option');
             option.value = file;
             option.textContent = file;
-            if (_this.resource != null && _this.resource.pub.theme === file) {
-            }
-            themeSelect.appendChild(option);
+            _this.fields['theme'].appendChild(option);
         }
-        themeSelect.addEventListener('change', function (event) {
+        _this.fields['theme'].addEventListener('change', function (event) {
             var theme = event.target.value !== '' ? event.target.value : 'default';
             _this.projectClient.socket.emit('edit:resources', 'fTextSettings', 'setProperty', 'theme', theme, function (err) {
                 if (err != null)
@@ -238,35 +281,33 @@ var fTextSettingsEditor = (function () {
         });
     }
 })(null,["3024-day.css","3024-night.css","ambiance-mobile.css","ambiance.css","base16-dark.css","base16-light.css","blackboard.css","cobalt.css","colorforth.css","default.css","eclipse.css","elegant.css","erlang-dark.css","lesser-dark.css","mbo.css","mdn-like.css","midnight.css","monokai.css","neat.css","neo.css","night.css","paraiso-dark.css","paraiso-light.css","pastel-on-dark.css","rubyblue.css","solarized.css","the-matrix.css","tomorrow-night-bright.css","tomorrow-night-eighties.css","twilight.css","vibrant-ink.css","xq-dark.css","xq-light.css","zenburn.css"])});
-        this.fields["indentUnit"] = document.querySelector("#indentUnit-input");
+        this.fields["indentUnit"] = document.querySelector("#indentUnit");
         this.fields["indentUnit"].addEventListener("change", function (event) {
             var size = (event.target.value !== "") ? event.target.value : 2;
             // call onResourceEdited methods that have subscribed to resources via project client
             _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "indentUnit", parseInt(size), function (err) { if (err != null)
                 console.error(err); });
         });
-        this.fields["keyMap"] = document.querySelector("#keyMap-select");
+        this.fields["keyMap"] = document.querySelector("#keyMap");
         this.fields["keyMap"].addEventListener("change", function (event) {
             var map = (event.target.value !== "") ? event.target.value : "sublime";
             _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "keyMap", map, function (err) { if (err != null)
                 console.error(err); });
         });
-        this.booleanFields = ["styleActiveLine", "showTrailingSpace", "autoCloseBrackets"];
-        this.fields["styleActiveLine"] = document.querySelector("#styleActiveLine");
-        this.fields["styleActiveLine"].addEventListener("click", function (event) {
-            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "styleActiveLine", event.target.checked, function (err) { if (err != null)
-                console.error(err); });
-        });
-        this.fields["showTrailingSpace"] = document.querySelector("#showTrailingSpace");
-        this.fields["showTrailingSpace"].addEventListener("click", function (event) {
-            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "showTrailingSpace", event.target.checked, function (err) { if (err != null)
-                console.error(err); });
-        });
-        this.fields["autoCloseBrackets"] = document.querySelector("#autoCloseBrackets");
-        this.fields["autoCloseBrackets"].addEventListener("click", function (event) {
-            _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "autoCloseBrackets", event.target.checked, function (err) { if (err != null)
-                console.error(err); });
-        });
+        // ----------------------------------------
+        // build booleand settings
+        for (var setting in fTextSettingsResource_1.default.defaultValues) {
+            var defaultValue = fTextSettingsResource_1.default.defaultValues[setting];
+            if (typeof defaultValue === "boolean") {
+                this.booleanFields.push(setting);
+                this.fields[setting] = document.querySelector("#" + setting);
+                this.fields[setting].checked = defaultValue;
+                this.fields[setting].addEventListener("click", function (event) {
+                    _this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", event.target.id, event.target.checked, function (err) { if (err != null)
+                        console.error(err); });
+                });
+            }
+        }
         this.projectClient.subResource("fTextSettings", this);
     }
     return fTextSettingsEditor;
@@ -274,4 +315,4 @@ var fTextSettingsEditor = (function () {
 exports.default = fTextSettingsEditor;
 
 }).call(this,require('_process'))
-},{"_process":2,"domify":3}]},{},[1]);
+},{"../data/fTextSettingsResource":3,"_process":2,"domify":4}]},{},[1]);

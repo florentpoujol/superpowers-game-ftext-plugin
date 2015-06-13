@@ -24,6 +24,8 @@ var fTextSettingsResource = (function (_super) {
         styleActiveLine: { type: "boolean", mutable: true },
         showTrailingSpace: { type: "boolean", mutable: true },
         autoCloseBrackets: { type: "boolean", mutable: true },
+        matchTags: { type: "boolean", mutable: true },
+        highlightSelectionMatches: { type: "boolean", mutable: true },
     };
     fTextSettingsResource.defaultValues = {
         theme: "default",
@@ -32,6 +34,8 @@ var fTextSettingsResource = (function (_super) {
         styleActiveLine: true,
         autoCloseBrackets: true,
         showTrailingSpace: false,
+        matchTags: true,
+        highlightSelectionMatches: true,
     };
     return fTextSettingsResource;
 })(SupCore.data.base.Resource);

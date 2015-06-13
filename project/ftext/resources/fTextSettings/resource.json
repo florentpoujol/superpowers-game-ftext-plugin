@@ -1,8 +1,10 @@
 {
-  "theme": "monokai",
+  "theme": "mbo",
   "keyMap": "sublime",
   "showTrailingSpace": true,
   "indentUnit": 3,
   "styleActiveLine": true,
-  "autoCloseBrackets": true
+  "autoCloseBrackets": true,
+  "matchTags": true,
+  "highlightSelectionMatches": true
 }

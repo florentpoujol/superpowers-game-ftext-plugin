@@ -5,6 +5,16 @@
     "type": "ftext"
   },
   {
+    "id": "5",
+    "name": "script.js",
+    "type": "ftext"
+  },
+  {
+    "id": "6",
+    "name": "md.md",
+    "type": "ftext"
+  },
+  {
     "id": "3",
     "name": "afolder",
     "type": null,
@@ -19,6 +29,11 @@
   {
     "id": "2",
     "name": "style.styl",
+    "type": "ftext"
+  },
+  {
+    "id": "4",
+    "name": "html.html",
     "type": "ftext"
   }
 ]

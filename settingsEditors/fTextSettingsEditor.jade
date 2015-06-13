@@ -5,27 +5,35 @@ div
     tr
       th Theme
       td
-        select(id="theme-select") 
+        select(id="theme")
     tr
       th Indent Unit
       td 
-        input(id="indentUnit-input",type="number",min=1,max=8,value=2)
+        input(id="indentUnit",type="number",min=1,max=8,value=2)
     tr
       th Key map
       td 
-        select(id="keyMap-select")
+        select(id="keyMap")
           option(value="sublime") sublime
           option(value="vim") vim
           option(value="emacs") emacs
     tr
-      th Style active line
-      td 
-        input(id="styleActiveLine",type="checkbox",checked)
-    tr
       th Auto close brackets
       td 
-        input(id="autoCloseBrackets",type="checkbox",checked)
+        input(id="autoCloseBrackets",type="checkbox")
     tr
-      th Show trailing spaces
+      th Highlight active line
+      td 
+        input(id="styleActiveLine",type="checkbox")
+    tr
+      th Highlight trailing spaces
       td 
         input(id="showTrailingSpace",type="checkbox")
+    tr
+      th Highlight matching tag
+      td 
+        input(id="matchTags",type="checkbox")
+    tr
+      th Highlight matching words
+      td 
+        input(id="highlightSelectionMatches",type="checkbox")

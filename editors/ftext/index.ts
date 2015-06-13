@@ -17,10 +17,16 @@ require("codemirror/keymap/sublime");
 require("codemirror/mode/javascript/javascript");
 
 // ftext plugin addons:
-require("codemirror/addon/search/match-highlighter");
-require("codemirror/addon/edit/matchtags");
-require("codemirror/addon/edit/trailingspace");
+require("codemirror/addon/fold/foldcode");
+require("codemirror/addon/fold/foldgutter");
+require("codemirror/addon/fold/brace-fold");
+require("codemirror/addon/fold/comment-fold");
+require("codemirror/addon/fold/indent-fold");
 require("codemirror/addon/fold/xml-fold");
+require("codemirror/addon/fold/markdown-fold");
+require("codemirror/addon/search/match-highlighter");
+require("codemirror/addon/edit/matchtags"); // depends on xml-fold
+require("codemirror/addon/edit/trailingspace");
 require("codemirror/addon/edit/closetag"); // depends on xml-fold
 
 require("codemirror/addon/selection/active-line");
@@ -118,12 +124,18 @@ function start() {
   }
 
   let textArea = <HTMLTextAreaElement>document.querySelector(".code-editor");
-  console.log("editor start");
+  
   ui.editor = CodeMirror.fromTextArea(textArea, {
-    lineNumbers: true, matchBrackets: true, styleActiveLine: false, autoCloseBrackets: true,
-    gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     indentUnit: 2, // how many spaces = 1 tab (tabSize seems to have no effect ?)
     keyMap: "sublime", 
+    matchBrackets: true,
+    styleActiveLine: true,
+    autoCloseBrackets: true,
+    matchTags: true,
+    foldGutter: true,
+
+    lineNumbers: true,
+    gutters: ["line-error-gutter", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     extraKeys: extraKeys,
     viewportMargin: Infinity,
     readOnly: true
@@ -299,6 +311,7 @@ let assetHandlers: any = {
         };
         mode = shortcuts[mode] || mode;
         ui.editor.setOption("mode", mode);
+        console.log("Loaded Mode:", mode);
       }
     }
   },

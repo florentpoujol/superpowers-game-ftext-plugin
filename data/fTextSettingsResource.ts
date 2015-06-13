@@ -6,6 +6,8 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     styleActiveLine: { type: "boolean", mutable: true },
     showTrailingSpace: { type: "boolean", mutable: true },
     autoCloseBrackets: { type: "boolean", mutable: true },
+    matchTags: { type: "boolean", mutable: true },
+    highlightSelectionMatches: { type: "boolean", mutable: true },
   }
 
   static defaultValues: { [key: string]: any } = { 
@@ -15,6 +17,8 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     styleActiveLine: true,
     autoCloseBrackets: true,
     showTrailingSpace: false,
+    matchTags: true,
+    highlightSelectionMatches: true,
   }
 
   constructor(pub: any, serverData?: any) {
