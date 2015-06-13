@@ -13,20 +13,35 @@ var stylus = require("gulp-stylus");
 var nib = require("nib");
 var cssimport = require("gulp-cssimport");
 gulp.task("stylus", function() {
-  return gulp.src("./editors/**/index.styl").pipe(stylus({use: [ nib() ], errors: true})).pipe(cssimport()).pipe(gulp.dest("./public/editors"));
+  gulp.src("./editors/**/index.styl").pipe(stylus({use: [ nib() ], errors: true})).pipe(cssimport()).pipe(gulp.dest("./public/editors"));
+});
+
+// TypeScript
+var ts = require("gulp-typescript");
+gulp.task("typescript", function() {
+  gulp.src([ "**/*.ts", "!node_modules/**", "!api/**", "!gitignore/**" ]).
+  pipe(ts({
+    typescript: require("typescript"),
+    declarationFiles: false,
+    module: "commonjs",
+    target: "ES5",
+    noImplicitAny: true
+  }))
+  .js.pipe(gulp.dest("./"));
 });
 
 // Browserify
 var browserify = require("browserify");
 var vinylSourceStream = require("vinyl-source-stream");
-function makeBrowserify(source, destination, output, compileTs) {
-  gulp.task(output + "-browserify", function() {
-    var bundler = browserify(source);
-    bundler.transform("brfs");
-    function bundle() { return bundler.bundle().pipe(vinylSourceStream(output + ".js")).pipe(gulp.dest(destination)); }
-    return bundle();
+function makeBrowserify(sourcePath, destinationPath, outputName) {
+  gulp.task(outputName + "-browserify", function() {
+    gulp.src(sourcePath).
+    transform("brfs"). // for reading the code and defs .ts files in api folder and the html in settingsEditors
+    bundle().
+    pipe(vinylSourceStream(outputName + ".js")).
+    pipe(gulp.dest(destinationPath));
   });
-  tasks.push(output + "-browserify");
+  tasks.push(outputName + "-browserify");
 }
 
 makeBrowserify("./api/index.js", "./public", "api");
@@ -46,6 +61,7 @@ gulp.task("watch", function() {
   gulp.watch("./runtime/*.js", ["runtime-browserify"]);
   gulp.watch("./editors/ftext/*.js", ["ftext/index-browserify"]);
   gulp.watch("./settingsEditors/*.js", ["settingsEditors-browserify"]);
+  gulp.watch("./**/*.ts", ["typescript"]);
 });
 
 // All
