@@ -1,4 +1,4 @@
 console.log("script loaded");
 
 let text = Sup.get("main.jade",fText.fText);
-console.log(text.text);
+console.log(text.content);

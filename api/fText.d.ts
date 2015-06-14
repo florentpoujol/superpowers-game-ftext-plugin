@@ -9,10 +9,21 @@
 // or via the "Docs browser" tool provided by the "Docs browser" plugin: https://github.com/florentpoujol/superpowers-docs-browser-plugin
 
 declare module fText {
-  function parseInstructions(text: string);
+  var parsers: any;
 
   class fText extends Sup.Asset {
-    text: string;
+    getContent(options?: {noParse?: boolean, noInclude?: boolean}): string;
+    content: string; //  parsed and include
+
+    parseInstructions();
+
+    parseJSON(): any;
+    parseCSON(): any;
+    parseHTML(): any;
+    parseMarkdown(): string;
+    parseJade(): string;
+    parseStylus(): string;
   }
+
 }
 

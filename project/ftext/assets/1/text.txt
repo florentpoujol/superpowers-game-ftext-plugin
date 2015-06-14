@@ -1,25 +1,8 @@
- .code-editor-container
-   textarea(disabled).code-editor
+.code-editor-container
+  textarea(disabled).code-editor
+    //[fText: include: md.md]
 
- .error-pane
-   .status
-     .info Loading...
-     button.toggle –
-
-   .errors(disabled)
-     table
-       thead
-         tr
-           th Line
-           th Message
-           th Script
-       tbody
-
- script(src="/core/SupCore.js")
- script(src="../../data.js")
- script(src="/api/SupAPI.js")
- script(src="../../api.js")
- script(src="/system/SupEngine.js")
- script(src="../../components.js")
- script(src="/client/SupClient.js")
- script(src="index.js")
+.error-pane
+  .status
+    .info Loading...
+     button.toggle

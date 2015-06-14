@@ -2,7 +2,7 @@
   "theme": "mbo",
   "keyMap": "sublime",
   "showTrailingSpace": true,
-  "indentUnit": 3,
+  "indentUnit": 2,
   "styleActiveLine": false,
   "autoCloseBrackets": true,
   "matchTags": true,

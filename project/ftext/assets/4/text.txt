@@ -1,11 +1,5 @@
 html
-   head
-     title bla
+  //[ftext: include: style.styl]
 
-   body
-      #include-div
-         //@ftextasset: include: afolder/include.jade
-
-         hr
-
-         //@ftextasset: include: afolder/include.jade
+  body#include-div
+    //[ftext: include: afolder/include.jade]

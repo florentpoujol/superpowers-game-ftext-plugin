@@ -18,7 +18,7 @@ declare module "jade" {
 }
 declare module "stylus" {}
 declare module "markdown" {
-  export function markdown(md: string): string;
+  export var markdown: any;
 }
 declare module "less" {}
 declare module "cson-parser" {}

@@ -18,6 +18,7 @@ import * as jsonlint from "jsonlint";
 
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
+  // console.log("createOuterAsset", asset);
   return new (<any>window).fText.fText(asset);
 }
 
@@ -30,6 +31,15 @@ export function start(player: any, callback: Function) {
 }
 
 export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err: Error, asset?: any) => any) {
+  /*
+  entry has the Asset interface
+  interface Asset {
+    id: string;
+    name: string;
+    type: string;
+    children?: any[];
+  }
+  */
   player.getAssetData("assets/"+entry.id+"/text.txt", "text", (err: Error, text: string) => {
     if (err) throw err;
 
@@ -37,7 +47,8 @@ export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err:
     if (text === Object(text))
       text = JSON.stringify(text);
     
-    callback(null, text);
+    entry.text = text;
+    callback(null, entry);
     /*
     var result = /codemirror-mode\s*:\s*(css|less)/gi.exec(text);
     if (result !== null && result[1] !== undefined) {
