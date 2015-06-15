@@ -1,12 +1,14 @@
-body
-  display flex
-  flex-direction column
-  flex 1
+border-radius()
+  -webkit-border-radius: arguments
+  -moz-border-radius: arguments
+  border-radius: arguments
 
-.code-editor-container
-  position relative
-  flex 1
-  min-height 100px
-      
-  textarea
-    opacity 0
+body a
+  font: 12px/1.4 "Lucida Grande", Arial, sans-serif
+  background: black
+  color: #ccc
+
+form input
+  padding: 5px
+  border: 1px solid
+  border-radius: 5px

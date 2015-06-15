@@ -1,19 +1,25 @@
 
-import * as jade from "jade";
-import * as markdown from "markdown";
-import * as domify from "domify";
-import * as stylus from "stylus";
-import * as CSON from "cson-parser";
 import * as jsonlint from "jsonlint";
+import * as CSON from "cson-parser";
+import * as domify from "domify";
+import * as markdown from "markdown";
+import * as jade from "jade";
+import * as stylus from "stylus";
 
 (<any>window).fTextParsers = {
-  jade: jade,
-  markdown: markdown.markdown,
-  domify: domify,
-  stylus: stylus,
-  CSON: CSON,
   jsonlint: jsonlint,
-}
+  CSON: CSON,
+  domify: domify,
+  markdown: markdown.markdown,
+  jade: jade,
+  stylus: stylus,
+};
+
+/*(<any>window).parseStylus = (text: string, fn: Function) => {
+  console.log("parseStylus start");
+  stylus.render(text, fn);
+  console.log("parseStylus end");
+};*/
 
 
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {

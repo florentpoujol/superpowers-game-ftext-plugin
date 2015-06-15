@@ -15,6 +15,7 @@ declare module fText {
     domify: any,
     markdwon: any,
     jade: any,
+    stylus: any,
   };
   
   function parseJSON(text: string): any; // JS Object
@@ -22,20 +23,22 @@ declare module fText {
   function parseHTML(text: string): any; // DOM object or documentFragment
   function parseMarkdown(text: string): string;
   function parseJade(text: string): string;
-  function parseStylus(text: string): string;
+  function parseStylus(text: string, fn: (err: Error, css: string)=>void): void;
 
   // ----------------------------------------
+  
+  interface GetContentOptions {
+    parse?: boolean,
+    include?: boolean,
+    stylusCallback?: (err: Error, css: string)=>void,
+  }
 
   var assets: fText[];
 
   class fText extends Sup.Asset {
     constructor(inner: {[key:string]: any;});
     parseInstructions();
-    getContent(options?: {noParse?: boolean, noInclude?: boolean}): string;
+    getContent(options?: GetContentOptions): string;
     content: string; //  parsed and include
-
-
   }
-
 }
-

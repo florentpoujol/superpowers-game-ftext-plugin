@@ -16,7 +16,9 @@ declare module "domify" {
 declare module "jade" {
   export function parse(jade: string): string;
 }
-declare module "stylus" {}
+declare module "stylus" {
+  export function render(text: string, fn: Function): void;
+}
 declare module "markdown" {
   export var markdown: any;
 }

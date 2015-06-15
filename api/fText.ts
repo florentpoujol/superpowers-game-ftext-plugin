@@ -61,8 +61,9 @@ module fText {
   * @param stylus - Some Stylus string to be parsed.
   * @returns A valid CSS string.
   */
-  export function parseStylus(stylus: string): string {
-    return "stylus";
+  export function parseStylus(stylus: string, fn: (err: Error, css: string)=>void): void {
+    // parsers.stylus.render(stylus, fn);
+    // (<any>window).parseStylus(stylus, fn);
   }
 
   // --------------------------------------------------------------------------------
@@ -85,6 +86,12 @@ module fText {
     md: "markdown",
     styl: "stylus",
   };
+
+  export interface GetContentOptions {
+    parse?: boolean,
+    include?: boolean,
+    stylusCallback?: (err: Error, css: string)=>void,
+  }
 
   export var assets: fText[] = [];
 
@@ -140,13 +147,13 @@ module fText {
     }
 
     // ----------------------------------------
-
+    
     /**
     * Returns the content of the asset, after having parsed and processed it
     * @param options - An object with options.
     * @return JavaScript or DOM object, or string.
     */
-    getContent(options?: {parse?: boolean, include?: boolean}): any {
+    getContent(options?: GetContentOptions): any {
       options = options || {};
       let parse = (options.parse !== false);
       let include = (options.include !== false);
@@ -167,7 +174,16 @@ module fText {
             let parsed: any;
             try {
               let fn = (<any>window).fText["parse"+_parsableSyntaxes[i]];
-              parsed = fn(text || this.__inner.text);
+              if (syntax === "stylys") {
+                let callback = options.stylusCallback;
+                if (callback == null) {
+                  console.error("fText.fText.getContent(): can't parse stylus for asset '"+this.__inner.name+"' because no callback is provided via the 'stylusCallback' option.");
+                  return "";
+                }
+                parsed = fn(text || this.__inner.text, callback);
+              }
+              else
+                parsed = fn(text || this.__inner.text);
             }
             catch (e) {
               console.error("fText.fText.getContent(): error parsing asset", this.__inner.name);

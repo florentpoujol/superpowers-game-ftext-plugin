@@ -1,5 +1,12 @@
 console.log("script loaded");
 
 let text = Sup.get("main.jade",fText.fText);
-console.log(text.content);
-console.log(fText.parsers.domify.parse(text.content));
+// console.log(text.content);
+// console.log(fText.parsers.domify.parse(text.content));
+let styl = Sup.get("style.styl", fText.fText);
+console.log(styl.getContent({
+  stylusCallback: (err: Error, css:string) => {
+    console.log("stylus");
+    console.log(css);
+  }
+}))
