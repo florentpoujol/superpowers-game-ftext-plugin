@@ -1,9 +1,9 @@
 {
-  "theme": "mbo",
+  "theme": "paraiso-dark",
   "keyMap": "sublime",
   "showTrailingSpace": true,
   "indentUnit": 2,
-  "styleActiveLine": false,
+  "styleActiveLine": true,
   "autoCloseBrackets": true,
   "matchTags": true,
   "highlightSelectionMatches": true

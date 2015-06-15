@@ -10,16 +10,17 @@
   "author": "Florent Poujol <florent.poujol@gmail.com> (http://florentpoujol.fr)",
   "dependencies": {
     "typescript": "1.5.0-alpha",
-    "codemirror": "5.1.x",
-    "operational-transform": "^0.2.1",
-    "cson-parser": "^1.0.8",
-    "domify": "^1.3.1",
-    "jade": "^1.9.2",
-    "less": "^2.4.0",
-    "markdown": "^0.5.0",
-    "jsonlint": "^1.6.2",
-    "file": "^0.2.2",
-    "system": "^0.1.0"
+    "codemirror": "5.3.x",
+    "operational-transform": "0.2.x",
+    "cson-parser": "1.0.x",
+    "domify": "1.3.x",
+    "jade": "1.9.x",
+    "less": "2.4.x",
+    "markdown": "0.5.x",
+    "jsonlint": "1.6.x",
+    "stylus": "0.51.x",
+    "file": "0.2.x",
+    "system": "0.1.x"
   },
   "keywords": [
     "superpowers",

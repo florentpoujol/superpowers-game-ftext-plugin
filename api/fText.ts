@@ -1,33 +1,100 @@
 /// <reference path="Sup.d.ts"/>
 
-/**
-* @private
-* Modes that have a parse function.
-*/
-let __parsableModes: string[] = ["JSON", "CSON", "HTML", "Jade", "Markdown", "Less", "Stylus"];
-
-/**
-* @private
-*/
-let __lcParsableModes: string[] = ["json", "cson", "html", "jade", "markdown", "less", "stylus"];
-
-let extensions: any = {
-  md: "markdown",
-  styl: "stylus",
-};
-
-(<any>window).fTextAssets = [];
 
 module fText {
   export var parsers: any = (<any>window).fTextParsers;
 
+  /**
+  * Parse a JSON string to JS object.
+  * @param json - Some JSON string to be parsed.
+  * @returns A JavaScript object.
+  */
+  export function parseJSON(json: string): any {
+    json = json.replace(/\/\/.*/gi, "");
+    return parsers.jsonlint.parse(json); // use jsonlint because the error messages returned by the built-in JSON doesn't help at all...
+  }
+
+  /**
+  * Parse a CSON string to JS object.
+  * @param cson - Some CSON string to be parsed.
+  * @returns A JavaScript object.
+  */
+  export function parseCSON(cson: string): any {
+    return parsers.CSON.parse(cson); 
+  }
+
+  /**
+  * Parse a HTML string to DOM Element.
+  * @param html - Some HTML string to be parsed.
+  * @returns A single DOM Node instance if there was a single root element in the provided HTML, or a DocumentFragment instance.
+  */
+  export function parseHTML(html: string): any {
+    html = html.replace(/<!--.*-->/gi, ""); // remove comments before domify
+    // return parsers.domify(dom);
+    return parsers.domify.parse(html); 
+    // domify has been modified so that it could be used by the settingsEditor class
+    // the modification doesn't expose domify as an alias for domify.parse() 
+  }
+
+  /**
+  * Parse a markdown string to HTML string.
+  * @param md - Some Markdown string to be parsed.
+  * @returns A valid HTML string.
+  */
+  export function parseMarkdown(md: string): string {
+    return parsers.markdown.toHTML(md);
+  }
+
+  /**
+  * Parse a Jade string to HTML string. <br>
+  * Note that the support of Jade's features is basically limited to the syntactic sugars (no includes, no code...).
+  * @param jade - Some Jade string to be parsed.
+  * @returns A valid HTML string.
+  */
+  export function parseJade(jade: string): string {
+    return parsers.jade.compile(jade)();
+  }
+
+  /**
+  * Parse a Stylus string to CSS string. <br>
+  * Note that the support of Stylu's features is basically limited to the syntactic sugars (no includes).
+  * @param stylus - Some Stylus string to be parsed.
+  * @returns A valid CSS string.
+  */
+  export function parseStylus(stylus: string): string {
+    return "stylus";
+  }
+
+  // --------------------------------------------------------------------------------
+
+  /**
+  * @private
+  * Modes that have a parse function.
+  */
+  let _parsableSyntaxes: string[] = ["JSON", "CSON", "HTML", "Jade", "Markdown", "Less", "Stylus"];
+
+  /**
+  * @private
+  */
+  let _lcParsableSyntaxes: string[] = ["json", "cson", "html", "jade", "markdown", "less", "stylus"];
+
+  /**
+  * @private
+  */
+  let _languagesByExtensions: any = {
+    md: "markdown",
+    styl: "stylus",
+  };
+
+  export var assets: fText[] = [];
+
   export class fText extends Sup.Asset {
 
-    // filled by parseInstructions(), called from the constructor
+    // filled by parseInstructions()
     instructions: { [key: string]: string|string[] } = {};
 
-    constructor(asset: any) {
-      super(asset);
+    constructor(inner: {[key:string]: any;}) {
+      super(inner); // sets inner as the value of this.__inner
 
       this.parseInstructions();
       if (this.instructions["syntax"] == null) {
@@ -35,16 +102,50 @@ module fText {
         let match = name.match(/\.[a-zA-Z]+$/gi);
         if (match != null) {
           let syntax = match[0].replace(".", "");
-           if (extensions[syntax] != null)
-            syntax = extensions[syntax];
+           if (_languagesByExtensions[syntax] != null)
+            syntax = _languagesByExtensions[syntax];
           this.instructions["syntax"] = syntax;
         }
       }
 
-      (<any>window).fTextAssets.push(this);
+      assets.push(this);
     }
 
-    
+    /**
+    * Read the [ftext: instruction: value] instructions in the asset's text
+    * then build the this.instructions object.
+    * Called once from the constructor
+    */
+    parseInstructions() {
+      let regex = /\[ftext\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?\]/ig
+      let match: any;
+      let instructionsCount = (this.__inner.text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
+      do {
+        match = regex.exec(this.__inner.text);
+        if (match != null && match[1] != null) {
+          let name = match[1].trim().toLowerCase();
+          let value = match[3];
+          if (value != null) value = value.trim();
+          else value = "";
+          if (name === "include") {
+            if (this.instructions[name] == null) this.instructions[name] = [];
+            (<string[]>this.instructions[name]).push(value);
+          }
+          else
+            this.instructions[name] = value;
+        }
+        instructionsCount--;
+      }
+      while (match != null && instructionsCount > 0);
+    }
+
+    // ----------------------------------------
+
+    /**
+    * Returns the content of the asset, after having parsed and processed it
+    * @param options - An object with options.
+    * @return JavaScript or DOM object, or string.
+    */
     getContent(options?: {parse?: boolean, include?: boolean}): any {
       options = options || {};
       let parse = (options.parse !== false);
@@ -54,18 +155,19 @@ module fText {
         return this.__inner.text;
       
       else {
-        let parseFn = (): string => {
+        let parseFn = (text?: string): string => {
           let syntax = <string>this.instructions["syntax"];
           if (syntax == null) {
             console.error("fText.fText.getContent(): can't parse asset '"+this.__inner.name+"' because the syntax in unkown.");
             return "Error unkown syntax.";
           }
           
-          var i = __lcParsableModes.indexOf(syntax.toLowerCase());
+          var i = _lcParsableSyntaxes.indexOf(syntax.toLowerCase());
           if (i !== -1) {
             let parsed: any;
             try {
-              parsed = (<any>this)["parse"+__parsableModes[i]]();
+              let fn = (<any>window).fText["parse"+_parsableSyntaxes[i]];
+              parsed = fn(text || this.__inner.text);
             }
             catch (e) {
               console.error("fText.fText.getContent(): error parsing asset", this.__inner.name);
@@ -103,91 +205,21 @@ module fText {
           return parseFn();
         else if (parse === false && include === true)
           return includeFn();
-        else
-          return includeFn(parseFn());
+        else {
+          if (this.instructions["syntax"] === "html"){
+            // include before parsing when parsing from html to dom
+            return parseFn(includeFn());
+          }
+          else
+            return includeFn(parseFn());
+        }
       }
     } // end of getContent()
 
     get content(): any {
       return this.getContent();
     }
-
-    parseInstructions() {
-      let regex = /\[ftext\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?\]/ig
-      let match: any;
-      let instructionsCount = (this.__inner.text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
-      do {
-        match = regex.exec(this.__inner.text);
-        if (match != null && match[1] != null) {
-          let name = match[1].trim().toLowerCase();
-          let value = match[3];
-          if (value != null) value = value.trim();
-          else value = "";
-          if (name === "include") {
-            if (this.instructions[name] == null) this.instructions[name] = [];
-            (<string[]>this.instructions[name]).push(value);
-          }
-          else
-            this.instructions[name] = value;
-        }
-        instructionsCount--;
-      }
-      while (match != null && instructionsCount > 0);
-    }
-
-    // --------------------------------------------------------------------------------
-
-    /**
-    * Parse a JSON string to JS object.
-    * @returns A JavaScript object.
-    */
-    parseJSON(): any {
-      let text: string = this.__inner.text.replace(/\/\/.*/gi, "");
-      return parsers.jsonlint.parse(text); // use jsonlint because the error messages returned by the built-in JSON doesn't help at all...
-    }
-
-    /**
-    * Parse a CSON string to JS object.
-    * @returns A JavaScript object.
-    */
-    parseCSON(): any {
-      return parsers.CSON.parse(this.__inner.text); 
-    }
-
-    /**
-    * Parse a HTML string to DOM Element.
-    * @returns A single DOM Node instance if there was a single root element in the provided HTML, or a DocumentFragment instance.
-    */
-    parseHTML(): any {
-      var dom = this.__inner.text.replace(/<!--.*-->/gi, ""); // remove comments before domify
-      // return parsers.domify(dom);
-      return parsers.domify.parse(dom); 
-      // domify has been modified so that it could be used by the settingsEditor class
-      // the modification doesn't expose domify as an alias for domify.parse() 
-    }
-
-    /**
-    * Parse a markdown string to HTML string.
-    * @returns A valid HTML string.
-    */
-    parseMarkdown(): string {
-      return parsers.markdown.toHTML(this.__inner.text);
-    }
-
-    /**
-    * Parse a Jade string to HTML string. <br>
-    * Note that the support of Jade's features is basically limited to the syntactic sugars (no includes, no code...).
-    * @returns A valid HTML string.
-    */
-    parseJade(): string {
-      return parsers.jade.compile(this.__inner.text)();
-    }
-
-    parseStylus(): string {
-      return "stylus";
-    }
-  }
-
+  } // end of fText class
 }
 
 (<any>window).fText = fText;

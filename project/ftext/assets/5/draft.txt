@@ -13,6 +13,7 @@ function test() {
    }
 }
 
+
 /*
  * Demonstration of code folding
  */

@@ -1,5 +1,6 @@
-html
-  //[ftext: include: style.styl]
 
-  body#include-div
+body#include-div
+  //[ftext: include: style.styl]
+ 
+  div
     //[ftext: include: afolder/include.jade]
