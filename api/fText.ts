@@ -1,6 +1,5 @@
 /// <reference path="Sup.d.ts"/>
 
-
 module fText {
   export var parsers: any = (<any>window).fTextParsers;
 
@@ -62,8 +61,10 @@ module fText {
   * @returns A valid CSS string.
   */
   export function parseStylus(stylus: string, fn: (err: Error, css: string)=>void): void {
-    // parsers.stylus.render(stylus, fn);
-    // (<any>window).parseStylus(stylus, fn);
+    parsers.stylus(stylus).set("imports",[]).render(fn);
+    // as described here https://github.com/stylus/stylus/pull/994
+    // set("imports",[]) is required to prevent this issue:
+    // https://github.com/stylus/stylus/issues/1868
   }
 
   // --------------------------------------------------------------------------------
@@ -174,7 +175,7 @@ module fText {
             let parsed: any;
             try {
               let fn = (<any>window).fText["parse"+_parsableSyntaxes[i]];
-              if (syntax === "stylys") {
+              if (syntax === "stylus") {
                 let callback = options.stylusCallback;
                 if (callback == null) {
                   console.error("fText.fText.getContent(): can't parse stylus for asset '"+this.__inner.name+"' because no callback is provided via the 'stylusCallback' option.");

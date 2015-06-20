@@ -15,13 +15,6 @@ import * as stylus from "stylus";
   stylus: stylus,
 };
 
-/*(<any>window).parseStylus = (text: string, fn: Function) => {
-  console.log("parseStylus start");
-  stylus.render(text, fn);
-  console.log("parseStylus end");
-};*/
-
-
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
   // console.log("createOuterAsset", asset);
