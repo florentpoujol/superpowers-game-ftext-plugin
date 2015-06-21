@@ -18,7 +18,7 @@ import * as stylus from "stylus";
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
   // console.log("createOuterAsset", asset);
-  return new (<any>window).fText.fText(asset);
+  return new (<any>window).fText(asset);
 }
 
 export function init(player: any, callback: Function) {

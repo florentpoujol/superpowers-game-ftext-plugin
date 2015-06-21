@@ -6,22 +6,11 @@
 ///<reference path="../../app/system/SupEngine/SupEngine.d.ts"/>
 ///<reference path="../../app/system/SupRuntime/SupRuntime.d.ts"/>
 
-
-// IMPORTANT
-// see comment at the top of fTextSettignsEditor
-declare module "domify" {
-  export function parse(html: string): HTMLElement;
-}
-
-declare module "jade" {
-  export function parse(jade: string): string;
-}
-declare module "stylus" {
-  export function render(text: string, fn: Function): void;
-}
+declare module "jsonlint" {}
+declare module "cson-parser" {}
+declare module "domify" {}
+declare module "jade" {}
+declare module "stylus" {}
 declare module "markdown" {
   export var markdown: any;
 }
-declare module "less" {}
-declare module "cson-parser" {}
-declare module "jsonlint" {}

@@ -1,44 +1,45 @@
 // fTextAsset plugin
-// https://github.com/florentpoujol/superpowers-text-asset-plugin
+// https://github.com/florentpoujol/superpowers-ftext-plugin
 // Adds a generic text asset of type text/Sup.Text
 
 // Documentation:
-// https://florentpoujol.github.io/superpowers-text-asset-plugin
+// https://florentpoujol.github.io/superpowers-ftext-plugin
 
 // You can also access the documentation offline in the plugin's "public/docs" folder 
 // or via the "Docs browser" tool provided by the "Docs browser" plugin: https://github.com/florentpoujol/superpowers-docs-browser-plugin
 
-declare module fText {
-  var parsers: {
-    jsonlint: any,
-    CSON: any,
-    domify: any,
-    markdwon: any,
-    jade: any,
+declare class fText extends Sup.Asset {
+  constructor(inner: {[key:string]: any;});
+  
+  static parsers: {
+    jsonlint: jsonlint,
+    CSON: cson,
+    domify: (text: string)=>any,
+    markdwon: markdown,
+    jade: jade,
     stylus: any,
   };
-  
-  function parseJSON(text: string): any; // JS Object
-  function parseCSON(text: string): any; // JS Object
-  function parseHTML(text: string): any; // DOM object or documentFragment
-  function parseMarkdown(text: string): string;
-  function parseJade(text: string): string;
-  function parseStylus(text: string, fn: (err: Error, css: string)=>void): void;
 
-  // ----------------------------------------
-  
-  interface GetContentOptions {
-    parse?: boolean,
+  text: string; // get raw content
+  name: string;
+
+  parse(options?: {
     include?: boolean,
-    stylusCallback?: (err: Error, css: string)=>void,
-  }
+  }): any;
+}
 
-  var assets: fText[];
+interface jsonlint {
+  parse(text: string): string;
+}
 
-  class fText extends Sup.Asset {
-    constructor(inner: {[key:string]: any;});
-    parseInstructions();
-    getContent(options?: GetContentOptions): string;
-    content: string; //  parsed and include
-  }
+interface cson {
+  parse(text: string): string;
+}
+
+interface jade {
+  compile(text: string): ()=>void;
+}
+
+interface markdown {
+  toHTML(md: string): string;
 }

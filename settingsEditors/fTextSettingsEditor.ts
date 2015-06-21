@@ -19,7 +19,8 @@ export default class fTextSettingsEditor {
 
     // build the form from the html file
     let html = fs.readFileSync("settingsEditors/fTextSettingsEditor.html", {encoding: "utf8"});
-    container.appendChild(domify.parse(html));
+    container.appendChild((<any>domify)(html));
+    // container.appendChild(domify.parse(html));
 
     // register fields
     this.fields["theme"] = <HTMLSelectElement>document.querySelector("#theme");
