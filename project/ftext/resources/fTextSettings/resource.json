@@ -1,10 +1,11 @@
 {
-  "theme": "paraiso-dark",
+  "theme": "night",
   "keyMap": "sublime",
   "showTrailingSpace": true,
   "indentUnit": 2,
   "styleActiveLine": true,
   "autoCloseBrackets": true,
   "matchTags": true,
-  "highlightSelectionMatches": true
+  "highlightSelectionMatches": true,
+  "customThemes": ""
 }

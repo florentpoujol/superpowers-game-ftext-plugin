@@ -2,6 +2,12 @@
 
 # Comments!!!
 
+""
+{}
+[]
+''
+
+
 # An Array with no commas!
 greatDocumentaries: [
     'earthlings.com'

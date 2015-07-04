@@ -25,17 +25,13 @@ export default class fTextSettingsEditor {
     // register fields
     this.fields["theme"] = <HTMLSelectElement>document.querySelector("#theme");
     // get list of all available themes
+    // note: the list is "cached" by the browserification
     fs.readdir("public/editors/ftext/codemirror-themes", (err: Error, themes?: any) => {
       if (err) throw err;
 
       if (themes != null && themes.length > 0) {
-        for (let i in themes) {
-          let file = themes[i].replace(".css", "");
-          let option = document.createElement("option");
-          option.value = file;
-          option.textContent = file;
-          this.fields["theme"].appendChild(option);
-        }
+        for (let i in themes)
+          this.addThemeToSelect(themes[i]);
 
         this.fields["theme"].addEventListener("change", (event: any) => {
           let theme = (event.target.value !== "") ? event.target.value : "default";
@@ -44,10 +40,18 @@ export default class fTextSettingsEditor {
       }
     });
 
+    this.fields["customThemes"] = <HTMLInputElement>document.querySelector("#customThemes");
+    this.fields["customThemes"].addEventListener("change", (event: any) => {
+      let themes = (event.target.value !== "") ? event.target.value : "";
+      themes = themes.trim().replace(/,?$/, ""); // remove leading spaces and comas
+
+      // call onResourceEdited methods that have subscribed to resources via project client
+      this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "customThemes", themes, (err?: string) => { if (err != null) console.error(err); } );
+    });
+
     this.fields["indentUnit"] = <HTMLInputElement>document.querySelector("#indentUnit");
     this.fields["indentUnit"].addEventListener("change", (event: any) => {
       let size = (event.target.value !== "") ? event.target.value : 2;
-      // call onResourceEdited methods that have subscribed to resources via project client
       this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "indentUnit", parseInt(size), (err?: string) => { if (err != null) console.error(err); } );
     });
 
@@ -77,14 +81,35 @@ export default class fTextSettingsEditor {
     this.projectClient.subResource("fTextSettings", this);
   }
 
+  // called from the constructor with the default themes
+  // then from onResourceReceived() with the custom themes
+  private addThemeToSelect(theme: string) {
+    let file = theme.replace(".css", "");
+    let option = document.createElement("option");
+    option.value = file;
+    option.textContent = file;
+    this.fields["theme"].appendChild(option);
+  }
+
   onResourceReceived = (resourceId: string, resource: fTextSettingsResource) => {
     this.resource = resource;
     for (let setting in resource.pub) {
       if (this.booleanFields.indexOf(setting) !== -1)
         (<HTMLInputElement>this.fields[setting]).checked = resource.pub[setting];
       else {
-        if (this.fields[setting] != null)
+        if (this.fields[setting] != null) {
+          if (setting === "theme") {
+            // add the custom theme to the themes select
+            let sThemes = resource.pub["customThemes"];
+            if (sThemes !== "") {
+              let themes = sThemes.split(",");
+              for (let i in themes)
+                this.addThemeToSelect(themes[i].trim());
+            }
+          }
+
           this.fields[setting].value = resource.pub[setting];
+        }
         else
           console.error("fTextSettingsEditor.onResourceReceived(): unknow setting", setting, resource.pub[setting]);
       }

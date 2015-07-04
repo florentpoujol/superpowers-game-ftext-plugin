@@ -1,0 +1,2 @@
+// codemirror-mode: undefined
+// "undefined" is the default mode. Change it and the comment characters as needed.

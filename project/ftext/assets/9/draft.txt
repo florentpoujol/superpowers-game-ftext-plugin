@@ -9,11 +9,14 @@
       <td>
         <select id="theme"></select>
       </td>
+      <td>
+      </td>
+      
     </tr>
      <tr>
       <th>Custom Themes</th>
       <td>
-        <input id="customThemes" type="text" placeholder="Coma-separated list of custom themes" />
+        <input id="customThemes" type="text" placeholder="come-separated list of custom themes to load" value="" />
       </td>
     </tr>
     <tr>
