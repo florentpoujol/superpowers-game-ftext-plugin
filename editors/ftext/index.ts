@@ -180,9 +180,9 @@ function start() {
 
   // Error pane
   ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
-  ui.errorPane.style.display = "none"; // temp, completely hide error panel
+  // ui.errorPane.style.display = "none"; // temp, completely hide error panel
 
-  /*ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
+  ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
   ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
   ui.errorsTBody = <HTMLTableSectionElement>ui.errorPane.querySelector(".errors tbody");
@@ -199,7 +199,7 @@ function start() {
     errorPaneToggleButton.textContent = collapsed ? "+" : "–";
     errorPaneResizeHandle.handleElt.classList.toggle("disabled", collapsed);
     ui.editor.refresh();
-  });*/
+  });
 
   ui.editor.focus();
 }
@@ -319,6 +319,7 @@ let assetHandlers: any = {
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
     if (id !== info.assetId) {
       /*if (command === "saveText") {
+        // compile then refresh errors
       }*/
       return
     }
@@ -328,10 +329,7 @@ let assetHandlers: any = {
 
   onAssetTrashed: (id: string) => {
     if (id !== info.assetId) return;
-
     if (ui.undoTimeout != null) clearTimeout(ui.undoTimeout);
-    // if (ui.errorCheckTimeout != null) clearTimeout(ui.errorCheckTimeout);
-    // if (ui.completionTimeout != null) clearTimeout(ui.completionTimeout);
     SupClient.onAssetTrashed();
   },
 };
@@ -475,114 +473,7 @@ function applyOperation(operation: OT.TextOperation, origin: string, moveCursor:
   }
 }
 
-/*function clearInfoPopup() {
-  if (ui.infoElement.parentElement != null) ui.infoElement.parentElement.removeChild(ui.infoElement);
-  if (ui.infoTimeout != null) clearTimeout(ui.infoTimeout);
-}
 
-let isCheckingForErrors: boolean = false;
-let hasScheduledErrorCheck: boolean = false;
-
-interface CompletionRequest {
-  callback: any;
-  cursor: any;
-  token: any;
-  start: any;
-}
-
-let activeCompletion: CompletionRequest;
-let nextCompletion: CompletionRequest;
-
-typescriptWorker.onmessage = (event: MessageEvent) => {
-  switch(event.data.type) {
-    case "errors":
-      refreshErrors(event.data.errors);
-      isCheckingForErrors = false;
-      if (hasScheduledErrorCheck) startErrorCheck();
-      break;
-
-    case "completion":
-      if (nextCompletion != null) {
-        activeCompletion = null;
-        startAutocomplete();
-        return;
-      }
-
-      for (let item of event.data.list) {
-        item.render = (parentElt: HTMLDivElement, data: any, item: { kind: string; name: string; info: string }) => {
-          parentElt.style.maxWidth = "100em";
-
-          let rowElement = document.createElement("div");
-          rowElement.style.display = "flex";
-          parentElt.appendChild(rowElement);
-
-          let kindElement = document.createElement("div");
-          kindElement.style.marginRight = "0.5em";
-          kindElement.style.width = "6em";
-          kindElement.textContent = item.kind;
-          rowElement.appendChild(kindElement);
-
-          let nameElement = document.createElement("div");
-          nameElement.style.marginRight = "0.5em";
-          nameElement.style.width = "15em";
-          nameElement.style.fontWeight = "bold";
-          nameElement.textContent = item.name;
-          rowElement.appendChild(nameElement);
-
-          let infoElement = document.createElement("div");
-          infoElement.textContent = item.info;
-          rowElement.appendChild(infoElement);
-        };
-      }
-      let from = (<any>CodeMirror).Pos(activeCompletion.cursor.line, activeCompletion.token.start);
-      let to = (<any>CodeMirror).Pos(activeCompletion.cursor.line, activeCompletion.token.end);
-      activeCompletion.callback({ list: event.data.list, from, to });
-      activeCompletion = null;
-      break;
-
-    case "quickInfo":
-      if (ui.infoTimeout == null) {
-        ui.infoElement.textContent = event.data.text;
-        ui.editor.addWidget(ui.infoPosition, ui.infoElement, false)
-      }
-      //if (token.string !== "" && token.string !== " ") {
-
-      //}
-      break;
-  }
-};
-
-function startErrorCheck() {
-  if (isCheckingForErrors) return;
-
-  isCheckingForErrors = true;
-  hasScheduledErrorCheck = false;
-  typescriptWorker.postMessage({ type: "checkForErrors" });
-}
-
-function scheduleErrorCheck() {
-  if (ui.errorCheckTimeout != null) clearTimeout(ui.errorCheckTimeout);
-
-  ui.errorCheckTimeout = window.setTimeout(() => {
-    hasScheduledErrorCheck = true;
-    if (!isCheckingForErrors) startErrorCheck();
-  }, 300);
-}
-
-function startAutocomplete() {
-  if (activeCompletion != null) return;
-
-  activeCompletion = nextCompletion;
-  nextCompletion = null;
-
-  typescriptWorker.postMessage({
-    type: "getCompletionAt",
-    tokenString: activeCompletion.token.string,
-    name: fileNamesByScriptId[info.assetId],
-    start: activeCompletion.start
-  });
-}
-*/
 // User interface
 function refreshErrors(errors: Array<{file: string; position: {line: number; character: number;}; length: number; message: string}>) {
   // Remove all previous erros
@@ -609,7 +500,6 @@ function refreshErrors(errors: Array<{file: string; position: {line: number; cha
   // Display new ones
   for (let error of errors) {
     let errorRow = document.createElement("tr");
-    //(<any>errorRow.dataset).assetId = files[error.file].id;
     (<any>errorRow.dataset).line = error.position.line;
     (<any>errorRow.dataset).character = error.position.character;
 
@@ -621,18 +511,7 @@ function refreshErrors(errors: Array<{file: string; position: {line: number; cha
     messageCell.textContent = error.message;
     errorRow.appendChild(messageCell);
 
-    let scriptCell = document.createElement("td");
-    scriptCell.textContent = error.file.substring(0, error.file.length - 3);
-    errorRow.appendChild(scriptCell);
-
-    /*if (error.file !== fileNamesByScriptId[info.assetId]) {
-      ui.errorsTBody.appendChild(errorRow);
-      continue;
-    }*/
-
-    ui.errorsTBody.insertBefore(errorRow, (lastSelfErrorRow != null) ? lastSelfErrorRow.nextElementSibling : ui.errorsTBody.firstChild);
-    lastSelfErrorRow = errorRow;
-    selfErrorsCount++;
+    ui.errorsTBody.appendChild(errorRow);
 
     let line = error.position.line;
     ui.editor.getDoc().markText(
@@ -647,13 +526,7 @@ function refreshErrors(errors: Array<{file: string; position: {line: number; cha
     ui.editor.setGutterMarker(line, "line-error-gutter", gutter);
   }
 
-  let otherErrorsCount = errors.length - selfErrorsCount;
-  if (selfErrorsCount > 0) {
-    if (otherErrorsCount == 0) ui.errorPaneInfo.textContent = `${selfErrorsCount} error${selfErrorsCount > 1 ? "s" : ""}`;
-    else ui.errorPaneInfo.textContent = `${selfErrorsCount} error${selfErrorsCount > 1 ? "s" : ""} in this script, ${otherErrorsCount} in other scripts`;
-  } else {
-    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s" : ""} in other scripts`;
-  }
+  ui.errorPaneInfo.textContent = `${selfErrorsCount} error${selfErrorsCount > 1 ? "s" : ""}`;
 }
 
 function onErrorTBodyClick(event: MouseEvent) {
@@ -664,20 +537,15 @@ function onErrorTBodyClick(event: MouseEvent) {
     target = target.parentElement;
   }
 
-  let assetId: string = (<any>target.dataset).assetId;
   let line: string = (<any>target.dataset).line;
   let character: string = (<any>target.dataset).character;
 
-  if (assetId === info.assetId) {
-    ui.editor.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
-    ui.editor.focus();
-  } else {
-    let origin: string = (<any>window.location).origin;
-    if (window.parent != null) window.parent.postMessage({ type: "openEntry", id: assetId, options: { line, ch: character } }, origin);
-  }
+  ui.editor.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
+  ui.editor.focus();
 }
 
 let localVersionNumber = 0;
+// listener for the editor's "changes" event
 function onEditText(instance: CodeMirror.Editor, changes: CodeMirror.EditorChange[]) {
   // let localFileName = fileNamesByScriptId[info.assetId];
   // let localFile = files[localFileName];
