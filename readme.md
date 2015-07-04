@@ -1,6 +1,6 @@
 # Superpowers fText plugin
 
-This plugin brings a generic text asset of type `ftext`/`fText.fTextAsset` to [Superpowers, the extensible HTML5 2D+3D game engine](http://sparklinlabs.com).
+This plugin brings a generic text asset of type `fText` to [Superpowers, the extensible HTML5 2D+3D game engine](http://sparklinlabs.com).
 
 ## Documentation
 
@@ -25,6 +25,6 @@ So you can leave the plugin path as `node_modules/sup-ftext-plugin`.
 
 The `project` folder contains a test/demo project.  
 
-To run it, put the project folder `textasset` in Superpowers' projects folder, start the server, access the project then run it and open the console.
+To run it, put the project folder `ftext` in Superpowers' projects folder, start the server, access the project then run it and open the console.
 
 On Window7, Superpowers' projects folder is typically in `C:\Users\[Your user name]\AppData\Roaming\Superpowers`.
