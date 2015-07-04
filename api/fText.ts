@@ -101,6 +101,8 @@ class fText extends Sup.Asset {
           text = fText.parsers.stylus(text).set("imports", []).render();
         else if (syntaxFn != null)
           text = syntaxFn(text);
+        else 
+          console.error("fText.parse(): no parse function found for asset '"+this.__inner.name+"' and syntax '"+syntax+"'");
       }
       catch (e) {
         console.error("fText.parse(): error parsing asset", this.__inner.name);
