@@ -20,25 +20,8 @@ body
   flex-direction column
   flex 1
 
-.code-editor-container
-  position relative
-  flex 1
+.text-editor-container
   min-height 100px
-
-  textarea
-    opacity 0
-
-.code-editor + .CodeMirror
-  position absolute
-  top 0
-  left 0
-  right 0
-  bottom 0
-  height auto
-  font-size 14px
-
-.code-editor + .CodeMirror, .CodeMirror-hints
-  font-family "Consolas", monospace
 
 .popup-info
   position absolute
@@ -68,14 +51,23 @@ body
     display flex
     align-items center
 
+    &.has-draft
+      background-color #37d
+      .draft { display: block; }
+
     &.has-errors
       background-color #a44
+
+    .draft
+      display none
+      padding-left 0.25em
+      color rgba(255,255,255,0.5)
 
     .info
       flex 1
       padding 0.5em
 
-    button
+    button.toggle
       width 30px
       background transparent
       border none

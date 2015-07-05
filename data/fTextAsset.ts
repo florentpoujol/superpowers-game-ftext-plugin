@@ -1,5 +1,3 @@
-///<reference path="./operational-transform.d.ts"/>
-
 import * as OT from "operational-transform";
 import * as fs from "fs";
 import * as path from "path";
@@ -12,14 +10,12 @@ export default class fTextAsset extends SupCore.data.base.Asset {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },
-    // syntax: { type: "string" }
   };
 
   pub: {
     text: string;
     draft: string;
     revisionId: number;
-    // sytax: string;
   }
 
   document: OT.Document;
@@ -27,7 +23,6 @@ export default class fTextAsset extends SupCore.data.base.Asset {
 
   // called from the editor onAssetReceived() as well as on server startup
   constructor(id: string, pub: any, serverData?: any) {
-    this.document = new OT.Document();
     super(id, pub, fTextAsset.schema, serverData);
   }
 
@@ -40,16 +35,13 @@ export default class fTextAsset extends SupCore.data.base.Asset {
       text: defaultContent,
       draft: defaultContent,
       revisionId: 0,
-      // syntax: "", // no default syntax (codemirror mode)
     }
 
     super.init(options, callback);
   }
 
   setup() {
-    this.document.text = this.pub.draft;
-    for (let i = 0; i < this.pub.revisionId; i++) (<any>this.document.operations).push(0);
-
+    this.document = new OT.Document(this.pub.draft, this.pub.revisionId);
     this.hasDraft = this.pub.text !== this.pub.draft;
   }
 
@@ -69,45 +61,35 @@ export default class fTextAsset extends SupCore.data.base.Asset {
 
   // called on server startup
   load(assetPath: string) {
-    fs.readFile(path.join(assetPath, "asset.json"), { encoding: "utf8" }, (err, json) => {
-      this.pub = JSON.parse(json);
+    // NOTE: We must not set this.pub with temporary values here, otherwise
+    // the asset will be considered loaded by Dictionary.acquire
+    // and the acquire callback will be called immediately
 
-      fs.readFile(path.join(assetPath, "text.txt"), { encoding: "utf8" }, (err, text) => {
-        this.pub.text = text;
-
-        fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, (err, draft) => {
-          // Temporary asset migration (from tyescript plugin)
-          if (draft == null) draft = this.pub.text;
-
-          this.pub.draft = draft;
-          this.setup();
-          this.emit("load");
-        });
+    fs.readFile(path.join(assetPath, "text.txt"), { encoding: "utf8" }, (err, text) => {
+      fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, (err, draft) => {
+        this.pub = { revisionId: 0, text, draft: (draft != null) ? draft : text };
+        this.setup();
+        this.emit("load");
       });
     });
   }
 
   save(assetPath: string, callback: (err: Error) => any) {
-    let text = this.pub.text; delete this.pub.text;
-    let draft = this.pub.draft; delete this.pub.draft;
-    // let editorSettings = this.pub.editorSettings; delete this.pub.editorSettings;
-
-    let json = JSON.stringify(this.pub, null, 2);
-
-    this.pub.text = text;
-    this.pub.draft = draft;
-    // this.pub.editorSettings = editorSettings;
-
-    fs.writeFile(path.join(assetPath, "asset.json"), json, { encoding: "utf8" }, (err) => {
+    fs.writeFile(path.join(assetPath, "text.txt"), this.pub.text, { encoding: "utf8" }, (err) => {
       if (err != null) { callback(err); return; }
-      fs.writeFile(path.join(assetPath, "text.txt"), text, { encoding: "utf8" }, (err) => {
-        if (err != null) { callback(err); return; }
-        fs.writeFile(path.join(assetPath, "draft.txt"), draft, { encoding: "utf8" }, callback);
-      });
+
+      if (this.hasDraft) {
+        fs.writeFile(path.join(assetPath, "draft.txt"), this.pub.draft, { encoding: "utf8" }, callback);
+      } else {
+        fs.unlink(path.join(assetPath, "draft.txt"), (err) => {
+          if (err != null && err.code !== "ENOENT") { callback(err); return; }
+          callback(null);
+        });
+      }
     });
   }
 
-  server_editText(client: any, operationData: OT.OperationData, revisionIndex: number, callback: (err: string, operationData?: any, revisionIndex?: number) => any) {
+  server_editText(client: any, operationData: OperationData, revisionIndex: number, callback: (err: string, operationData?: any, revisionIndex?: number) => any) {
     if (operationData.userId !== client.id) { callback("Invalid client id"); return; }
 
     let operation = new OT.TextOperation();
@@ -128,7 +110,7 @@ export default class fTextAsset extends SupCore.data.base.Asset {
     this.emit("change");
   }
 
-  client_editText(operationData: OT.OperationData, revisionIndex: number) {
+  client_editText(operationData: OperationData, revisionIndex: number) {
     let operation = new OT.TextOperation();
     operation.deserialize(operationData);
     this.document.apply(operation, revisionIndex);
