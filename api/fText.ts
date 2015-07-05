@@ -94,19 +94,22 @@ class fText extends Sup.Asset {
         case "jade":
           syntaxFn = fText.parsers.jade.compile(text);
           break;
+        case "stylus": 
+          syntaxFn = ()=>{};
+          break;
       }
-     
-      try {
-        if (syntax === "stylus")
-          text = fText.parsers.stylus(text).set("imports", []).render();
-        else if (syntaxFn != null)
-          text = syntaxFn(text);
-        else 
-          console.error("fText.parse(): no parse function found for asset '"+this.__inner.name+"' and syntax '"+syntax+"'");
-      }
-      catch (e) {
-        console.error("fText.parse(): error parsing asset", this.__inner.name);
-        throw e;
+      
+      if (syntaxFn != null) {
+        try {
+          if (syntax === "stylus")
+            text = fText.parsers.stylus(text).set("imports", []).render();
+          else
+            text = syntaxFn(text);
+        }
+        catch (e) {
+          console.error("fText.parse(): error parsing asset", this.__inner.name);
+          throw e;
+        }
       }
       return text;
     };
