@@ -12,12 +12,12 @@ declare class fText extends Sup.Asset {
   constructor(inner: {[key:string]: any;});
   
   static parsers: {
-    jsonlint: jsonlint,
-    CSON: cson,
-    domify: (text: string)=>any,
-    markdwon: markdown,
-    jade: jade,
-    stylus: any,
+    jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
+    CSON: cson,                   // https://github.com/bevry/cson
+    domify: (text: string)=>any,  // https://github.com/component/domify
+    markdown: markdown,           // https://github.com/evilstreak/markdown-js
+    jade: jade,                   // https://github.com/jadejs/jade
+    stylus: any,                  // https://github.com/stylus/stylus
   };
 
   text: string; // get raw content
