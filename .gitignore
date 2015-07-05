@@ -6,6 +6,7 @@ project/*/internals.json
 project/*/members.json
 
 public/*
+!public/docs
 public/editors/ftext
 !public/editors/ftext/icon.svg
 !public/editors/ftext/codemirror-themes
