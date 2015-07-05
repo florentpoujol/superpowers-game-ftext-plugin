@@ -12,7 +12,7 @@ When creating a new asset in Superpowers' client, select the `fText` type.
 
 You can configure the editor through the Settings tool :
 
-![fText settings editor](editor_settings.jpeg)
+![fText settings editor](https://raw.githubusercontent.com/florentpoujol/superpowers-ftext-plugin/dev/public/docs/editor_settings.jpg)
 
 <table>
   <tr>
@@ -33,7 +33,7 @@ You can configure the editor through the Settings tool :
   </tr>
   <tr>
     <td>Auto close brackets</td>
-    <td>Automatically add the closing character when writing {, (, [, " and '</td>
+    <td>Automatically add the closing character when writing the following characters <code>{ ( [ " '</code></td>
   </tr>
   <tr>
     <td>Highlight active line</td>
@@ -64,108 +64,95 @@ You can have several custom themes separated by comas.
 
 Close the Settings tool then reopen it, so that you can choose your custom theme at the bottom of the theme's list.
 
-### Other features
-
-- Support for code folding
-
 ## Syntax
 
+The syntax of the asset defines the data-type of its content and thus change how the syntactic coloration behave and how the asset's content is parsed, if at all.
+
+To set a syntax, just add an extension at the end of the asset's name just like for any standard file.  
+Ie: `"styles/main.styl"`.
+
+Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `styl`, `shader` and `js`.
 
 
+## Other features
 
-### Mode
+- Code folding
+- Error reporting for `json`, `cson`, `jade`, `stylus`
+- `json` supports standard `//` comments
+- Basic autocompletion via the `Ctrl/Cmd + Space` command.
 
-The mode defines the data-type (JSON, HTML, CSS, ...).  
-It's important to specify it for the syntactic coloration and when parsing the asset's content.
+### Includes
 
-Unlike other settings, you can set a different mode on every assets.  
-Just write `codemirror-mode:[value]` anywhere in the file (in comments at the beginning of the file, for instance).
+You can include an asset into another with the `include` command :  
+  
+    [ftext: include: path/to/the/asset]
 
-Replace `[value]` by a mode's name, a MIME type or a shortcut as defined in the table below.  
-There is no default mode.
 
-<table>
-  <tr>
-    <th>Laguage</th>
-    <th>Mode value</th>
-  </tr>
-  <tr>
-    <td>HTML</td>
-    <td>html</td>
-  </tr>
-  <tr>
-    <td>Jade</td>
-    <td>jade</td>
-  </tr>
-  <tr>
-    <td>Markdown</td>
-    <td>markdown</td>
-  </tr>
-  <tr>
-    <td>CSS</td>
-    <td>css</td>
-  </tr>
-  <tr>
-    <td>Less</td>
-    <td>less</td>
-  </tr>
-  <tr>
-    <td>JSON</td>
-    <td>json<br>Note that you can write JS single line comments within you JSON.</td>
-  </tr>
-  <tr>
-    <td>CSON</td>
-    <td>cson</td>
-  </tr>
-  <tr>
-    <td>HLSL / GLSL</td>
-    <td>shader</td>
-  </tr>
-</table>
+Replace `path/to/the/asset` by the path to the asset to include inside this one.
 
-JSON, CSON and Less are parsed on save. Any error will appear in the gutter and in the error dialog below the text.
+The specified asset content will then be included when the asset is parsed with the `fText.parse()` method.
 
-Ie: JSON with Monokai theme, inline comments and in-editor error reporting on save. 
+Since assets are usually parsed before the inclusion is performed, it is best to have comment characters immediately before the command.
 
-![bma](https://dl.dropboxusercontent.com/u/51314747/superpowers/Text%20Asset/json_editor.png)
+    //[ftext: include: path/to/the/asset]
+
 
 ## In-game usage
 
 `fText` is the type of the text assets inside your game's code. Get an asset like this:
 
-    var asset = Sup.get( "My Text Asset", fText );
+    let asset = Sup.get( "My Text Asset", fText );
     // or
-    var asset = <fText>Sup.get( "My Text Asset" );
+    let asset = <fText>Sup.get( "My Text Asset" );
 
-You can access the text content of the text via the readonly property `text` :
+You can access the text content of the asset via the readonly property `text` :
     
-    var asset = Sup.get( "My Text Asset", fText );
-    var data = asset.text;
+    let asset = Sup.get( "My Text Asset", fText );
+    let data = asset.text;
 
-You can convert the data using the `parse[Datatype](text?: string)` functions described below in this doc.  
-All functions will use either the asset's text, or the text passed as their only argument.
+You can parse the asset's content with the `parse()` method and access all parsers through the static property `fText.parsers` :
 
 Ie:
 
-    var asset = Sup.get( "My Jade Asset", fText );
+    let asset = Sup.get( "My Jade Asset", fText );
+
+    let html = asset.parse();
     
-    var html = asset.parseJade();
-    var elt = asset.parseHTML( html );
+    let elt = fText.parsers.domify( html );
 
     document.body.appendChild( elt ); 
     // note that document is not accessible inside your game''s code
     // without the DOM plugin you can find at:
     // https://github.com/florentpoujol/superpowers-dom-plugin
 
+- `json` and `cson` are parsed to JS object.
+- `html` > DOM object
+- `jade` and `md` > HTML string
+- `styl` > CSS string
 
-You can also use the `parse()` function, provided that the mode can be found in the line `codemirror-mode` line or as second argument.
+The `fText.parsers` has this definition :
 
-    var asset = Sup.get( "My Jade Asset", fText );
-      
-    var html = asset.parse(); // parse from Jade to HTML using parseJade() because "jade" is the mode specified in the asset's content.
-    var elt = asset.parseHTML( html );
+    static parsers: {
+      jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
+      CSON: cson,                   // https://github.com/bevry/cson
+      domify: (text: string)=>any,  // https://github.com/component/domify
+      markdown: markdown,           // https://github.com/evilstreak/markdown-js
+      jade: jade,                   // https://github.com/jadejs/jade
+      stylus: any,                  // https://github.com/stylus/stylus
+    };
 
+    interface jsonlint {
+      parse(text: string): string;
+    }
 
-### Automatically load styles at runtime
+    interface cson {
+      parse(text: string): string;
+    }
 
-Just write `loadStyleAtRuntime: true` anywhere in CSS or Less assets to have their content automatically added to the game's page's head at runtime.
+    interface jade {
+      compile(text: string): ()=>void;
+    }
+
+    interface markdown {
+      toHTML(md: string): string;
+    }

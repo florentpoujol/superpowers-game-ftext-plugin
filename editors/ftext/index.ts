@@ -299,12 +299,10 @@ let assetHandlers: any = {
 
       if (mode != null) {
         let shortcuts: { [key: string]: string } = {
-          coffee: "coffeescript",
           cson: "coffeescript",
           html: "htmlmixed",
           js: "javascript",
           json: "application/json",
-          less: "text/x-less",
           md: "markdown",
           shader: "x-shader/x-fragment",
           styl: "stylus",
