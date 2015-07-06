@@ -83,7 +83,9 @@ export function setupEditor(clientId: number) {
   
   ui.editor.codeMirrorInstance.setOption("foldGutter", true);
   ui.editor.codeMirrorInstance.setOption("matchTags", true);
-  let gutters = ui.editor.codeMirrorInstance.getOption("gutters").push("CodeMirror-foldgutter");
+  let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
+  console.log("gutters", gutters);
+  gutters.push("CodeMirror-foldgutter");
   ui.editor.codeMirrorInstance.setOption("gutters", gutters);
 }
 
@@ -112,6 +114,7 @@ function onSendOperation(operation: OperationData) {
 // Error pane
 
 ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
+ui.errorPane.style.display = "none";
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
 ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 

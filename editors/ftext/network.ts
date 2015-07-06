@@ -8,17 +8,14 @@ import fTextAsset from "../../data/fTextAsset";
 import fTextSettingsResource from "../../data/fTextSettingsResource";
 
 export let data: { 
-  clientId: number;
   projectClient?: SupClient.ProjectClient;
   assetsById?: {[id: string]: fTextAsset};
   asset?: fTextAsset;
   assetInstructions?: { [key: string]: any },
   fTextSettingsResourcePub?: any,
-};
+} = { assetsById: {} };
 
 export let socket: SocketIOClient.Socket;
-
-
 
 // ----------------------------------------
 
@@ -70,6 +67,7 @@ let assetHandlers: any = {
 
       (<any>ui.errorPaneStatus.classList.toggle)("has-draft", data.asset.hasDraft);
       ui.editor.setText(data.asset.pub.draft);
+      
       if (info.line != null && info.ch != null)
         ui.editor.codeMirrorInstance.getDoc().setCursor({ line: info.line, ch: info.ch });
 
@@ -189,18 +187,14 @@ let resourceHandlers: any = {
 
 // ----------------------------------------
 
-function start() {
-  socket = SupClient.connect(info.projectId);
-  socket.on("welcome", onWelcomed);
-  socket.on("disconnect", SupClient.onDisconnected);
-}
-
 function onWelcomed(clientId: number) {
-  data = { clientId, assetsById: {} }
   data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
   data.projectClient.subEntries(entriesHandlers);
-
   data.projectClient.subResource("fTextSettings", resourceHandlers);
-
   setupEditor(clientId); // defined in ui.ts
 }
+
+// start
+socket = SupClient.connect(info.projectId);
+socket.on("welcome", onWelcomed);
+socket.on("disconnect", SupClient.onDisconnected);
