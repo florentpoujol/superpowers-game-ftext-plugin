@@ -12,7 +12,7 @@ export let data: {
   assetsById?: {[id: string]: fTextAsset};
   asset?: fTextAsset;
   assetInstructions?: { [key: string]: any },
-  fTextSettingsResourcePub?: any,
+  fTextSettingsResourcePub?: any, // set in onResourceReceived(), used in onfTextSettingsUpdated()
 } = { assetsById: {} };
 
 export let socket: SocketIOClient.Socket;
@@ -148,13 +148,15 @@ let entriesHandlers: any = {
 
 // updates the editor whe the resource is received or edited
 // called from the resources handlers
-function onfTextSettingsUpdated() {
-  let pub = data.fTextSettingsResourcePub;
-
+function onfTextSettingsResourceUpdated() {
   if (ui.editor != null) {
+    let pub = data.fTextSettingsResourcePub;
     let settings = fTextSettingsResource.defaultValues;
 
     for (let name in settings) {
+      if (name === "indentWithTabs" && name === "tabSize")
+        continue;
+
       let value = (pub[name] != null) ? pub[name] : settings[name];
       // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
 
@@ -177,11 +179,11 @@ function loadThemeStyle(theme: string) {
 let resourceHandlers: any = {
   onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
     data.fTextSettingsResourcePub = resource.pub;
-    onfTextSettingsUpdated();
+    onfTextSettingsResourceUpdated();
   },
 
   onResourceEdited: (resourceId: string, command: string, propertyName: string) => {
-    onfTextSettingsUpdated();
+    onfTextSettingsResourceUpdated();
   }
 }
 

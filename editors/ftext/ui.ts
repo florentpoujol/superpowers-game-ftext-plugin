@@ -1,33 +1,10 @@
 import info from "./info";
 import { socket, data } from "./network";
 
-require("codemirror/addon/fold/foldcode");
-require("codemirror/addon/fold/foldgutter");
-require("codemirror/addon/fold/brace-fold");
-require("codemirror/addon/fold/comment-fold");
-require("codemirror/addon/fold/indent-fold");
-require("codemirror/addon/fold/xml-fold");
-require("codemirror/addon/fold/markdown-fold");
-require("codemirror/addon/search/match-highlighter");
-require("codemirror/addon/edit/matchtags"); // depends on xml-fold
-require("codemirror/addon/edit/trailingspace");
-require("codemirror/addon/edit/closetag"); // depends on xml-fold
-
-require("codemirror/addon/selection/active-line");
-require("codemirror/addon/hint/anyword-hint");
-require("codemirror/keymap/emacs");
-require("codemirror/keymap/vim");
-
-require("codemirror/mode/htmlmixed/htmlmixed"); // load js, css, xml
-require("codemirror/mode/jade/jade");
-require("codemirror/mode/markdown/markdown"); // load xml
-require("codemirror/mode/coffeescript/coffeescript");
-require("codemirror/mode/stylus/stylus");
-
 let PerfectResize = require("perfect-resize");
 
 let ui: {
-  editor?: TextEditorWidget;
+  editor?: fTextEditorWidget;
   
   errorPane?: HTMLDivElement;
   errorPaneStatus?: HTMLDivElement;
@@ -68,7 +45,7 @@ if (nwDispatcher != null) {
 // called from network.ts/onWelcomed()
 export function setupEditor(clientId: number) {
   let textArea = <HTMLTextAreaElement>document.querySelector(".text-editor");
-  ui.editor = new TextEditorWidget(data.projectClient, clientId, textArea, {
+  ui.editor = new fTextEditorWidget(data.projectClient, clientId, textArea, {
     mode: "",
     extraKeys: {
       "Ctrl-Space": "autocomplete",

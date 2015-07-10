@@ -49,10 +49,10 @@ export default class fTextSettingsEditor {
       this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "customThemes", themes, (err?: string) => { if (err != null) console.error(err); } );
     });
 
-    this.fields["indentUnit"] = <HTMLInputElement>document.querySelector("#indentUnit");
-    this.fields["indentUnit"].addEventListener("change", (event: any) => {
+    this.fields["tabSize"] = <HTMLInputElement>document.querySelector("#tabSize");
+    this.fields["tabSize"].addEventListener("change", (event: any) => {
       let size = (event.target.value !== "") ? event.target.value : 2;
-      this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "indentUnit", parseInt(size), (err?: string) => { if (err != null) console.error(err); } );
+      this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "tabSize", parseInt(size), (err?: string) => { if (err != null) console.error(err); } );
     });
 
     this.fields["keyMap"] = <HTMLSelectElement>document.querySelector("#keyMap");
@@ -125,6 +125,5 @@ export default class fTextSettingsEditor {
       else
         console.error("fTextSettingsEditor.onResourceEdited(): unknow setting", setting, this.resource.pub[setting]);
     }
-
   }
 }

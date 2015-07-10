@@ -1,5 +1,5 @@
-///<reference path="./typings/tsd.d.ts"/>
-///<reference path="../../app/plugins/sparklinlabs/textEditorWidget/widget.d.ts"/>
+///<reference path="typings/tsd.d.ts"/>
+///<reference path="textEditorWidget/widget.d.ts"/>
 ///<reference path="../../app/typings/tsd.d.ts"/>
 ///<reference path="../../app/SupAPI/SupAPI.d.ts"/>
 ///<reference path="../../app/SupClient/SupClient.d.ts"/>
