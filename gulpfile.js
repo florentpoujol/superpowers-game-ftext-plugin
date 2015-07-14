@@ -39,9 +39,8 @@ var vinylSourceStream = require("vinyl-source-stream");
 function makeBrowserify(sourcePath, destPath, outputName, standalone) {
   gulp.task(outputName + "-browserify", function() {   
     var options = {};
-    if (standalone === true) {
+    if (standalone === true)
       options = { standalone: "fTextEditorWidget" };
-    }
     browserify(sourcePath+"index.js", options).
     transform("brfs").
     bundle().

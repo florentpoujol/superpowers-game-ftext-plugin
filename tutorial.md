@@ -12,8 +12,6 @@ When creating a new asset in Superpowers' client, select the `fText` type.
 
 You can configure the editor through the Settings tool :
 
-![fText settings editor](https://raw.githubusercontent.com/florentpoujol/superpowers-ftext-plugin/dev/public/docs/editor_settings.jpg)
-
 <table>
   <tr>
     <th>Setting</th>
@@ -24,8 +22,13 @@ You can configure the editor through the Settings tool :
     <td>Define the editor's looks.<br> See below for using your own themes.</td>
   </tr>
   <tr>
-    <td>Indent Unit</td>
-    <td>Define how many spaces a tab should take.<br>Changing the value does not update existing tabs.</td>
+    <td>Indent with tabs</td>
+    <td>Tell whether pressing the Tab key should insert an actual tab character or regular spaces.</td>
+  </tr>
+  <tr>
+    <td>Tab Size</td>
+    <td>This define the width (in spaces equivalent) of a tab. <br>
+    Updating the value will update all existing tab characters (and not tabs that use spaces) in you text assets.</td>
   </tr>
   <tr>
     <td>Key map</td>
@@ -83,7 +86,8 @@ Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `
 
 ### Includes
 
-You can include an asset into another with the `include` command :  
+You can include an asset into another with the `include` command.  
+Just write in you asset :  
   
     [ftext: include: path/to/the/asset]
 
@@ -92,7 +96,7 @@ Replace `path/to/the/asset` by the path to the asset to include inside this one.
 
 The specified asset content will then be included when the asset is parsed with the `fText.parse()` method.
 
-Since assets are usually parsed before the inclusion is performed, it is best to have comment characters immediately before the command.
+Since assets are usually parsed before the inclusion is performed, it is best to have comment characters _immediately_ before the command.
 
     //[ftext: include: path/to/the/asset]
 
@@ -121,16 +125,16 @@ Ie:
     let elt = fText.parsers.domify( html );
 
     document.body.appendChild( elt ); 
-    // note that document is not accessible inside your game''s code
+    // note that document is not accessible inside your game's code
     // without the DOM plugin you can find at:
     // https://github.com/florentpoujol/superpowers-dom-plugin
 
 - `json` and `cson` are parsed to JS object.
-- `html` > DOM object
 - `jade` and `md` > HTML string
+- `html` > DOM object
 - `styl` > CSS string
 
-The `fText.parsers` has this definition :
+The `fText.parsers` static property has this definition :
 
     static parsers: {
       jsonlint: jsonlint,           // https://github.com/zaach/jsonlint

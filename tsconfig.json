@@ -13,6 +13,7 @@
     "editors/fText/network.ts",
     "editors/fText/ui.ts",
     "runtime/fText.ts",
-    "settingsEditors/fTextSettingsEditor.ts"
+    "settingsEditors/fTextSettingsEditor.ts",
+    "textEditorWidget/index.ts"
   ]
 }
