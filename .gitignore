@@ -22,3 +22,5 @@ runtime/*.js
 
 settingsEditors/*.js
 !settingsEditors/index.js
+
+textEditorWidget/*.js

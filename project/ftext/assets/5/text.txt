@@ -8,7 +8,7 @@ var truc = "test";
 
 function test() {
    var a = function() {
-      var z = "";
+      var z = ""; //
       
    }
 }

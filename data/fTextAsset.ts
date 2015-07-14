@@ -101,7 +101,7 @@ export default class fTextAsset extends SupCore.data.base.Asset {
     this.pub.draft = this.document.text;
     this.pub.revisionId++;
 
-    callback(null, operation.serialize(), this.document.operations.length - 1);
+    callback(null, operation.serialize(), this.document.getRevisionId() - 1);
 
     if (!this.hasDraft) {
       this.hasDraft = true;

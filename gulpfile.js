@@ -36,9 +36,13 @@ tasks.push("typescript");
 // Browserify
 var browserify = require("browserify");
 var vinylSourceStream = require("vinyl-source-stream");
-function makeBrowserify(sourcePath, destPath, outputName, fn) {
+function makeBrowserify(sourcePath, destPath, outputName, standalone) {
   gulp.task(outputName + "-browserify", function() {   
-    browserify(sourcePath+"index.js", { standalone: "fTextEditorWidget" }).
+    var options = {};
+    if (standalone === true) {
+      options = { standalone: "fTextEditorWidget" };
+    }
+    browserify(sourcePath+"index.js", options).
     transform("brfs").
     bundle().
     pipe(vinylSourceStream(outputName + ".js")).
@@ -52,7 +56,7 @@ makeBrowserify("./data/", "./public", "data");
 makeBrowserify("./editors/fText/", "./public/editors", "fText/index");
 makeBrowserify("./runtime/", "./public", "runtime");
 makeBrowserify("./settingsEditors/", "./public", "settingsEditors");
-makeBrowserify("./textEditorWidget/", "./public", "textEditorWidget/index");
+makeBrowserify("./textEditorWidget/", "./public", "textEditorWidget/index", true);
 
 // watch
 gulp.task("watch", function() {
@@ -64,7 +68,7 @@ gulp.task("watch", function() {
   gulp.watch("./editors/fText/*.js", ["fText/index-browserify"]); 
   gulp.watch("./runtime/*.js", ["runtime-browserify"]);
   gulp.watch(["./settingsEditors/*.js", "./settingsEditors/*.html"], ["settingsEditors-browserify"]);
-  gulp.watch(["./textEditorWidget/*.js"], ["textEditorWidget-browserify"]);
+  gulp.watch(["./textEditorWidget/*.js"], ["textEditorWidget/index-browserify"]);
   
   gulp.watch(["./**/*.ts", "!./api/*.ts"], ["typescript"]);
 });

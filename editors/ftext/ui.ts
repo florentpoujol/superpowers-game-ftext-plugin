@@ -61,7 +61,6 @@ export function setupEditor(clientId: number) {
   ui.editor.codeMirrorInstance.setOption("foldGutter", true);
   ui.editor.codeMirrorInstance.setOption("matchTags", true);
   let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-  console.log("gutters", gutters);
   gutters.push("CodeMirror-foldgutter");
   ui.editor.codeMirrorInstance.setOption("gutters", gutters);
 }

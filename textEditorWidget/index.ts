@@ -59,7 +59,7 @@ class fTextEditorWidget {
   sentOperation: OT.TextOperation;
   pendingOperation: OT.TextOperation;
 
-  useSoftTab = true;
+  useSoftTab = true; // use spaces as tabs = true (indent with tabs = false)
 
   constructor(projectClient: SupClient.ProjectClient, clientId: number, textArea: HTMLTextAreaElement, options: TextEditorWidgetOptions) {
     let extraKeys: { [name: string]: string|Function } = {
@@ -108,7 +108,7 @@ class fTextEditorWidget {
     this.codeMirrorInstance.on("beforeChange", this.beforeChange);
     
     this.clientId = clientId;
-    projectClient.subResource("textEditorSettings", this);
+    projectClient.subResource("fTextSettings", this);
   }
 
   setText(text: string) {

@@ -5,7 +5,7 @@ border-radius()
 
 body a
   font: 12px/1.4 "Lucida Grande", Arial, sans-serif
-  background: black
+	background: black
   color: #ccc
 
 form input

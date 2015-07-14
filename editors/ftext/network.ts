@@ -100,11 +100,11 @@ let assetHandlers: any = {
   },
 
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
+    /*if (command === "saveText") {
+      // compile then refresh errors
+    }*/
+    // or do that from the save text function in UI
     if (id !== info.assetId) {
-      /*if (command === "saveText") {
-        // compile then refresh errors
-      }*/
-      // or do that from the save text function in UI
       return
     }
 
