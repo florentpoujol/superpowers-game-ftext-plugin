@@ -1,5 +1,6 @@
 import info from "./info";
-import ui, { setupEditor } from "./ui";
+import ui, { setupEditor, refreshErrors } from "./ui";
+import { compile } from "./compilator";
 
 import * as async from "async";
 import * as OT from "operational-transform";
@@ -36,24 +37,43 @@ let onAssetCommands: any = {
 // used to populate data.localEditorSettings
 // called from onAssetReceived()
 function parseInstructions() {
-  let text = ui.editor.codeMirrorInstance.getDoc().getValue();
-  let instructions: any = {};
-  let regex = /@ftextasset\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?/ig
+  let regex = /\[ftext\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?\]/ig
   let match: any;
-  let i = ui.editor.codeMirrorInstance.getDoc().lineCount(); // make sure the loop does not run more than the number of lines
-  
+  let instructionsCount = (this.__inner.text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
+  let instructions: any = {};
   do {
-    match = regex.exec(text);
-    if (match != null && match[1] != undefined) {
+    match = regex.exec(this.__inner.text);
+    if (match != null && match[1] != null) {
       let name = match[1].trim().toLowerCase();
       let value = match[3];
-      if (value !== undefined) value = value.trim();
+      if (value != null) value = value.trim();
       else value = "";
-      instructions[name] = value;
+      if (name === "include") {
+        if (instructions[name] == null) instructions[name] = [];
+        (<string[]>instructions[name]).push(value);
+      }
+      else
+        instructions[name] = value.trim().toLowerCase();
     }
-    i--;
+    instructionsCount--;
   }
-  while (match != null && i > 0);
+  while (match != null && instructionsCount > 0);
+
+  // check the extension of the asset name
+  if (instructions["syntax"] == null) {
+    let _languagesByExtensions: any = {
+      md: "markdown",
+      styl: "stylus",
+    };
+    let name = data.projectClient.entries.getPathFromId(data.asset.id);
+    let match = name.match(/\.[a-zA-Z]+$/gi);
+    if (match != null) {
+      let syntax = match[0].replace(".", "");
+       if (_languagesByExtensions[syntax] != null)
+        syntax = _languagesByExtensions[syntax];
+      instructions["syntax"] = syntax;
+    }
+  }
 
   return instructions;
 }
@@ -74,16 +94,9 @@ let assetHandlers: any = {
       // fText specific settings
       data.assetInstructions = parseInstructions();
 
-      let mode: string = data.assetInstructions["syntax"];
-      
-      if (mode == null) { // check the extension of the asset name
-        let path = data.projectClient.entries.getPathFromId(asset.id);
-        let match = /\.([a-z]+)$/ig.exec(path);
-        if (match != null && match[1] != null)
-          mode = match[1];
-      }
+      let syntax: string = data.assetInstructions["syntax"];
 
-      if (mode != null) {
+      if (syntax != null) {
         let shortcuts: { [key: string]: string } = {
           cson: "coffeescript",
           html: "htmlmixed",
@@ -93,17 +106,20 @@ let assetHandlers: any = {
           shader: "x-shader/x-fragment",
           styl: "stylus",
         };
-        mode = shortcuts[mode] || mode;
-        ui.editor.codeMirrorInstance.setOption("mode", mode);
+        syntax = shortcuts[syntax] || syntax;
+        ui.editor.codeMirrorInstance.setOption("mode", syntax);
       }
+
+      compile(data);
     }
   },
 
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
-    /*if (command === "saveText") {
-      // compile then refresh errors
-    }*/
-    // or do that from the save text function in UI
+    if (command === "saveText") {
+      // saveText command sent from onSaveText() in ui.ts
+      compile(data);
+    }
+
     if (id !== info.assetId) {
       return
     }

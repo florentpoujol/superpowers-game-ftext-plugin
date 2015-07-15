@@ -11,20 +11,7 @@ class fText extends Sup.Asset {
     super(inner); // sets inner as the value of this.__inner
 
     this._parseInstructions();
-    if (this.instructions["syntax"] == null) {
-      let _languagesByExtensions: any = {
-        md: "markdown",
-        styl: "stylus",
-      };
-      let name = this.__inner.name;
-      let match = name.match(/\.[a-zA-Z]+$/gi);
-      if (match != null) {
-        let syntax = match[0].replace(".", "");
-         if (_languagesByExtensions[syntax] != null)
-          syntax = _languagesByExtensions[syntax];
-        this.instructions["syntax"] = syntax;
-      }
-    }
+    
   }
 
   /**
@@ -53,6 +40,21 @@ class fText extends Sup.Asset {
       instructionsCount--;
     }
     while (match != null && instructionsCount > 0);
+
+    if (this.instructions["syntax"] == null) {
+      let _languagesByExtensions: any = {
+        md: "markdown",
+        styl: "stylus",
+      };
+      let name = this.__inner.name;
+      let match = name.match(/\.[a-zA-Z]+$/gi);
+      if (match != null) {
+        let syntax = match[0].replace(".", "");
+         if (_languagesByExtensions[syntax] != null)
+          syntax = _languagesByExtensions[syntax];
+        this.instructions["syntax"] = syntax;
+      }
+    }
   }
 
   // ----------------------------------------

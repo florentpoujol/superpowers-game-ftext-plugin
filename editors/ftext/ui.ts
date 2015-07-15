@@ -67,16 +67,9 @@ export function setupEditor(clientId: number) {
 
 let localVersionNumber = 0;
 function onEditText(text: string, origin: string) {
-  /*let localFileName = data.fileNamesByScriptId[info.assetId];
-  let localFile = data.files[localFileName];
-  localFile.text = text;
-  localVersionNumber++;
-  localFile.version = `l${localVersionNumber}`;*/
-
   // We ignore the initial setValue
   if (origin !== "setValue") {
-    /*data.typescriptWorker.postMessage({ type: "updateFile", fileName: localFileName, text: localFile.text, version: localFile.version });
-    scheduleErrorCheck();*/
+    // check for errors
   }
 }
 
@@ -90,7 +83,7 @@ function onSendOperation(operation: OperationData) {
 // Error pane
 
 ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
-ui.errorPane.style.display = "none";
+// ui.errorPane.style.display = "none";
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
 ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
@@ -110,17 +103,18 @@ ui.errorPaneStatus.addEventListener("click", (event: any) => {
   ui.editor.codeMirrorInstance.refresh();
 });
 
-export function refreshErrors(errors: Array<{file: string; position: {line: number; character: number;}; length: number; message: string}>) {
-  // Remove all previous erros
+// export function refreshErrors(errors: Array<{position: {line: number; character: number;}; message: string}>) {
+export function refreshErrors(errors?: Array<any>) {
+  // Remove all previous errors
   for (let textMarker of ui.editor.codeMirrorInstance.getDoc().getAllMarks()) {
     if ((<any>textMarker).className !== "line-error") continue;
     textMarker.clear();
   }
 
   ui.editor.codeMirrorInstance.clearGutter("line-error-gutter");
-
   ui.errorsTBody.innerHTML = "";
-
+  
+  if (errors == null) errors = new Array<any>();
   if (errors.length === 0) {
     ui.errorPaneInfo.textContent = "No errors";
     ui.errorPaneStatus.classList.remove("has-errors");
@@ -129,7 +123,6 @@ export function refreshErrors(errors: Array<{file: string; position: {line: numb
 
   ui.errorPaneStatus.classList.add("has-errors");
 
-  let selfErrorsCount = 0;
   let lastSelfErrorRow: HTMLTableRowElement = null;
 
   // Display new ones
@@ -147,26 +140,13 @@ export function refreshErrors(errors: Array<{file: string; position: {line: numb
     messageCell.textContent = error.message;
     errorRow.appendChild(messageCell);
 
-    let scriptCell = document.createElement("td");
-    errorRow.appendChild(scriptCell);
-    /*if (error.file !== "") {
-      (<any>errorRow.dataset).assetId = data.files[error.file].id;
-      scriptCell.textContent = error.file.substring(0, error.file.length - 3);
-    } else scriptCell.textContent = "Internal"
-
-    if (error.file !== data.fileNamesByScriptId[info.assetId]) {
-      ui.errorsTBody.appendChild(errorRow);
-      continue;
-    }*/
-
     ui.errorsTBody.insertBefore(errorRow, (lastSelfErrorRow != null) ? lastSelfErrorRow.nextElementSibling : ui.errorsTBody.firstChild);
     lastSelfErrorRow = errorRow;
-    selfErrorsCount++;
 
     let line = error.position.line;
     ui.editor.codeMirrorInstance.getDoc().markText(
       { line , ch: error.position.character },
-      { line, ch: error.position.character + error.length },
+      { line, ch: error.position.character + 1 },
       { className: "line-error" }
     );
 
@@ -174,14 +154,6 @@ export function refreshErrors(errors: Array<{file: string; position: {line: numb
     gutter.className = "line-error-gutter";
     gutter.innerHTML = "●";
     ui.editor.codeMirrorInstance.setGutterMarker(line, "line-error-gutter", gutter);
-  }
-
-  let otherErrorsCount = errors.length - selfErrorsCount;
-  if (selfErrorsCount > 0) {
-    if (otherErrorsCount == 0) ui.errorPaneInfo.textContent = `${selfErrorsCount} error${selfErrorsCount > 1 ? "s" : ""}`;
-    else ui.errorPaneInfo.textContent = `${selfErrorsCount} error${selfErrorsCount > 1 ? "s" : ""} in this script, ${otherErrorsCount} in other scripts`;
-  } else {
-    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s" : ""} in other scripts`;
   }
 }
 
@@ -192,20 +164,12 @@ function onErrorTBodyClick(event: MouseEvent) {
     if (target.tagName === "TR") break;
     target = target.parentElement;
   }
-
-  let assetId: string = (<any>target.dataset).assetId;
-  if (assetId == null) return;
   
   let line: string = (<any>target.dataset).line;
   let character: string = (<any>target.dataset).character;
 
-  if (assetId === info.assetId) {
-    ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
-    ui.editor.codeMirrorInstance.focus();
-  } else {
-    let origin: string = (<any>window.location).origin;
-    if (window.parent != null) window.parent.postMessage({ type: "openEntry", id: assetId, options: { line, ch: character } }, origin);
-  }
+  ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
+  ui.editor.codeMirrorInstance.focus();
 }
 
 // Save button
@@ -218,4 +182,3 @@ saveButton.addEventListener("click", (event: MouseEvent) => {
 function onSaveText() {
   socket.emit("edit:assets", info.assetId, "saveText", (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
 }
-

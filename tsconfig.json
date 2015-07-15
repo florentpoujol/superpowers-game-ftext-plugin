@@ -8,10 +8,11 @@
     "index.d.ts",
     "data/fTextAsset.ts", 
     "data/fTextSettingsResource.ts",
-    "editors/fText/index.ts",
+    "editors/fText/compilator.ts",
     "editors/fText/info.ts",
-    "editors/fText/network.ts",
     "editors/fText/ui.ts",
+    "editors/fText/network.ts",
+    "editors/fText/index.ts",
     "runtime/fText.ts",
     "settingsEditors/fTextSettingsEditor.ts",
     "textEditorWidget/index.ts"

@@ -39,7 +39,7 @@ require("codemirror/mode/stylus/stylus");
 // /added for fText plugin
 
 class fTextEditorWidget {
-  textEditorResource: fTextSettingsResource
+  textEditorResource: fTextSettingsResource;
   codeMirrorInstance: CodeMirror.EditorFromTextArea;
 
   editCallback: EditCallback;
