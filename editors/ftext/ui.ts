@@ -96,12 +96,25 @@ errorPaneResizeHandle.on("drag", () => { ui.editor.codeMirrorInstance.refresh();
 let errorPaneToggleButton = ui.errorPane.querySelector("button.toggle");
 ui.errorPaneStatus.addEventListener("click", (event: any) => {
   if (event.target.tagName === "BUTTON" && event.target.parentElement.className === "draft") return;
-
-  let collapsed = ui.errorPane.classList.toggle("collapsed");
-  errorPaneToggleButton.textContent = collapsed ? "+" : "–";
-  errorPaneResizeHandle.handleElt.classList.toggle("disabled", collapsed);
-  ui.editor.codeMirrorInstance.refresh();
+  toggleErrorPanel();
 });
+
+function toggleErrorPanel(display?: boolean) {
+  let collapsed = false;
+  if (display !== undefined)
+    collapsed = !display;
+  else
+    collapsed = !ui.errorPane.classList.contains("collapsed");
+
+  errorPaneToggleButton.textContent = collapsed ? "+" : "–";
+  // ui.errorPane.classList.toggle("collapsed", collapsed);
+  if (collapsed)
+    ui.errorPane.classList.add("collapsed");
+  else
+    ui.errorPane.classList.remove("collapsed");
+  errorPaneResizeHandle.handleElt.classList.toggle("disabled", !collapsed);
+  ui.editor.codeMirrorInstance.refresh();
+}
 
 // export function refreshErrors(errors: Array<{position: {line: number; character: number;}; message: string}>) {
 export function refreshErrors(errors?: Array<any>) {
@@ -118,7 +131,12 @@ export function refreshErrors(errors?: Array<any>) {
   if (errors.length === 0) {
     ui.errorPaneInfo.textContent = "No errors";
     ui.errorPaneStatus.classList.remove("has-errors");
+    toggleErrorPanel(false);
     return;
+  }
+  else {
+    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s" : ""}`;
+    toggleErrorPanel(true);
   }
 
   ui.errorPaneStatus.classList.add("has-errors");
@@ -127,17 +145,32 @@ export function refreshErrors(errors?: Array<any>) {
 
   // Display new ones
   for (let error of errors) {
-    let errorRow = document.createElement("tr");
+    console.log("error objecr", error);
+
+    if (error.position == null)
+      error.position = { line: -1, character: -1 };
+    if (error.position.line == null)
+      error.position.line = -1;
+    if (error.position.character == null)
+      error.position.character = -1;
     
+    if (error.length == null)
+      error.length = 1;
+
+    error.position.line--;
+    error.position.character--;
+
+    let errorRow = document.createElement("tr");
     (<any>errorRow.dataset).line = error.position.line;
     (<any>errorRow.dataset).character = error.position.character;
 
     let positionCell = document.createElement("td");
-    positionCell.textContent = (error.position.line + 1).toString();
+    if (error.position.line !== -1)
+      positionCell.textContent = (error.position.line + 1).toString();
     errorRow.appendChild(positionCell);
 
     let messageCell = document.createElement("td");
-    messageCell.textContent = error.message;
+    messageCell.innerHTML = error.message;
     errorRow.appendChild(messageCell);
 
     ui.errorsTBody.insertBefore(errorRow, (lastSelfErrorRow != null) ? lastSelfErrorRow.nextElementSibling : ui.errorsTBody.firstChild);
@@ -146,7 +179,7 @@ export function refreshErrors(errors?: Array<any>) {
     let line = error.position.line;
     ui.editor.codeMirrorInstance.getDoc().markText(
       { line , ch: error.position.character },
-      { line, ch: error.position.character + 1 },
+      { line, ch: error.position.character + error.length },
       { className: "line-error" }
     );
 

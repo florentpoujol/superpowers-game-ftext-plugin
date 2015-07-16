@@ -39,10 +39,11 @@ let onAssetCommands: any = {
 function parseInstructions() {
   let regex = /\[ftext\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?\]/ig
   let match: any;
-  let instructionsCount = (this.__inner.text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
+  let text = ui.editor.codeMirrorInstance.getDoc().getValue();
+  let instructionsCount = (text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
   let instructions: any = {};
   do {
-    match = regex.exec(this.__inner.text);
+    match = regex.exec(text);
     if (match != null && match[1] != null) {
       let name = match[1].trim().toLowerCase();
       let value = match[3];

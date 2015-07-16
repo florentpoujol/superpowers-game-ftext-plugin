@@ -13,7 +13,7 @@
     "browserify": "10.2.x",
     "codemirror": "5.3.x",
     "operational-transform": "0.2.x",
-    "cson-parser": "1.0.x",
+    "cson-parser": "1.1.x",
     "domify": "1.3.x",
     "jade": "1.9.x",
     "markdown": "0.5.x",

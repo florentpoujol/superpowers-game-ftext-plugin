@@ -50,5 +50,15 @@
     "id": "10",
     "name": "shader.shader",
     "type": "fText"
+  },
+  {
+    "id": "11",
+    "name": "json.json",
+    "type": "fText"
+  },
+  {
+    "id": "12",
+    "name": "cson2.cson",
+    "type": "fText"
   }
 ]

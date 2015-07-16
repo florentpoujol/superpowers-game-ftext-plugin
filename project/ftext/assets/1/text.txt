@@ -3,6 +3,6 @@
     //[fText: include: md.md]
 
 .error-pane
-  .status
+  @.status
     .info Loading...
      button.toggle
