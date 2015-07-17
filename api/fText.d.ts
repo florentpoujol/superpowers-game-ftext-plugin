@@ -13,7 +13,7 @@ declare class fText extends Sup.Asset {
   
   static parsers: {
     jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
-    CSON: cson,                   // https://github.com/bevry/cson
+    csonparser: csonparser,       // https://github.com/groupon/cson-parser
     domify: (text: string)=>any,  // https://github.com/component/domify
     markdown: markdown,           // https://github.com/evilstreak/markdown-js
     jade: jade,                   // https://github.com/jadejs/jade
@@ -32,7 +32,7 @@ interface jsonlint {
   parse(text: string): string;
 }
 
-interface cson {
+interface csonparser {
   parse(text: string): string;
 }
 

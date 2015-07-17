@@ -9,7 +9,6 @@
 
 declare module "jsonlint" {}
 declare module "cson-parser" {}
-declare module "cson" {}
 declare module "domify" {}
 declare module "jade" {}
 declare module "stylus" {}

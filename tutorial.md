@@ -80,7 +80,7 @@ Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `
 ## Other features
 
 - Code folding
-- Error reporting for `json`, `cson`, `jade`, `stylus`
+- On save error reporting for `json`, `cson`, `jade` and `stylus`.
 - `json` supports standard `//` comments
 - Basic autocompletion via the `Ctrl/Cmd + Space` command.
 

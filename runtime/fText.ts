@@ -1,6 +1,6 @@
 
 import * as jsonlint from "jsonlint";
-import * as CSON from "cson-parser";
+import * as csonparser from "cson-parser";
 import * as domify from "domify";
 import * as markdown from "markdown";
 import * as jade from "jade";
@@ -8,7 +8,7 @@ import * as stylus from "stylus";
 
 (<any>window).fTextParsers = {
   jsonlint: jsonlint,
-  CSON: CSON,
+  csonparser: csonparser,
   domify: domify,
   markdown: markdown.markdown,
   jade: jade,

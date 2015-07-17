@@ -1,7 +1,7 @@
 import ui, { refreshErrors } from "./ui";
 
 import * as jsonlint from "jsonlint";
-import * as cson from "cson-parser";
+import * as csonparser from "cson-parser";
 import * as jade from "jade";
 import * as stylus from "stylus";
 
@@ -17,7 +17,7 @@ export function compile(data: any) {
           (<any>jsonlint).parse(text);
           break;
         case "cson": 
-          (<any>cson).parse(text);
+          (<any>csonparser).parse(text);
           break;
         case "jade": 
           (<any>jade).compile(text);

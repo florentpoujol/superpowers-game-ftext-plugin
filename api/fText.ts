@@ -9,9 +9,7 @@ class fText extends Sup.Asset {
 
   constructor(inner: {[key:string]: any;}) {
     super(inner); // sets inner as the value of this.__inner
-
     this._parseInstructions();
-    
   }
 
   /**
@@ -85,7 +83,7 @@ class fText extends Sup.Asset {
           syntaxFn = fText.parsers.jsonlint.parse;
           break;
         case "cson":
-          syntaxFn = fText.parsers.cson.parse;
+          syntaxFn = fText.parsers.csonparser.parse;
           break;
         case "html":
           syntaxFn = fText.parsers.domify;
@@ -109,7 +107,7 @@ class fText extends Sup.Asset {
             text = syntaxFn(text);
         }
         catch (e) {
-          console.error("fText.parse(): error parsing asset", this.__inner.name);
+          console.error("fText.parse(): error parsing asset '"+this.__inner.name+"' :");
           throw e;
         }
       }
