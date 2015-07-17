@@ -8,10 +8,9 @@ import * as stylus from "stylus";
 export function compile(data: any) {
   let errors = new Array<any>();
   let syntax: string = data.assetInstructions["syntax"];
-  let compilableSyntaxes: any = ["json", "cson", "jade", "styl"];
-  let text = ui.editor.codeMirrorInstance.getDoc().getValue();
-
-  if (syntax != null && compilableSyntaxes.indexOf(syntax) !== -1) {
+  
+  if (syntax != null && ui.compilableSyntaxes.indexOf(syntax) !== -1) {
+    let text = ui.editor.codeMirrorInstance.getDoc().getValue();
     try {
       switch(syntax) {
         case "json": 
@@ -23,12 +22,16 @@ export function compile(data: any) {
         case "jade": 
           (<any>jade).compile(text);
           break;
+        case "stylus": 
+          (<any>stylus)(text).set("imports", []).render();
+          break;
       }
     }
     catch (e) {
-      console.log("Error compiling fText asset:", (<Object>e));
+      console.log("Error compiling fText asset:");
       console.error(e);
       let line = -1;
+      let lines: string[];
       let character = -1;
       let errorLength: number;
       let result: string[];
@@ -71,15 +74,27 @@ export function compile(data: any) {
         
         case "jade":
           msg = e.message;
-          // get line and char
+          // get line
           result = /Jade:([0-9]+)/.exec(msg);
-          if (result != null) {
+          if (result != null)
             line = parseInt(result[1]);
-            msg = msg.replace(result[0], "");
-          }
+          // keep the before-the-last line, with the actual error msg
+          lines = msg.split("\n");
+          if (lines.length >= 2)
+            msg = lines[lines.length-2]; 
           errors.push({
             message: msg,
-            position: { line}
+            position: { line }
+          });
+          break;
+
+        case "stylus":
+          msg = e.message
+          lines = msg.split("\n");
+          if (lines.length >= 2)
+            msg = lines[lines.length-2]; 
+          errors.push({
+            message: msg
           });
           break;
       }

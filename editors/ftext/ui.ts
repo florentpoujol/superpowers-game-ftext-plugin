@@ -6,6 +6,7 @@ let PerfectResize = require("perfect-resize");
 let ui: {
   editor?: fTextEditorWidget;
   
+  compilableSyntaxes: string[];
   errorPane?: HTMLDivElement;
   errorPaneStatus?: HTMLDivElement;
   errorPaneInfo?: HTMLDivElement;
@@ -14,7 +15,9 @@ let ui: {
   infoElement?: HTMLDivElement;
   infoPosition?: CodeMirror.Position;
   infoTimeout?: number;
-} = {};
+} = {
+  compilableSyntaxes: ["json", "cson", "jade", "stylus"]
+};
 export default ui;
 
 SupClient.setupHotkeys();
@@ -83,7 +86,6 @@ function onSendOperation(operation: OperationData) {
 // Error pane
 
 ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
-// ui.errorPane.style.display = "none";
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
 ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
@@ -112,7 +114,7 @@ function toggleErrorPanel(display?: boolean) {
     ui.errorPane.classList.add("collapsed");
   else
     ui.errorPane.classList.remove("collapsed");
-  errorPaneResizeHandle.handleElt.classList.toggle("disabled", !collapsed);
+  errorPaneResizeHandle.handleElt.classList.toggle("disabled", collapsed);
   ui.editor.codeMirrorInstance.refresh();
 }
 
@@ -145,7 +147,7 @@ export function refreshErrors(errors?: Array<any>) {
 
   // Display new ones
   for (let error of errors) {
-    console.log("error objecr", error);
+    // console.log("error objecr", error);
 
     if (error.position == null)
       error.position = { line: -1, character: -1 };
@@ -165,11 +167,12 @@ export function refreshErrors(errors?: Array<any>) {
     (<any>errorRow.dataset).character = error.position.character;
 
     let positionCell = document.createElement("td");
-    if (error.position.line !== -1)
+    if (error.position.line !== -2) 
       positionCell.textContent = (error.position.line + 1).toString();
     errorRow.appendChild(positionCell);
 
     let messageCell = document.createElement("td");
+    messageCell.classList.add("errorMessageCell")
     messageCell.innerHTML = error.message;
     errorRow.appendChild(messageCell);
 
@@ -177,16 +180,18 @@ export function refreshErrors(errors?: Array<any>) {
     lastSelfErrorRow = errorRow;
 
     let line = error.position.line;
-    ui.editor.codeMirrorInstance.getDoc().markText(
-      { line , ch: error.position.character },
-      { line, ch: error.position.character + error.length },
-      { className: "line-error" }
-    );
+    if (line !== -2) {
+      ui.editor.codeMirrorInstance.getDoc().markText(
+        { line , ch: error.position.character },
+        { line, ch: error.position.character + error.length },
+        { className: "line-error" }
+      );
 
-    let gutter = document.createElement("div");
-    gutter.className = "line-error-gutter";
-    gutter.innerHTML = "●";
-    ui.editor.codeMirrorInstance.setGutterMarker(line, "line-error-gutter", gutter);
+      let gutter = document.createElement("div");
+      gutter.className = "line-error-gutter";
+      gutter.innerHTML = "●";
+      ui.editor.codeMirrorInstance.setGutterMarker(line, "line-error-gutter", gutter);
+    }
   }
 }
 

@@ -111,6 +111,8 @@ let assetHandlers: any = {
         ui.editor.codeMirrorInstance.setOption("mode", syntax);
       }
 
+      if (ui.compilableSyntaxes.indexOf(syntax) === -1)
+        ui.errorPane.style.display = "none";
       compile(data);
     }
   },
