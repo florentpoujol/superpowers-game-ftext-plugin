@@ -60,5 +60,10 @@
     "id": "12",
     "name": "cson2.cson",
     "type": "fText"
+  },
+  {
+    "id": "13",
+    "name": "css.css",
+    "type": "fText"
   }
 ]

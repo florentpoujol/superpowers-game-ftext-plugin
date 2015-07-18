@@ -1,6 +1,6 @@
 import ui, { refreshErrors } from "./ui";
 
-import * as jsonlint from "jsonlint";
+// import * as jsonlint from "jsonlint"; // note: json is removed fromt the compilable syntaxes since it is linted by codemirror
 import * as csonparser from "cson-parser";
 import * as jade from "jade";
 import * as stylus from "stylus";
@@ -13,9 +13,9 @@ export function compile(data: any) {
     let text = ui.editor.codeMirrorInstance.getDoc().getValue();
     try {
       switch(syntax) {
-        case "json": 
+        /*case "json": 
           (<any>jsonlint).parse(text);
-          break;
+          break;*/
         case "cson": 
           (<any>csonparser).parse(text);
           break;
@@ -38,7 +38,7 @@ export function compile(data: any) {
       let msg: string;
 
       switch(syntax) {
-        case "json": 
+        /*case "json": 
           // first line of the message:
           // "Error: Parse error on line X:"
           result = /line ([0-9]+)/.exec(e.message);
@@ -48,7 +48,7 @@ export function compile(data: any) {
             message: e.message,
             position: { line }
           });
-          break;
+          break;*/
        
         case "cson": 
           msg = e.toString();

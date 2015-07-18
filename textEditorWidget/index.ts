@@ -21,6 +21,7 @@ require("codemirror/addon/fold/comment-fold");
 require("codemirror/addon/fold/indent-fold");
 require("codemirror/addon/fold/xml-fold");
 require("codemirror/addon/fold/markdown-fold");
+
 require("codemirror/addon/search/match-highlighter");
 require("codemirror/addon/edit/matchtags"); // depends on xml-fold
 require("codemirror/addon/edit/trailingspace");
@@ -28,6 +29,15 @@ require("codemirror/addon/edit/closetag"); // depends on xml-fold
 
 require("codemirror/addon/selection/active-line");
 require("codemirror/addon/hint/anyword-hint");
+
+require("codemirror/addon/lint/lint");
+(<any>window).CSSLint = require("codemirror/node_modules/csslint").CSSLint;
+require("codemirror/addon/lint/css-lint");
+(<any>window).JSHINT = require("codemirror/node_modules/jshint").JSHINT;
+require("codemirror/addon/lint/javascript-lint");
+(<any>window).jsonlint = require("codemirror/node_modules/jsonlint");
+require("codemirror/addon/lint/ftext-json-lint");
+
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");
 
@@ -96,7 +106,7 @@ class fTextEditorWidget {
     this.codeMirrorInstance = CodeMirror.fromTextArea(textArea, {
       // theme: "monokai",
       lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
-      gutters: ["line-error-gutter", "CodeMirror-linenumbers"],
+      gutters: ["CodeMirror-linenumbers"],
       indentWithTabs: false, indentUnit: 2, tabSize: 2, 
       extraKeys: extraKeys, keyMap: "sublime",
       viewportMargin: Infinity,

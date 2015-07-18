@@ -1,5 +1,5 @@
 import info from "./info";
-import ui, { setupEditor, refreshErrors } from "./ui";
+import ui, { setupEditor, refreshErrors, allowCompilation, allowLinting } from "./ui";
 import { compile } from "./compilator";
 
 import * as async from "async";
@@ -30,6 +30,88 @@ let onAssetCommands: any = {
     ui.errorPaneStatus.classList.remove("has-draft");
   }
 };
+
+// ----------------------------------------
+// Ressource
+// fText resource is sub at the end of onAssetReceived
+
+// updates the editor whe the resource is received or edited
+// called from the resources handlers
+function onfTextSettingsResourceUpdated() {
+  if (ui.editor != null) {
+    let pub = data.fTextSettingsResourcePub;
+    let settings = fTextSettingsResource.defaultValues;
+    let syntax: string = data.assetInstructions["syntax"];
+
+    for (let name in settings) {
+      let value = (pub[name] != null) ? pub[name] : settings[name];
+      // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
+      let doContinue = true;
+
+      switch(name) {
+        case "indentWithTabs":
+        case "tabSize":
+          break;
+
+        case "lintjson": 
+          if (syntax === "json")
+            allowLinting(value);
+          break;
+        case "lintjs": 
+          if (syntax === "js")
+            allowLinting(value);
+          break;
+        case "lintcss":
+          if (syntax === "css")
+            allowLinting(value);
+          break;
+
+        case "lintjade": 
+          if (syntax === "jade")
+            allowCompilation(value);
+          break;
+        case "lintstylus": 
+          if (syntax === "stylus")
+            allowCompilation(value);
+          break;
+        case "lintcson":
+          if (syntax === "cson")
+            allowCompilation(value);
+          break;
+
+        default:
+          doContinue = false;
+      }
+
+      if (doContinue) continue;
+
+      if (value != ui.editor.codeMirrorInstance.getOption(name)) {
+        if (name === "theme")
+            loadThemeStyle(value);
+
+        ui.editor.codeMirrorInstance.setOption(name, value);
+      }
+    }
+  }
+}
+
+function loadThemeStyle(theme: string) {
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `codemirror-themes/${theme}.css`;
+  document.head.appendChild(link);
+}
+
+let resourceHandlers: any = {
+  onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
+    data.fTextSettingsResourcePub = resource.pub;
+    onfTextSettingsResourceUpdated();
+  },
+
+  onResourceEdited: (resourceId: string, command: string, propertyName: string) => {
+    onfTextSettingsResourceUpdated();
+  }
+}
 
 // ----------------------------------------
 
@@ -96,9 +178,8 @@ let assetHandlers: any = {
       data.assetInstructions = parseInstructions();
 
       let syntax: string = data.assetInstructions["syntax"];
-
       if (syntax != null) {
-        let shortcuts: { [key: string]: string } = {
+        let modesBySyntaxes: { [key: string]: string } = {
           cson: "coffeescript",
           html: "htmlmixed",
           js: "javascript",
@@ -107,13 +188,14 @@ let assetHandlers: any = {
           shader: "x-shader/x-fragment",
           styl: "stylus",
         };
-        syntax = shortcuts[syntax] || syntax;
-        ui.editor.codeMirrorInstance.setOption("mode", syntax);
+        let mode = modesBySyntaxes[syntax] || syntax;
+        ui.editor.codeMirrorInstance.setOption("mode", mode);
       }
 
-      if (ui.compilableSyntaxes.indexOf(syntax) === -1)
-        ui.errorPane.style.display = "none";
-      compile(data);
+      allowCompilation(ui.compilableSyntaxes.indexOf(syntax) !== -1);
+      allowLinting(ui.lintableSyntaxes.indexOf(syntax) !== -1);
+
+      data.projectClient.subResource("fTextSettings", resourceHandlers);
     }
   },
 
@@ -163,55 +245,11 @@ let entriesHandlers: any = {
 }
 
 // ----------------------------------------
-// Ressource
-
-// updates the editor whe the resource is received or edited
-// called from the resources handlers
-function onfTextSettingsResourceUpdated() {
-  if (ui.editor != null) {
-    let pub = data.fTextSettingsResourcePub;
-    let settings = fTextSettingsResource.defaultValues;
-
-    for (let name in settings) {
-      if (name === "indentWithTabs" && name === "tabSize")
-        continue;
-
-      let value = (pub[name] != null) ? pub[name] : settings[name];
-      // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
-
-      if (value != ui.editor.codeMirrorInstance.getOption(name)) {
-        ui.editor.codeMirrorInstance.setOption(name, value);
-        if (name === "theme")
-          loadThemeStyle(value);
-      }
-    }
-  }
-}
-
-function loadThemeStyle(theme: string) {
-  let link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = `codemirror-themes/${theme}.css`;
-  document.head.appendChild(link);
-}
-
-let resourceHandlers: any = {
-  onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
-    data.fTextSettingsResourcePub = resource.pub;
-    onfTextSettingsResourceUpdated();
-  },
-
-  onResourceEdited: (resourceId: string, command: string, propertyName: string) => {
-    onfTextSettingsResourceUpdated();
-  }
-}
-
-// ----------------------------------------
 
 function onWelcomed(clientId: number) {
   data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
   data.projectClient.subEntries(entriesHandlers);
-  data.projectClient.subResource("fTextSettings", resourceHandlers);
+  // data.projectClient.subResource("fTextSettings", resourceHandlers); // done in onAssetReceived()
   setupEditor(clientId); // defined in ui.ts
 }
 
