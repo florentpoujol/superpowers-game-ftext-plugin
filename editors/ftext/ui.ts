@@ -1,13 +1,11 @@
 import info from "./info";
 import { socket, data } from "./network";
-import { compile } from "./compilator";
 
 let PerfectResize = require("perfect-resize");
 
 let ui: {
   editor?: fTextEditorWidget;
   
-  compilableSyntaxes: string[];
   lintableSyntaxes: string[];
 
   errorPane?: HTMLDivElement;
@@ -19,8 +17,7 @@ let ui: {
   infoPosition?: CodeMirror.Position;
   infoTimeout?: number;
 } = {
-  compilableSyntaxes: ["stylus"],
-  lintableSyntaxes: ["js", "css", "json", "cson", "jade"]
+  lintableSyntaxes: ["js", "css", "json", "cson", "jade", "stylus"]
 };
 export default ui;
 
@@ -87,29 +84,6 @@ function onSendOperation(operation: OperationData) {
 }
 
 // ----------------------------------------
-
-// used in network.ts/assetHandlers/onAssetReceived()
-export function allowCompilation(allow: boolean = true) {
-  if (allow === true) {
-    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-    let index = gutters.indexOf("line-error-gutter");
-    if (index === -1) {
-      gutters.unshift("line-error-gutter");
-      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
-    }
-    ui.errorPane.style.display = "block";
-    compile(data);
-  }
-  else {
-    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-    let index = gutters.indexOf("line-error-gutter");
-    if (index !== -1) {
-      gutters.splice(index, 1);
-      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
-    }
-    ui.errorPane.style.display = "none";
-  }
-}
 
 // used in network.ts/assetHandlers/onAssetReceived()
 export function allowLinting(allow: boolean = true) {

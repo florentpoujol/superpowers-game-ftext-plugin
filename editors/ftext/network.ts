@@ -1,6 +1,5 @@
 import info from "./info";
-import ui, { setupEditor, refreshErrors, allowCompilation, allowLinting } from "./ui";
-import { compile } from "./compilator";
+import ui, { setupEditor, refreshErrors, allowLinting } from "./ui";
 
 import * as async from "async";
 import * as OT from "operational-transform";
@@ -73,10 +72,9 @@ function onfTextSettingsResourceUpdated() {
           if (syntax === "jade")
             allowLinting(value);
           break;
-
         case "lintstylus": 
           if (syntax === "stylus")
-            allowCompilation(value);
+            allowLinting(value);
           break;
 
         default:
@@ -192,7 +190,6 @@ let assetHandlers: any = {
         ui.editor.codeMirrorInstance.setOption("mode", mode);
       }
 
-      allowCompilation(ui.compilableSyntaxes.indexOf(syntax) !== -1);
       allowLinting(ui.lintableSyntaxes.indexOf(syntax) !== -1);
 
       data.projectClient.subResource("fTextSettings", resourceHandlers);
@@ -202,7 +199,6 @@ let assetHandlers: any = {
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
     if (command === "saveText") {
       // saveText command sent from onSaveText() in ui.ts
-      compile(data);
     }
 
     if (id !== info.assetId) {

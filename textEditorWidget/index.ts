@@ -31,16 +31,18 @@ require("codemirror/addon/selection/active-line");
 require("codemirror/addon/hint/anyword-hint");
 
 require("codemirror/addon/lint/lint");
-(<any>window).CSSLint = require("codemirror/node_modules/csslint").CSSLint;
+(<any>window).CSSLint = require("csslint").CSSLint;
 require("codemirror/addon/lint/css-lint");
-(<any>window).JSHINT = require("codemirror/node_modules/jshint").JSHINT;
+(<any>window).JSHINT = require("jshint").JSHINT;
 require("codemirror/addon/lint/javascript-lint");
-(<any>window).jsonlint = require("codemirror/node_modules/jsonlint");
-require("codemirror/addon/lint/ftext-json-lint");
+(<any>window).jsonlint = require("jsonlint");
+require("../codemirror-linters/json-lint");
 (<any>window).csonparser = require("cson-parser");
-require("codemirror/addon/lint/coffeescript-lint-cson-parser"); // cofeelint would be browserified
+require("../codemirror-linters/cson-lint");
 (<any>window).jade = require("jade");
-require("codemirror/addon/lint/jade-lint"); // cofeelint would be browserified
+require("../codemirror-linters/jade-lint");
+(<any>window).stylus = require("stylus");
+require("../codemirror-linters/stylus-lint");
 
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");
@@ -117,6 +119,7 @@ class fTextEditorWidget {
       mode: options.mode,
       readOnly: true
     });
+    (<any>window).codeMirrorInstance = this.codeMirrorInstance;
 
     this.codeMirrorInstance.on("changes", <any>this.edit);
     this.codeMirrorInstance.on("beforeChange", this.beforeChange);
