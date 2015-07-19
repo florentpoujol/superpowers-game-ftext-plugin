@@ -1,6 +1,7 @@
 @import "nib"
 
 @require '../../node_modules/codemirror/addon/fold/foldgutter.css'
+@require '../../node_modules/codemirror/addon/lint/lint.css'
 // styles are loaded when the editor loads (see onAssetReceived() in index.ts)
 
 // for the trailing space addon
@@ -10,6 +11,9 @@
 .cm-matchhighlight
   background-color rgba(200,200,200,0.5)
   
+.CodeMirror-lint-markers {
+  width: 10px;
+}
 
 body
   display flex

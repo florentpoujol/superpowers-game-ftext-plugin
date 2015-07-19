@@ -19,8 +19,8 @@ let ui: {
   infoPosition?: CodeMirror.Position;
   infoTimeout?: number;
 } = {
-  compilableSyntaxes: ["cson", "jade", "stylus"],
-  lintableSyntaxes: ["js", "css", "json"]
+  compilableSyntaxes: ["jade", "stylus"],
+  lintableSyntaxes: ["js", "css", "json", "cson"]
 };
 export default ui;
 
@@ -65,8 +65,12 @@ export function setupEditor(clientId: number) {
     saveCallback: onSaveText
   });
   
-  ui.editor.codeMirrorInstance.setOption("foldGutter", true);
   ui.editor.codeMirrorInstance.setOption("matchTags", true);
+
+  let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
+  gutters.push("CodeMirror-foldgutter");
+  ui.editor.codeMirrorInstance.setOption("gutters", gutters);
+  ui.editor.codeMirrorInstance.setOption("foldGutter", true);
 }
 
 function onEditText(text: string, origin: string) {

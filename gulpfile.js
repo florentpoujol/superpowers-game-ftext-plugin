@@ -72,5 +72,12 @@ gulp.task("watch", function() {
   gulp.watch(["./**/*.ts", "!./api/*.ts"], ["typescript"]);
 });
 
+gulp.task("watchts", function() {
+  gulp.watch("./**/*.jade", ["jade"]);
+  gulp.watch("./**/*.styl", ["stylus"]);
+
+  gulp.watch(["./**/*.ts", "!./api/*.ts"], ["typescript"]);
+});
+
 // All
 gulp.task("default", tasks);
