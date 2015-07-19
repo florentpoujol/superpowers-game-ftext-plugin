@@ -19,8 +19,8 @@ let ui: {
   infoPosition?: CodeMirror.Position;
   infoTimeout?: number;
 } = {
-  compilableSyntaxes: ["jade", "stylus"],
-  lintableSyntaxes: ["js", "css", "json", "cson"]
+  compilableSyntaxes: ["stylus"],
+  lintableSyntaxes: ["js", "css", "json", "cson", "jade"]
 };
 export default ui;
 

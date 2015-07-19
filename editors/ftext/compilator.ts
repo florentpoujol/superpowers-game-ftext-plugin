@@ -1,6 +1,5 @@
 import ui, { refreshErrors } from "./ui";
 
-import * as jade from "jade";
 import * as stylus from "stylus";
 
 export function compile(data: any) {
@@ -11,9 +10,6 @@ export function compile(data: any) {
     let text = ui.editor.codeMirrorInstance.getDoc().getValue();
     try {
       switch(syntax) {
-        case "jade": 
-          (<any>jade).compile(text);
-          break;
         case "stylus": 
           (<any>stylus)(text).set("imports", []).render();
           break;
@@ -30,21 +26,6 @@ export function compile(data: any) {
       let msg: string;
 
       switch(syntax) {       
-        case "jade":
-          msg = e.message;
-          // get line
-          result = /Jade:([0-9]+)/.exec(msg);
-          if (result != null)
-            line = parseInt(result[1]);
-          // keep the before-the-last line, with the actual error msg
-          lines = msg.split("\n");
-          if (lines.length >= 2)
-            msg = lines[lines.length-2]; 
-          errors.push({
-            message: msg,
-            position: { line }
-          });
-          break;
 
         case "stylus":
           msg = e.message

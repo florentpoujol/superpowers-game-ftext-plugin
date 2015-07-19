@@ -39,6 +39,8 @@ require("codemirror/addon/lint/javascript-lint");
 require("codemirror/addon/lint/ftext-json-lint");
 (<any>window).csonparser = require("cson-parser");
 require("codemirror/addon/lint/coffeescript-lint-cson-parser"); // cofeelint would be browserified
+(<any>window).jade = require("jade");
+require("codemirror/addon/lint/jade-lint"); // cofeelint would be browserified
 
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");

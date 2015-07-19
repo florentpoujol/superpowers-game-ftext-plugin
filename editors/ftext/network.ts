@@ -69,11 +69,11 @@ function onfTextSettingsResourceUpdated() {
           if (syntax === "cson")
             allowLinting(value);
           break;
-
         case "lintjade": 
           if (syntax === "jade")
-            allowCompilation(value);
+            allowLinting(value);
           break;
+
         case "lintstylus": 
           if (syntax === "stylus")
             allowCompilation(value);
