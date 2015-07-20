@@ -88,7 +88,9 @@ function onSaveText() {
 
 ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
+ui.errorPaneStatus.addEventListener("click", onErrorPanelClick);
 // has-draft added/removed from the onAssetCommands function in network.ts
+
 ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
 function refreshErrors(errors?: Array<any>) { 
@@ -97,8 +99,29 @@ function refreshErrors(errors?: Array<any>) {
     ui.errorPaneStatus.classList.remove("has-errors");
   }
   else {
-    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s" : ""}`;
+    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s - Click to jump to the first error" : " - Click to jump to the error"}`;
     ui.errorPaneStatus.classList.add("has-errors");
+    (<any>ui.errorPaneStatus.dataset).line = errors[0].from.line;
+    (<any>ui.errorPaneStatus.dataset).character = errors[0].from.ch;
+  }
+}
+
+function onErrorPanelClick(event: MouseEvent) {
+  if (ui.errorPaneStatus.classList.contains("has-errors") === false)
+    return;
+
+  let target = <HTMLElement>event.target;
+  while (true) {
+    if (target.tagName === "BUTTON") return;
+    if (target === ui.errorPaneStatus) break;
+    target = target.parentElement;
+  }
+  
+  let line: string = (<any>target.dataset).line;
+  let character: string = (<any>target.dataset).character;
+  if (line != null) {
+    ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
+    ui.editor.codeMirrorInstance.focus();
   }
 }
 

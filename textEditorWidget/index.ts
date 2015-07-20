@@ -30,7 +30,7 @@ require("codemirror/addon/edit/closetag"); // depends on xml-fold
 require("codemirror/addon/selection/active-line");
 require("codemirror/addon/hint/anyword-hint");
 
-require("codemirror/addon/lint/lint");
+require("../codemirror-linters/lint");
 (<any>window).CSSLint = require("csslint").CSSLint;
 require("codemirror/addon/lint/css-lint");
 (<any>window).JSHINT = require("jshint").JSHINT;
