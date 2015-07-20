@@ -1,11 +1,6 @@
 import fTextSettingsResource from "../data/fTextSettingsResource";
 import * as fs from "fs";
-
 import * as domify from "domify";
-// definitions are index.d.ts
-// IMPORTANT: domify has been modified so that the module expose an object that contains the parse function
-// instead of exposing the function directly.
-// Typescript wouldn't let met import the module and use it as a function at the same time.
 
 export default class fTextSettingsEditor {
 
@@ -20,7 +15,6 @@ export default class fTextSettingsEditor {
     // build the form from the html file
     let html = fs.readFileSync("settingsEditors/fTextSettingsEditor.html", {encoding: "utf8"});
     container.appendChild((<any>domify)(html));
-    // container.appendChild(domify.parse(html));
 
     // register fields
     this.fields["theme"] = <HTMLSelectElement>document.querySelector("#theme");
@@ -75,6 +69,24 @@ export default class fTextSettingsEditor {
         this.fields[setting].addEventListener("click", (event: any) => {
           this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", event.target.id, event.target.checked, (err?: string) => { if (err != null) console.error(err); } );
         });
+      }
+      else if (setting === "lint") {
+        let lintCell = container.querySelector("#lintCell");
+        for (let syntax in defaultValue) {
+          let id: string = "lint"+syntax;
+          
+          let checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = id;
+          checkbox.checked = defaultValue[syntax];
+          lintCell.appendChild(checkbox);
+
+          let label = document.createElement("label");
+          label.htmlFor = id;
+          label.textContent = syntax;
+          lintCell.appendChild(label);
+          lintCell.appendChild(document.createElement("br"));
+        }
       }
     }
 

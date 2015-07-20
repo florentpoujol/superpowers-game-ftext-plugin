@@ -3,15 +3,10 @@ import { socket, data } from "./network";
 
 let ui: {
   editor?: fTextEditorWidget;
-  
-  lintableSyntaxes: string[];
-
   errorPane?: HTMLDivElement;
   errorPaneStatus?: HTMLDivElement;
   errorPaneInfo?: HTMLDivElement;
-} = {
-  lintableSyntaxes: ["js", "css", "json", "cson", "jade", "stylus"]
-};
+} = {};
 export default ui;
 
 SupClient.setupHotkeys();

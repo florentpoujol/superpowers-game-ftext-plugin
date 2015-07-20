@@ -38,29 +38,11 @@ function onfTextSettingsResourceUpdated() {
         case "tabSize":
           break;
 
-        case "lintjson": 
-          if (syntax === "json")
-            allowLinting(value);
-          break;
-        case "lintjs": 
-          if (syntax === "js")
-            allowLinting(value);
-          break;
-        case "lintcss":
-          if (syntax === "css")
-            allowLinting(value);
-          break;
-        case "lintcson":
-          if (syntax === "cson")
-            allowLinting(value);
-          break;
-        case "lintjade": 
-          if (syntax === "jade")
-            allowLinting(value);
-          break;
-        case "lintstylus": 
-          if (syntax === "stylus")
-            allowLinting(value);
+        case "lint":
+          for (let _syntax in value) {
+            if (syntax == _syntax)
+              allowLinting(value[_syntax]);
+          }
           break;
 
         default:
@@ -153,6 +135,7 @@ function parseInstructions() {
     let _languagesByExtensions: any = {
       md: "markdown",
       styl: "stylus",
+      js: "javascript",
     };
     let name = data.projectClient.entries.getPathFromId(data.asset.id);
     let match = name.match(/\.[a-zA-Z]+$/gi);
@@ -197,17 +180,17 @@ let assetHandlers: any = {
         let modesBySyntaxes: { [key: string]: string } = {
           cson: "coffeescript",
           html: "htmlmixed",
-          js: "javascript",
           json: "application/json",
           md: "markdown",
           shader: "x-shader/x-fragment",
-          styl: "stylus",
         };
         let mode = modesBySyntaxes[syntax] || syntax;
         ui.editor.codeMirrorInstance.setOption("mode", mode);
       }
 
-      allowLinting(ui.lintableSyntaxes.indexOf(syntax) !== -1);
+      // needed ?
+      if (fTextSettingsResource.defaultValues.lint[syntax] != null)
+        allowLinting(fTextSettingsResource.defaultValues.lint[syntax]);
 
       data.projectClient.subResource("fTextSettings", resourceHandlers);
     }

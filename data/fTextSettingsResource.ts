@@ -10,19 +10,40 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     autoCloseBrackets: { type: "boolean", mutable: true },
     matchTags: { type: "boolean", mutable: true },
     highlightSelectionMatches: { type: "boolean", mutable: true },
+    lint: { 
+      type: "hash",
+      keys: { minLength: 1 },
+      values: {
+        type: "hash",
+        json: { type: "boolean", mutable: true },
+        cson: { type: "boolean", mutable: true },
+        javascript: { type: "boolean", mutable: true },
+        jade: { type: "boolean", mutable: true },
+        stylus: { type: "boolean", mutable: true },
+        css: { type: "boolean", mutable: true },
+      }
+    }
   }
 
-  static defaultValues: { [key: string]: any } = { 
+  static defaultValues: any = { 
     theme: "default",
     customThemes: "",
     tabSize: 2,
-    indentWithTabs: false,
+    indentWithTabs: true,
     keyMap: "sublime",
     styleActiveLine: true,
     autoCloseBrackets: true,
-    showTrailingSpace: false,
+    showTrailingSpace: true,
     matchTags: true,
     highlightSelectionMatches: true,
+    lint: {
+      json: true,
+      cson: true,
+      javascript: true,
+      jade: true,
+      stylus: true,
+      css: true
+    }
   }
 
   constructor(pub: any, serverData?: any) {
