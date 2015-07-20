@@ -17,12 +17,6 @@ body
 .text-editor-container
   min-height 100px
 
-.popup-info
-  position absolute
-  z-index 10
-  background-color rgba(86, 232, 86, 1)
-  padding 0.2em
-
 .line-error
   background-color rgba(232, 86, 86, 0.5)
 
@@ -35,10 +29,10 @@ body
 .error-pane
   display flex
   flex-flow column
-  height 200px
+  // height 100px
 
   .status
-    cursor pointer
+    // cursor pointer
     background-color #444
     color #fff
     display flex
@@ -60,61 +54,6 @@ body
       flex 1
       padding 0.5em
 
-    button.toggle
-      width 30px
-      background transparent
-      border none
-      opacity 0.5
-      font-size 20px
-      font-weight bold
-      cursor pointer
-      color #fff
-
-      &:hover
-        opacity 1
-        background-color rgba(0,0,0,0.1)
-
-      &:active
-        background-color #fff
-        color #444
-
-      &:disabled
-        opacity 0.2
-        cursor default
-
-  .errors
-    flex 1
-    overflow-y scroll
-
-    table
-      width 100%
-      border-collapse collapse
-
-    tbody tr
-      cursor pointer
-
-      &:hover { background: #eee; }
-      &:active { background-color: #444; color: #ccc; }
-
-    th
-      font-weight normal
-      color #666
-
-    td, th
-      text-align left
-      border 1px solid #ccc
-      padding 0.4em
-
-    td:first-child, th:first-child
-      text-align right
-
-    td:nth-child(2), th:nth-child(2)
-      width 100%
-
-    td:last-child
-      white-space pre-line
-
   &.collapsed
     min-height 0
     height auto !important
-    .errors { display: none; }

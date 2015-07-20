@@ -9,7 +9,6 @@
     "data/fTextAsset.ts", 
     "data/fTextSettingsResource.ts",
     "textEditorWidget/index.ts",
-    "editors/fText/compilator.ts",
     "editors/fText/info.ts",
     "editors/fText/ui.ts",
     "editors/fText/network.ts",

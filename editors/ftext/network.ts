@@ -1,5 +1,5 @@
 import info from "./info";
-import ui, { setupEditor, refreshErrors, allowLinting } from "./ui";
+import ui, { setupEditor } from "./ui";
 
 import * as async from "async";
 import * as OT from "operational-transform";
@@ -9,32 +9,18 @@ import fTextSettingsResource from "../../data/fTextSettingsResource";
 
 export let data: { 
   projectClient?: SupClient.ProjectClient;
-  assetsById?: {[id: string]: fTextAsset};
   asset?: fTextAsset;
   assetInstructions?: { [key: string]: any },
   fTextSettingsResourcePub?: any, // set in onResourceReceived(), used in onfTextSettingsUpdated()
-} = { assetsById: {} };
+} = {};
 
 export let socket: SocketIOClient.Socket;
 
 // ----------------------------------------
-
-let onAssetCommands: any = {
-  editText: (operationData: OperationData) => {
-    ui.errorPaneStatus.classList.add("has-draft");
-    ui.editor.receiveEditText(operationData);
-  },
-
-  saveText: () => {
-    ui.errorPaneStatus.classList.remove("has-draft");
-  }
-};
-
-// ----------------------------------------
 // Ressource
-// fText resource is sub at the end of onAssetReceived
+// fText resource is sub at the end of onAssetReceived()
 
-// updates the editor whe the resource is received or edited
+// updates the editor when the resource is received or edited
 // called from the resources handlers
 function onfTextSettingsResourceUpdated() {
   if (ui.editor != null) {
@@ -100,6 +86,28 @@ function loadThemeStyle(theme: string) {
   document.head.appendChild(link);
 }
 
+// used in network.ts/assetHandlers/onAssetReceived()
+function allowLinting(allow: boolean = true) {
+  if (allow === true) {
+    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
+    let index = gutters.indexOf("CodeMirror-lint-markers");
+    if (index === -1) {
+      gutters.unshift("CodeMirror-lint-markers");
+      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
+    }
+    ui.editor.codeMirrorInstance.setOption("lint", true);
+  }
+  else {
+    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
+    let index = gutters.indexOf("CodeMirror-lint-markers");
+    if (index !== -1) {
+      gutters.splice(index, 1);
+      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
+    }
+    ui.editor.codeMirrorInstance.setOption("lint", false);
+  }
+}
+
 let resourceHandlers: any = {
   onResourceReceived: (resourceId: string, resource: fTextSettingsResource) => {
     data.fTextSettingsResourcePub = resource.pub;
@@ -159,10 +167,19 @@ function parseInstructions() {
   return instructions;
 }
 
+let onAssetCommands: any = {
+  editText: (operationData: OperationData) => {
+    ui.errorPaneStatus.classList.add("has-draft");
+    ui.editor.receiveEditText(operationData);
+  },
+
+  saveText: () => {
+    ui.errorPaneStatus.classList.remove("has-draft");
+  }
+};
+
 let assetHandlers: any = {
   onAssetReceived: (err: string, asset: fTextAsset) => {
-    data.assetsById[asset.id] = asset;
-
     if (asset.id === info.assetId) {
       data.asset = asset;
 
@@ -200,11 +217,7 @@ let assetHandlers: any = {
     if (command === "saveText") {
       // saveText command sent from onSaveText() in ui.ts
     }
-
-    if (id !== info.assetId) {
-      return
-    }
-
+    if (id !== info.assetId) return;
     if (onAssetCommands[command] != null) onAssetCommands[command].apply(data.asset, args);
   },
 

@@ -1,8 +1,6 @@
 import info from "./info";
 import { socket, data } from "./network";
 
-let PerfectResize = require("perfect-resize");
-
 let ui: {
   editor?: fTextEditorWidget;
   
@@ -11,11 +9,6 @@ let ui: {
   errorPane?: HTMLDivElement;
   errorPaneStatus?: HTMLDivElement;
   errorPaneInfo?: HTMLDivElement;
-  errorsTBody?: HTMLTableSectionElement;
-
-  infoElement?: HTMLDivElement;
-  infoPosition?: CodeMirror.Position;
-  infoTimeout?: number;
 } = {
   lintableSyntaxes: ["js", "css", "json", "cson", "jade", "stylus"]
 };
@@ -29,7 +22,7 @@ window.addEventListener("message", (event) => {
     ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(event.data.line), ch: parseInt(event.data.ch) });
 });
 
-// Context menu
+// Add a context menu on Right-Click when using NodeWebkit
 let nwDispatcher = (<any>window).nwDispatcher;
 if (nwDispatcher != null) {
   let gui = nwDispatcher.requireNwGui();
@@ -68,6 +61,9 @@ export function setupEditor(clientId: number) {
   gutters.push("CodeMirror-foldgutter");
   ui.editor.codeMirrorInstance.setOption("gutters", gutters);
   ui.editor.codeMirrorInstance.setOption("foldGutter", true);
+
+  // resfreshErrors() is called from codemirror-linters/lint.js to pass the number of errors
+  (<any>ui.editor.codeMirrorInstance).refreshErrors = refreshErrors;
 }
 
 function onEditText(text: string, origin: string) {
@@ -83,157 +79,27 @@ function onSendOperation(operation: OperationData) {
   });
 }
 
-// ----------------------------------------
-
-// used in network.ts/assetHandlers/onAssetReceived()
-export function allowLinting(allow: boolean = true) {
-  if (allow === true) {
-    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-    let index = gutters.indexOf("CodeMirror-lint-markers");
-    if (index === -1) {
-      gutters.unshift("CodeMirror-lint-markers");
-      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
-    }
-    ui.editor.codeMirrorInstance.setOption("lint", true);
-  }
-  else {
-    let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-    let index = gutters.indexOf("CodeMirror-lint-markers");
-    if (index !== -1) {
-      gutters.splice(index, 1);
-      ui.editor.codeMirrorInstance.setOption("gutters", gutters);
-    }
-    ui.editor.codeMirrorInstance.setOption("lint", false);
-  }
+function onSaveText() {
+  socket.emit("edit:assets", info.assetId, "saveText", (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
 }
 
 // ----------------------------------------
 // Error pane
 
 ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
-ui.errorPane.style.display = "none";
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
+// has-draft added/removed from the onAssetCommands function in network.ts
 ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
 
-ui.errorsTBody = <HTMLTableSectionElement>ui.errorPane.querySelector(".errors tbody");
-ui.errorsTBody.addEventListener("click", onErrorTBodyClick);
-
-let errorPaneResizeHandle = new PerfectResize(ui.errorPane, "bottom");
-errorPaneResizeHandle.on("drag", () => { ui.editor.codeMirrorInstance.refresh(); });
-
-let errorPaneToggleButton = ui.errorPane.querySelector("button.toggle");
-ui.errorPaneStatus.addEventListener("click", (event: any) => {
-  if (event.target.tagName === "BUTTON" && event.target.parentElement.className === "draft") return;
-  toggleErrorPanel();
-});
-
-function toggleErrorPanel(display?: boolean) {
-  let collapsed = false;
-  if (display !== undefined)
-    collapsed = !display;
-  else
-    collapsed = !ui.errorPane.classList.contains("collapsed");
-
-  errorPaneToggleButton.textContent = collapsed ? "+" : "–";
-  // ui.errorPane.classList.toggle("collapsed", collapsed);
-  if (collapsed)
-    ui.errorPane.classList.add("collapsed");
-  else
-    ui.errorPane.classList.remove("collapsed");
-  errorPaneResizeHandle.handleElt.classList.toggle("disabled", collapsed);
-  ui.editor.codeMirrorInstance.refresh();
-}
-
-// export function refreshErrors(errors: Array<{position: {line: number; character: number;}; message: string}>) {
-export function refreshErrors(errors?: Array<any>) {
-  // Remove all previous errors
-  for (let textMarker of ui.editor.codeMirrorInstance.getDoc().getAllMarks()) {
-    if ((<any>textMarker).className !== "line-error") continue;
-    textMarker.clear();
-  }
-
-  ui.editor.codeMirrorInstance.clearGutter("line-error-gutter");
-  ui.errorsTBody.innerHTML = "";
-  
-  if (errors == null) errors = new Array<any>();
-  if (errors.length === 0) {
-    ui.errorPaneInfo.textContent = "No errors";
+function refreshErrors(errors?: Array<any>) { 
+  if (errors == null || errors.length === 0) {
+    ui.errorPaneInfo.textContent = "No error";
     ui.errorPaneStatus.classList.remove("has-errors");
-    toggleErrorPanel(false);
-    return;
   }
   else {
     ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s" : ""}`;
-    toggleErrorPanel(true);
+    ui.errorPaneStatus.classList.add("has-errors");
   }
-
-  ui.errorPaneStatus.classList.add("has-errors");
-
-  let lastSelfErrorRow: HTMLTableRowElement = null;
-
-  // Display new ones
-  for (let error of errors) {
-    // console.log("error objecr", error);
-
-    if (error.position == null)
-      error.position = { line: -1, character: -1 };
-    if (error.position.line == null)
-      error.position.line = -1;
-    if (error.position.character == null)
-      error.position.character = -1;
-    
-    if (error.length == null)
-      error.length = 1;
-
-    error.position.line--;
-    error.position.character--;
-
-    let errorRow = document.createElement("tr");
-    (<any>errorRow.dataset).line = error.position.line;
-    (<any>errorRow.dataset).character = error.position.character;
-
-    let positionCell = document.createElement("td");
-    if (error.position.line !== -2) 
-      positionCell.textContent = (error.position.line + 1).toString();
-    errorRow.appendChild(positionCell);
-
-    let messageCell = document.createElement("td");
-    messageCell.classList.add("errorMessageCell")
-    messageCell.innerHTML = error.message;
-    errorRow.appendChild(messageCell);
-
-    ui.errorsTBody.insertBefore(errorRow, (lastSelfErrorRow != null) ? lastSelfErrorRow.nextElementSibling : ui.errorsTBody.firstChild);
-    lastSelfErrorRow = errorRow;
-
-    let line = error.position.line;
-    if (line !== -2) {
-      ui.editor.codeMirrorInstance.getDoc().markText(
-        { line , ch: error.position.character },
-        { line, ch: error.position.character + error.length },
-        { className: "line-error" }
-      );
-
-      let gutter = document.createElement("div");
-      gutter.className = "line-error-gutter";
-      gutter.innerHTML = "●";
-      ui.editor.codeMirrorInstance.setGutterMarker(line, "line-error-gutter", gutter);
-    }
-  }
-}
-
-function onErrorTBodyClick(event: MouseEvent) {
-  let target = <HTMLElement>event.target;
-  while (true) {
-    if (target.tagName === "TBODY") return;
-    if (target.tagName === "TR") break;
-    target = target.parentElement;
-  }
-  
-  let line: string = (<any>target.dataset).line;
-  let character: string = (<any>target.dataset).character;
-
-  ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(line), ch: parseInt(character) });
-  ui.editor.codeMirrorInstance.focus();
 }
 
 // Save button
@@ -242,7 +108,3 @@ saveButton.addEventListener("click", (event: MouseEvent) => {
   event.preventDefault();
   onSaveText();
 });
-
-function onSaveText() {
-  socket.emit("edit:assets", info.assetId, "saveText", (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
-}
