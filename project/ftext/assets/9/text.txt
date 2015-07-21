@@ -46,7 +46,7 @@
       <td>
         <input id="styleActiveLine" type="checkbox"/>
       </td>
-    </tr>
+		</tr>
     <tr>
       <th>Highlight trailing spaces</th>
       <td>

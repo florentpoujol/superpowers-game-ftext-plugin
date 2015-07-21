@@ -10,22 +10,15 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     autoCloseBrackets: { type: "boolean", mutable: true },
     matchTags: { type: "boolean", mutable: true },
     highlightSelectionMatches: { type: "boolean", mutable: true },
-    lint: { 
-      type: "hash",
-      keys: { minLength: 1 },
-      values: {
-        type: "hash",
-        json: { type: "boolean", mutable: true },
-        cson: { type: "boolean", mutable: true },
-        javascript: { type: "boolean", mutable: true },
-        jade: { type: "boolean", mutable: true },
-        stylus: { type: "boolean", mutable: true },
-        css: { type: "boolean", mutable: true },
-      }
-    }
+    lint_json: { type: "boolean", mutable: true },
+    lint_cson: { type: "boolean", mutable: true },
+    lint_javascript: { type: "boolean", mutable: true },
+    lint_jade: { type: "boolean", mutable: true },
+    lint_stylus: { type: "boolean", mutable: true },
+    lint_css: { type: "boolean", mutable: true },
   }
 
-  static defaultValues: any = { 
+  static defaultValues: any = {
     theme: "default",
     customThemes: "",
     tabSize: 2,
@@ -36,14 +29,12 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     showTrailingSpace: true,
     matchTags: true,
     highlightSelectionMatches: true,
-    lint: {
-      json: true,
-      cson: true,
-      javascript: true,
-      jade: true,
-      stylus: true,
-      css: true
-    }
+    lint_json: true,
+    lint_cson: true,
+    lint_javascript: true,
+    lint_jade: true,
+    lint_stylus: true,
+    lint_css: true
   }
 
   constructor(pub: any, serverData?: any) {

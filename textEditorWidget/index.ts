@@ -119,7 +119,6 @@ class fTextEditorWidget {
       mode: options.mode,
       readOnly: true
     });
-    (<any>window).codeMirrorInstance = this.codeMirrorInstance;
 
     this.codeMirrorInstance.on("changes", <any>this.edit);
     this.codeMirrorInstance.on("beforeChange", this.beforeChange);

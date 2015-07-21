@@ -3,7 +3,7 @@
 # Comments!!!
 
 # An Array with no commas!
-greatDocumentaries: [
+greatDocumentaries: 
   'earthlings.com'
   'forksoverknives.com'
   'cowspiracy.com'

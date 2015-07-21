@@ -70,24 +70,6 @@ export default class fTextSettingsEditor {
           this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", event.target.id, event.target.checked, (err?: string) => { if (err != null) console.error(err); } );
         });
       }
-      else if (setting === "lint") {
-        let lintCell = container.querySelector("#lintCell");
-        for (let syntax in defaultValue) {
-          let id: string = "lint"+syntax;
-          
-          let checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.id = id;
-          checkbox.checked = defaultValue[syntax];
-          lintCell.appendChild(checkbox);
-
-          let label = document.createElement("label");
-          label.htmlFor = id;
-          label.textContent = syntax;
-          lintCell.appendChild(label);
-          lintCell.appendChild(document.createElement("br"));
-        }
-      }
     }
 
     this.projectClient.subResource("fTextSettings", this);

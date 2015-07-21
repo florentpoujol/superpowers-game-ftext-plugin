@@ -8,5 +8,11 @@
   "autoCloseBrackets": true,
   "matchTags": true,
   "highlightSelectionMatches": true,
-  "customThemes": ""
+  "customThemes": "",
+  "lint_json": true,
+  "lint_cson": true,
+  "lint_javascript": true,
+  "lint_jade": true,
+  "lint_stylus": true,
+  "lint_css": true
 }

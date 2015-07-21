@@ -25,37 +25,27 @@ export let socket: SocketIOClient.Socket;
 function onfTextSettingsResourceUpdated() {
   if (ui.editor != null) {
     let pub = data.fTextSettingsResourcePub;
-    let settings = fTextSettingsResource.defaultValues;
+    let defaultValues = fTextSettingsResource.defaultValues;
     let syntax: string = data.assetInstructions["syntax"];
 
-    for (let name in settings) {
-      let value = (pub[name] != null) ? pub[name] : settings[name];
-      // can't do 'pub[name] || settings[name]' because if pub[name] == false, the defautl value is always chosen.
-      let doContinue = true;
+    for (let optionName in defaultValues) {
+      let value = (pub[optionName] != null) ? pub[optionName] : defaultValues[optionName];
+      // can't do 'pub[optionName] || defaultValues[optionName]' because if pub[optionName] == false, the defautl value is always chosen.
+     
+      if (optionName === "indentWithTabs" || optionName === "tabSize")
+        continue;
 
-      switch(name) {
-        case "indentWithTabs":
-        case "tabSize":
-          break;
-
-        case "lint":
-          for (let _syntax in value) {
-            if (syntax == _syntax)
-              allowLinting(value[_syntax]);
-          }
-          break;
-
-        default:
-          doContinue = false;
+      if (optionName.indexOf("lint_") === 0) {
+        if (optionName === "lint_"+syntax)
+          allowLinting(value);
+        continue;
       }
 
-      if (doContinue) continue;
-
-      if (value != ui.editor.codeMirrorInstance.getOption(name)) {
-        if (name === "theme")
+      if (value != ui.editor.codeMirrorInstance.getOption(optionName)) {
+        if (optionName === "theme")
             loadThemeStyle(value);
 
-        ui.editor.codeMirrorInstance.setOption(name, value);
+        ui.editor.codeMirrorInstance.setOption(optionName, value);
       }
     }
   }
@@ -188,9 +178,10 @@ let assetHandlers: any = {
         ui.editor.codeMirrorInstance.setOption("mode", mode);
       }
 
-      // needed ?
-      if (fTextSettingsResource.defaultValues.lint[syntax] != null)
-        allowLinting(fTextSettingsResource.defaultValues.lint[syntax]);
+      // for some reason, its necessary to allow linting from here at least once
+      // other wise allowLinting() from the onfTextSettingsUpdated() would mess with the side bar
+      if (fTextSettingsResource.defaultValues["lint_"+syntax] != null)
+        allowLinting(true);
 
       data.projectClient.subResource("fTextSettings", resourceHandlers);
     }
