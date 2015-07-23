@@ -2,11 +2,18 @@ import info from "./info";
 import { socket, data } from "./network";
 
 let ui: {
+  isAssetLinted: boolean; // set in network.ts/allowLinting()
   editor?: fTextEditorWidget;
   errorPane?: HTMLDivElement;
   errorPaneStatus?: HTMLDivElement;
   errorPaneInfo?: HTMLDivElement;
-} = {};
+  saveButton?: HTMLButtonElement;
+  refreshErrors?: Function;
+  hasDraft?: Function;
+  setupEditor?: Function;
+} = {
+  isAssetLinted: true
+};
 export default ui;
 
 SupClient.setupHotkeys();
@@ -35,7 +42,7 @@ if (nwDispatcher != null) {
 }
 
 // called from network.ts/onWelcomed()
-export function setupEditor(clientId: number) {
+ui.setupEditor = function(clientId: number) {
   let textArea = <HTMLTextAreaElement>document.querySelector(".text-editor");
   ui.editor = new fTextEditorWidget(data.projectClient, clientId, textArea, {
     mode: "",
@@ -45,33 +52,22 @@ export function setupEditor(clientId: number) {
       "Cmd-J": "toMatchingTag",
       "Ctrl-J": "toMatchingTag"
     },
-    editCallback: onEditText,
+    editCallback: (text: string, origin: string) => {},
     sendOperationCallback: onSendOperation,
     saveCallback: onSaveText
   });
   
   ui.editor.codeMirrorInstance.setOption("matchTags", true);
 
-  let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-  gutters.push("CodeMirror-foldgutter");
-  ui.editor.codeMirrorInstance.setOption("gutters", gutters);
+  ui.editor.codeMirrorInstance.getOption("gutters").push("CodeMirror-foldgutter");
   ui.editor.codeMirrorInstance.setOption("foldGutter", true);
 
   // resfreshErrors() is called from codemirror-linters/lint.js to pass the number of errors
-  (<any>ui.editor.codeMirrorInstance).refreshErrors = refreshErrors;
-}
-
-function onEditText(text: string, origin: string) {
-  // We ignore the initial setValue
-  if (origin !== "setValue") {
-    // check for errors
-  }
+  (<any>ui.editor.codeMirrorInstance).refreshErrors = ui.refreshErrors;
 }
 
 function onSendOperation(operation: OperationData) {
-  socket.emit("edit:assets", info.assetId, "editText", operation, data.asset.document.getRevisionId(), (err: string) => {
-    if (err != null) { alert(err); SupClient.onDisconnected(); }
-  });
+  socket.emit("edit:assets", info.assetId, "editText", operation, data.asset.document.getRevisionId(), (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
 }
 
 function onSaveText() {
@@ -85,16 +81,17 @@ ui.errorPane = <HTMLDivElement>document.querySelector(".error-pane");
 ui.errorPaneStatus = <HTMLDivElement>ui.errorPane.querySelector(".status");
 ui.errorPaneStatus.addEventListener("click", onErrorPanelClick);
 // has-draft added/removed from the onAssetCommands function in network.ts
+ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".errorInfo");
 
-ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".info");
-
-function refreshErrors(errors?: Array<any>) { 
+ui.refreshErrors = function(errors?: Array<any>) { 
+  let text = "";
   if (errors == null || errors.length === 0) {
-    ui.errorPaneInfo.textContent = "No error";
+    ui.isAssetLinted === true ? text = "- No error": text = "";
+    ui.errorPaneInfo.textContent = text;
     ui.errorPaneStatus.classList.remove("has-errors");
   }
   else {
-    ui.errorPaneInfo.textContent = `${errors.length} error${errors.length > 1 ? "s - Click to jump to the first error" : " - Click to jump to the error"}`;
+    ui.errorPaneInfo.textContent = `- ${errors.length} error${errors.length > 1 ? "s - Click to jump to the first error" : " - Click to jump to the error"}`;
     ui.errorPaneStatus.classList.add("has-errors");
     (<any>ui.errorPaneStatus.dataset).line = errors[0].from.line;
     (<any>ui.errorPaneStatus.dataset).character = errors[0].from.ch;
@@ -120,9 +117,23 @@ function onErrorPanelClick(event: MouseEvent) {
   }
 }
 
+// called from network.ts/assetCommands/editText() and savetext()
+ui.hasDraft = function(hasDraft: boolean = true) {
+  if (hasDraft === true) {
+    ui.errorPaneStatus.classList.add("has-draft");
+    ui.saveButton.textContent = "Save ";
+    ui.saveButton.disabled = false;
+  }
+  else {
+    ui.errorPaneStatus.classList.remove("has-draft");
+    ui.saveButton.textContent = "Saved";
+    ui.saveButton.disabled = true;
+  }
+}
+
 // Save button
-let saveButton = ui.errorPane.querySelector(".draft button");
-saveButton.addEventListener("click", (event: MouseEvent) => {
+ui.saveButton = <HTMLButtonElement>ui.errorPane.querySelector(".draft button");
+ui.saveButton.addEventListener("click", (event: MouseEvent) => {
   event.preventDefault();
   onSaveText();
 });

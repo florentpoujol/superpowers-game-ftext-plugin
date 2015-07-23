@@ -7,7 +7,7 @@
     <tr>
       <th>Theme</th>
       <td>
-        <select id="theme"></select>
+        <select id="theme"></select> 
       </td>
       <td>
       </td>

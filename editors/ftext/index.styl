@@ -29,28 +29,26 @@ body
 .error-pane
   display flex
   flex-flow column
-  // height 100px
 
   .status
     background-color #444
     color #fff
     display flex
     align-items center
+    height 30px
 
     &.has-draft
       background-color #37d
-      .draft { display: block; }
 
     &.has-errors
       cursor pointer
       background-color #a44
 
     .draft
-      display none
       padding-left 0.25em
       color rgba(255,255,255,0.5)
 
-    .info
+    .errorInfo
       flex 1
       padding 0.5em
 

@@ -8,7 +8,7 @@ var truc = "test";
 
 function test() {
    var a = function() {
-      var z = "" //
+      var z = ""; // 
       
    };
 }
@@ -17,7 +17,7 @@ function test() {
 /*
  * Demonstration of code folding
  */
-window.onload = function( {
+window.onload = function() {
   var te = document.getElementById("code");
   var sc = document.getElementById("script");
   te.value = (sc.textContent || sc.innerText || sc.innerHTML).replace(/^\s*/, "");
