@@ -39,20 +39,17 @@ You can configure the editor through the Settings tool :
     <td>Automatically add the closing character when writing the following characters <code>{ ( [ " '</code></td>
   </tr>
   <tr>
-    <td>Highlight active line</td>
-    <td>Makes the current line stand out.</td>
+    <td>Highlight</td>
+    <td>
+      - active line: Makes the current line stand out.<br>
+      - trailing spaces: in red.<br>
+      - matching tags: in languages that have pairs of tags -like HTML- having the mouse cursor over one will highlight the other one. <br>Pressing <code>Ctrl/Cmd+J</code> will jump to the matching tag.<br>
+      - matching words: when a word is selected, this highlight all other occurrences in the document.
+    </td>
   </tr>
   <tr>
-    <td>Highlight trailing spaces</td>
-    <td>Highlight trailing spaces in red.</td>
-  </tr>
-  <tr>
-    <td>Highlight matching tags</td>
-    <td>In languages that have pairs of tags -like HTML- having the mouse cursor over one will highlight the other one.<br>Pressing <code>Ctrl/Cmd+J</code> will jump to the matching tag.</td>
-  </tr>
-  <tr>
-    <td>Highlight matching words</td>
-    <td>When a word is selected, this highlight all other occurrences in the document.</td>
+    <td>Lint syntaxes</td>
+    <td>Enable/disable linting of the said syntaxes.</td>
   </tr>
 </table>
 
@@ -67,18 +64,19 @@ In the editor settings, add the theme's name in the custom theme input field the
 
 ## Syntax
 
-The syntax of the asset defines the data-type of its content and thus change how the syntactic coloration behave and how the asset's content is parsed, if at all.
+The syntax of the asset defines the data-type of its content and thus change how the syntactic coloration behave and how the asset's content is parsed and linted, if at all.
 
 To set a syntax, just add an extension at the end of the asset's name just like for any standard file.  
 Ie: `"styles/main.styl"`.
 
 Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `styl`, `shader` and `js`.
 
+Linted extensions are : `json`, `cson`, `jade`, `css`, `styl` and `js`.
+
 
 ## Other features
 
 - Code folding
-- On save error reporting for `json`, `cson`, `jade` and `stylus`.
 - `json` supports standard `//` comments
 - Basic autocompletion via the `Ctrl/Cmd + Space` command.
 
@@ -136,7 +134,7 @@ The `fText.parsers` static property has this definition :
 
     static parsers: {
       jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
-      CSON: cson,                   // https://github.com/bevry/cson
+      csonparser: csonparser,       // https://github.com/groupon/cson-parser
       domify: (text: string)=>any,  // https://github.com/component/domify
       markdown: markdown,           // https://github.com/evilstreak/markdown-js
       jade: jade,                   // https://github.com/jadejs/jade
@@ -147,14 +145,15 @@ The `fText.parsers` static property has this definition :
       parse(text: string): string;
     }
 
-    interface cson {
+    interface csonparser {
       parse(text: string): string;
-    }
-
-    interface jade {
-      compile(text: string): ()=>void;
     }
 
     interface markdown {
       toHTML(md: string): string;
     }
+    
+    interface jade {
+      compile(text: string): ()=>void;
+    }
+

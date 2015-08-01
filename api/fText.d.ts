@@ -36,10 +36,10 @@ interface csonparser {
   parse(text: string): string;
 }
 
-interface jade {
-  compile(text: string): ()=>void;
-}
-
 interface markdown {
   toHTML(md: string): string;
+}
+
+interface jade {
+  compile(text: string): ()=>void;
 }
