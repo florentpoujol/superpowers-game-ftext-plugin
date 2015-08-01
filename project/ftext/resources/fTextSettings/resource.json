@@ -1,5 +1,5 @@
 {
-  "theme": "mbo",
+  "theme": "3024-night",
   "keyMap": "sublime",
   "showTrailingSpace": true,
   "tabSize": 2,
@@ -8,7 +8,7 @@
   "autoCloseBrackets": true,
   "matchTags": true,
   "highlightSelectionMatches": true,
-  "customThemes": "",
+  "customTheme": "",
   "lint_json": true,
   "lint_cson": true,
   "lint_javascript": true,

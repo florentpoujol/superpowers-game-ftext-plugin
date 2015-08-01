@@ -29,23 +29,26 @@ function onfTextSettingsResourceUpdated() {
     let syntax: string = data.assetInstructions["syntax"];
 
     for (let optionName in defaultValues) {
-      let value = (pub[optionName] != null) ? pub[optionName] : defaultValues[optionName];
-      // can't do 'pub[optionName] || defaultValues[optionName]' because if pub[optionName] == false, the defautl value is always chosen.
+      let optionValue = (pub[optionName] != null) ? pub[optionName] : defaultValues[optionName];
+      // can't do 'pub[optionName] || defaultValues[optionName]' because if pub[optionName] == false, the defautl optionValue is always chosen.
      
-      if (optionName === "indentWithTabs" || optionName === "tabSize")
+      if (optionName === "indentWithTabs" || optionName === "tabSize" || optionName === "customTheme")
         continue;
 
       if (optionName.indexOf("lint_") === 0) {
         if (optionName === "lint_"+syntax)
-          allowLinting(value);
+          allowLinting(optionValue);
         continue;
       }
 
-      if (value != ui.editor.codeMirrorInstance.getOption(optionName)) {
-        if (optionName === "theme")
-            loadThemeStyle(value);
+      if (optionValue != ui.editor.codeMirrorInstance.getOption(optionName)) {
+        if (optionName === "theme") {
+          if (optionValue === "custom")
+            optionValue = pub["customTheme"];
+          loadThemeStyle(optionValue);
+        }
 
-        ui.editor.codeMirrorInstance.setOption(optionName, value);
+        ui.editor.codeMirrorInstance.setOption(optionName, optionValue);
       }
     }
   }

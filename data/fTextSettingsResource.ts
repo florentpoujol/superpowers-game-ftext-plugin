@@ -1,7 +1,7 @@
 export default class fTextSettingsResource extends SupCore.data.base.Resource {
   static schema = {
     theme: { type: "string", mutable: true },
-    customThemes: { type: "string", mutable: true },
+    customTheme: { type: "string", mutable: true },
     tabSize: { type: "number", min: 1, max: 8, mutable: true },
     indentWithTabs: { type: "boolean", mutable: true },
     keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
@@ -20,7 +20,7 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
 
   static defaultValues: any = {
     theme: "default",
-    customThemes: "",
+    customTheme: "",
     tabSize: 2,
     indentWithTabs: true,
     keyMap: "sublime",

@@ -19,7 +19,7 @@ You can configure the editor through the Settings tool :
   </tr>
   <tr>
     <td>Theme</td>
-    <td>Define the editor's looks.<br> See below for using your own themes.</td>
+    <td>Define the editor's looks.<br> See below for creating custom themes.</td>
   </tr>
   <tr>
     <td>Indent with tabs</td>
@@ -62,10 +62,8 @@ Copy one of the themes you can find the the plugin's `public/editors/fText/codem
 
 Edit the file name and the theme name inside the CSS classes, as well as all values to you likings.
 
-In the editor settings, add the theme name in the `Custom Themes` fields.  
-You can have several custom themes separated by comas.
+In the editor settings, add the theme's name in the custom theme input field then select `Custom` at the top of the list in the select field.  
 
-Close the Settings tool then reopen it, so that you can choose your custom theme at the bottom of the theme's list.
 
 ## Syntax
 

@@ -29,18 +29,16 @@ export default class fTextSettingsEditor {
 
         this.fields["theme"].addEventListener("change", (event: any) => {
           let theme = (event.target.value !== "") ? event.target.value : "default";
+        // call onResourceEdited methods that have subscribed to resources via project client
           this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "theme", theme, (err?: string) => { if (err != null) alert(err); } );
         });
       }
     });
 
-    this.fields["customThemes"] = <HTMLInputElement>document.querySelector("#customThemes");
-    this.fields["customThemes"].addEventListener("change", (event: any) => {
-      let themes = (event.target.value !== "") ? event.target.value : "";
-      themes = themes.trim().replace(/,?$/, ""); // remove leading spaces and comas
-
-      // call onResourceEdited methods that have subscribed to resources via project client
-      this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "customThemes", themes, (err?: string) => { if (err != null) console.error(err); } );
+    this.fields["customTheme"] = <HTMLInputElement>document.querySelector("#customTheme");
+    this.fields["customTheme"].addEventListener("change", (event: any) => {
+      let theme = (event.target.value !== "") ? event.target.value.trim() : "";
+      this.projectClient.socket.emit("edit:resources", "fTextSettings", "setProperty", "customTheme", theme, (err?: string) => { if (err != null) console.error(err); } );
     });
 
     this.fields["tabSize"] = <HTMLInputElement>document.querySelector("#tabSize");
@@ -91,19 +89,8 @@ export default class fTextSettingsEditor {
       if (this.booleanFields.indexOf(setting) !== -1)
         (<HTMLInputElement>this.fields[setting]).checked = resource.pub[setting];
       else {
-        if (this.fields[setting] != null) {
-          if (setting === "theme") {
-            // add the custom theme to the themes select
-            let sThemes = resource.pub["customThemes"];
-            if (sThemes !== "") {
-              let themes = sThemes.split(",");
-              for (let i in themes)
-                this.addThemeToSelect(themes[i].trim());
-            }
-          }
-
+        if (this.fields[setting] != null)
           this.fields[setting].value = resource.pub[setting];
-        }
         else
           console.error("fTextSettingsEditor.onResourceReceived(): unknow setting", setting, resource.pub[setting]);
       }
