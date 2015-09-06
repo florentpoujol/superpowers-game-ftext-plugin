@@ -27,7 +27,7 @@ var tsProject = ts.createProject({
 });
 
 gulp.task("typescript", function() {
-  var js = gulp.src([ "**/*.ts", "!node_modules/**", "!api/**", "!gitignore/**" ]).
+  var js = gulp.src([ "**/*.ts", "!node_modules/**", "!api/**", "!gitignore/**", "!project/**" ]).
   pipe(ts(tsProject)).js.
   pipe(gulp.dest("./"));
 });

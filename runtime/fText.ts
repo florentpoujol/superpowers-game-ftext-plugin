@@ -34,12 +34,13 @@ export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err:
   entry has the Asset interface
   interface Asset {
     id: string;
-    name: string;
+    name: string; // or Path ?
     type: string;
+    storagePath: string
     children?: any[];
   }
   */
-  player.getAssetData("assets/"+entry.id+"/text.txt", "text", (err: Error, text: string) => {
+  player.getAssetData("assets/"+entry.storagePath+"/text.txt", "text", (err: Error, text: string) => {
     if (err) throw err;
 
     // in case the content is valid JSON, text is a JS object instead of a string
@@ -48,29 +49,5 @@ export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err:
     
     entry.text = text;
     callback(null, entry);
-    /*
-    var result = /codemirror-mode\s*:\s*(css|less)/gi.exec(text);
-    if (result !== null && result[1] !== undefined) {
-      
-      var load = /loadStyleAtRuntime:\s*true/gi.exec(text);
-      if (load !== null) {
-
-        var style = window.document.createElement("style");
-        window.document.head.appendChild(style);
-        style.type = "text/css";
-
-        var mode = result[1];
-        if (mode === "css")
-          style.innerHTML = text;
-        else if (mode === "less") {
-          // window.textAssetParsers is defined in api/index.js
-          window.textAssetParsers.less.render(text, {}, function(err, output) {
-            if (err) throw err;
-            else
-              style.innerHTML = output.css;
-          }); 
-        }
-      }
-    }*/
   });
 }
