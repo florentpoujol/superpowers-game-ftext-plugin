@@ -19,16 +19,16 @@ You can configure the editor through the Settings tool :
   </tr>
   <tr>
     <td>Theme</td>
-    <td>Define the editor's looks.<br> See below for creating custom themes.</td>
-  </tr>
-  <tr>
-    <td>Indent with tabs</td>
-    <td>Tell whether pressing the Tab key should insert an actual tab character or regular spaces.</td>
+    <td>Define the editor's looks.<br> See below for using a custom theme.</td>
   </tr>
   <tr>
     <td>Tab Size</td>
     <td>This define the width (in spaces equivalent) of a tab. <br>
     Updating the value will update all existing tab characters (and not tabs that use spaces) in you text assets.</td>
+  </tr>
+  <tr>
+    <td>Indent with tabs</td>
+    <td>Tell whether pressing the Tab key should insert an actual tab character or regular spaces.</td>
   </tr>
   <tr>
     <td>Key map</td>
@@ -53,14 +53,13 @@ You can configure the editor through the Settings tool :
   </tr>
 </table>
 
-### Adding you own themes
+### Using a custom theme
 
 Copy one of the themes you can find the the plugin's `public/editors/fText/codemirror-themes` folder.
 
 Edit the file name and the theme name inside the CSS classes, as well as all values to you likings.
 
 In the editor settings, add the theme's name in the custom theme input field then select `Custom` at the top of the list in the select field.  
-
 
 ## Syntax
 
@@ -71,7 +70,7 @@ Ie: `"styles/main.styl"`.
 
 Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `styl`, `shader` and `js`.
 
-Linted extensions are : `json`, `cson`, `jade`, `css`, `styl` and `js`.
+Linted extensions are : 
 
 
 ## Other features
@@ -79,10 +78,11 @@ Linted extensions are : `json`, `cson`, `jade`, `css`, `styl` and `js`.
 - Code folding
 - `json` supports standard `//` comments
 - Basic autocompletion via the `Ctrl/Cmd + Space` command.
+- Linting for the following syntaxes : `json`, `cson`, `js`, `jade`, `styl` and `css`.
 
-### Includes
+## Includes
 
-You can include an asset into another with the `include` command.  
+You can include a text asset into another with the `include` instruction.  
 Just write in you asset :  
   
     [ftext: include: path/to/the/asset]
@@ -105,12 +105,12 @@ Since assets are usually parsed before the inclusion is performed, it is best to
     // or
     let asset = <fText>Sup.get( "My Text Asset" );
 
-You can access the text content of the asset via the readonly property `text` :
+You can access the raw text content of the asset via the readonly property `text` :
     
     let asset = Sup.get( "My Text Asset", fText );
     let data = asset.text;
 
-You can parse the asset's content with the `parse()` method and access all parsers through the static property `fText.parsers` :
+You can parse the asset's content with the `parse()` method as well as access all parsers through the static property `fText.parsers` :
 
 Ie:
 

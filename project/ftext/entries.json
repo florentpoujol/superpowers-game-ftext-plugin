@@ -37,11 +37,6 @@
     "type": "fText"
   },
   {
-    "id": "7",
-    "name": "script",
-    "type": "script"
-  },
-  {
     "id": "14",
     "name": "Script",
     "type": "script"
