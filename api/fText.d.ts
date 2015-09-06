@@ -24,7 +24,6 @@ declare class fText extends Sup.Asset {
   syntax: string;
 
   text: string; // get raw content, readonly
-  name: string; // readonly
 
   parse(options?: {
     include?: boolean,

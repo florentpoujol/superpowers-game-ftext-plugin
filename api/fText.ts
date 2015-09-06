@@ -3,17 +3,41 @@
 class fText extends Sup.Asset {
 
   // (<any>window).fTextParsers is set in rutime/ftext.ts
-  static parsers: any = (<any>window).fTextParsers;
+  /**
+  * Holds the following parsers :<br>
+  * https://github.com/zaach/jsonlint <br>
+  * https://github.com/groupon/cson-parser<br>
+  * https://github.com/component/domify<br>
+  * https://github.com/evilstreak/markdown-js<br>
+  * https://github.com/jadejs/jade<br>
+  * https://github.com/stylus/stylus<br>
+  */
+  static parsers: {
+    jsonlint: any,
+    csonparser: any,
+    domify: (text: string)=>any,
+    markdown: any,
+    jade: any,
+    stylus: any,
+  } = (<any>window).fTextParsers;
 
-  // filled by parseInstructions()
+  /**
+  * The set of instructions which can be found in the asset's content.
+  */
   instructions: { [key: string]: string|string[] } = {};
 
+  /**
+  * The asset's syntax, defined by the extension (if any) found at the end of its name.
+  */
   syntax: string = "";
 
   // ----------------------------------------
 
   // called from runtime createdOuterAsset(), or by hand
   // inner is the asset's pub as defined in the asset's class
+  /**
+  * @param inner - The asset's pub as defined in the asset's class.
+  */
   constructor(inner: {[key:string]: any;}) {
     super(inner); // sets inner as the value of this.__inner
 
@@ -66,12 +90,12 @@ class fText extends Sup.Asset {
 
   // ----------------------------------------
 
+  /**
+  * @readonly
+  * The raw content of the asset.
+  */
   get text(): string {
     return this.__inner.text;
-  }
-
-  get name(): string {
-    return this.__inner.name;
   }
 
   // ----------------------------------------
@@ -79,7 +103,7 @@ class fText extends Sup.Asset {
   /**
   * Returns the content of the asset, after having parsed and processed it
   * @param options - An object with options.
-  * @return JavaScript, DOM object, or string.
+  * @return JavaScript or DOM object, or string.
   */
   parse(options?: { include?: boolean }): any {
     options = options || {};
