@@ -1,6 +1,6 @@
 // fTextAsset plugin
 // https://github.com/florentpoujol/superpowers-ftext-plugin
-// Adds a generic text asset of type text/Sup.Text
+// Adds a generic text asset of type fText
 
 // Documentation:
 // https://florentpoujol.github.io/superpowers-ftext-plugin
@@ -20,8 +20,11 @@ declare class fText extends Sup.Asset {
     stylus: any,                  // https://github.com/stylus/stylus
   };
 
-  text: string; // get raw content
-  name: string;
+  instructions: { [key: string]: string|string[] };
+  syntax: string;
+
+  text: string; // get raw content, readonly
+  name: string; // readonly
 
   parse(options?: {
     include?: boolean,

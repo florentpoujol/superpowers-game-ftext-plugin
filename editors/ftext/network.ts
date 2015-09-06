@@ -11,6 +11,7 @@ export let data: {
   projectClient?: SupClient.ProjectClient;
   asset?: fTextAsset;
   assetInstructions?: { [key: string]: any },
+  assetSyntax?: string;
   fTextSettingsResourcePub?: any, // set in onResourceReceived(), used in onfTextSettingsUpdated()
 } = {};
 
@@ -26,7 +27,7 @@ function onfTextSettingsResourceUpdated() {
   if (ui.editor != null) {
     let pub = data.fTextSettingsResourcePub;
     let defaultValues = fTextSettingsResource.defaultValues;
-    let syntax: string = data.assetInstructions["syntax"];
+    let syntax: string = data.assetSyntax;
 
     for (let optionName in defaultValues) {
       let optionValue = (pub[optionName] != null) ? pub[optionName] : defaultValues[optionName];
@@ -108,24 +109,6 @@ function parseInstructions() {
     instructionsCount--;
   }
   while (match != null && instructionsCount > 0);
-
-  // check the extension of the asset name
-  if (instructions["syntax"] == null) {
-    let _languagesByExtensions: any = {
-      md: "markdown",
-      styl: "stylus",
-      js: "javascript",
-    };
-    let name = data.projectClient.entries.getPathFromId(data.asset.id);
-    let match = name.match(/\.[a-zA-Z]+$/gi);
-    if (match != null) {
-      let syntax = match[0].replace(".", "");
-       if (_languagesByExtensions[syntax] != null)
-        syntax = _languagesByExtensions[syntax];
-      instructions["syntax"] = syntax;
-    }
-  }
-
   return instructions;
 }
 
@@ -154,11 +137,29 @@ let assetHandlers: any = {
     if (info.line != null && info.ch != null)
       ui.editor.codeMirrorInstance.getDoc().setCursor({ line: info.line, ch: info.ch });
 
-    // fText specific settings
+    // fText specific settings :
+
     data.assetInstructions = parseInstructions();
 
-    let syntax: string = data.assetInstructions["syntax"];
-    if (syntax != null) {
+    // get asset syntax
+    data.assetSyntax = "";
+    let _languagesByExtensions: any = {
+      md: "markdown",
+      styl: "stylus",
+      js: "javascript",
+    };
+    let name = data.projectClient.entries.getPathFromId(data.asset.id);
+    let match = name.match(/\.[a-zA-Z]+$/gi);
+    if (match != null) {
+      let syntax = match[0].replace(".", "");
+       if (_languagesByExtensions[syntax] != null)
+        syntax = _languagesByExtensions[syntax];
+      data.assetSyntax = syntax;
+    }
+
+    // set Codemirror's mode based on the asset's syntax
+    let syntax: string = data.assetSyntax;
+    if (syntax != "") {
       let modesBySyntaxes: { [key: string]: string } = {
         cson: "coffeescript",
         html: "htmlmixed",

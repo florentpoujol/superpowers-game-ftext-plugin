@@ -42,6 +42,11 @@
     "type": "script"
   },
   {
+    "id": "14",
+    "name": "Script",
+    "type": "script"
+  },
+  {
     "id": "9",
     "name": "html.html",
     "type": "fText"

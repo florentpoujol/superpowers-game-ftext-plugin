@@ -2,14 +2,38 @@
 
 class fText extends Sup.Asset {
 
+  // (<any>window).fTextParsers is set in rutime/ftext.ts
   static parsers: any = (<any>window).fTextParsers;
 
   // filled by parseInstructions()
   instructions: { [key: string]: string|string[] } = {};
 
+  syntax: string = "";
+
+  // ----------------------------------------
+
+  // called from runtime createdOuterAsset(), or by hand
+  // inner is the asset's pub as defined in the asset's class
   constructor(inner: {[key:string]: any;}) {
     super(inner); // sets inner as the value of this.__inner
+
     this._parseInstructions();
+
+    // get asset's syntax
+    let _languagesByExtensions: any = {
+      md: "markdown",
+      styl: "stylus",
+      js: "javascript",
+    };
+    let name = this.__inner.name; // 06/09/15 where does this.__inner.name come from ? is it the path ?
+    // it comes from the runtime loadAsset() where entry
+    let match = name.match(/\.[a-zA-Z]+$/gi); // look for any letter after a dot at the end of the string
+    if (match != null) {
+      let syntax = match[0].replace(".", "");
+      if (_languagesByExtensions[syntax] != null)
+        syntax = _languagesByExtensions[syntax];
+      this.syntax = syntax;
+    }
   }
 
   /**
@@ -38,21 +62,6 @@ class fText extends Sup.Asset {
       instructionsCount--;
     }
     while (match != null && instructionsCount > 0);
-
-    if (this.instructions["syntax"] == null) {
-      let _languagesByExtensions: any = {
-        md: "markdown",
-        styl: "stylus",
-      };
-      let name = this.__inner.name;
-      let match = name.match(/\.[a-zA-Z]+$/gi);
-      if (match != null) {
-        let syntax = match[0].replace(".", "");
-         if (_languagesByExtensions[syntax] != null)
-          syntax = _languagesByExtensions[syntax];
-        this.instructions["syntax"] = syntax;
-      }
-    }
   }
 
   // ----------------------------------------
@@ -64,18 +73,21 @@ class fText extends Sup.Asset {
   get name(): string {
     return this.__inner.name;
   }
-  
+
+  // ----------------------------------------
+
   /**
   * Returns the content of the asset, after having parsed and processed it
   * @param options - An object with options.
-  * @return JavaScript or DOM object, or string.
+  * @return JavaScript, DOM object, or string.
   */
   parse(options?: { include?: boolean }): any {
     options = options || {};
-    let syntax = <string>this.instructions["syntax"];
+    let syntax = this.syntax;
 
     let parseFn = (text?: string): string => {
-      text = text || this.__inner.text;
+      if (text == null)
+        text = this.__inner.text;
 
       let syntaxFn: Function;
       switch (syntax) {
@@ -95,7 +107,7 @@ class fText extends Sup.Asset {
           syntaxFn = fText.parsers.jade.compile(text);
           break;
         case "stylus": 
-          syntaxFn = ()=>{};
+          syntaxFn = ()=>{}; // special case
           break;
       }
       
@@ -123,8 +135,8 @@ class fText extends Sup.Asset {
           // console.log("fTextAsset.text path", path);
           let asset = Sup.get(path, fText, {ignoreMissing: false});
           // note: for some reason, the three arguments are needed here
-          let re = new RegExp("[<!/*#-]*\\[ftext\\s*:\\s*include\\s*:\\s*"+path.replace(".", "\\.")+"\\][>*/-]*", "i");
-          text = text.replace(re, asset.parse(options));
+          let regexp = new RegExp("[<!/*#-]*\\[ftext\\s*:\\s*include\\s*:\\s*"+path.replace(".", "\\.")+"\\][>*/-]*", "i");
+          text = text.replace(regexp, asset.parse(options));
         }
       }
       else if (options.include === true)
