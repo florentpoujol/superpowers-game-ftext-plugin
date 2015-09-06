@@ -1,2 +1,0 @@
-floent: "un text"
-"mac": 36

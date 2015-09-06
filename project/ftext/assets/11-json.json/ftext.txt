@@ -1,5 +1,0 @@
-{
-	"bla": "machin",
-	"bli": 30,
-	"bla": "machin"
-}
