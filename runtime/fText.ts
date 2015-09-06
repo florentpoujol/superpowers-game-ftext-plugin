@@ -17,7 +17,6 @@ import * as stylus from "stylus";
 
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
-  // console.log("createOuterAsset", asset);
   return new (<any>window).fText(asset);
 }
 
@@ -30,17 +29,9 @@ export function start(player: any, callback: Function) {
 }
 
 export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err: Error, asset?: any) => any) {
-  /*
-  entry has the Asset interface
-  interface Asset {
-    id: string;
-    name: string; // or Path ?
-    type: string;
-    storagePath: string
-    children?: any[];
-  }
-  */
-  player.getAssetData("assets/"+entry.storagePath+"/text.txt", "text", (err: Error, text: string) => {
+  // entry has the Asset interface
+  // app\system\SupRuntime\src\Player.ts:
+  player.getAssetData("assets/"+entry.storagePath+"/ftext.txt", "text", (err: Error, text: string) => {
     if (err) throw err;
 
     // in case the content is valid JSON, text is a JS object instead of a string

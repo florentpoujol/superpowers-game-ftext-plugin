@@ -50,12 +50,6 @@ export default class fTextAsset extends SupCore.data.base.Asset {
   }
 
   destroy(callback: Function) {
-    /*this.serverData.resources.acquire("fTextSettings", null, (err: Error, fTextSettings: fTextSettingsResource) => {
-      // nothing to do here
-      this.serverData.resources.release("fTextSettings", null);
-      callback();
-    });*/
-    // just call callback if there is nothing to do with the ressource
     callback();
   }
 
@@ -65,7 +59,7 @@ export default class fTextAsset extends SupCore.data.base.Asset {
     // the asset will be considered loaded by Dictionary.acquire
     // and the acquire callback will be called immediately
 
-    fs.readFile(path.join(assetPath, "text.txt"), { encoding: "utf8" }, (err, text) => {
+    fs.readFile(path.join(assetPath, "ftext.txt"), { encoding: "utf8" }, (err, text) => {
       fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, (err, draft) => {
         this.pub = { revisionId: 0, text, draft: (draft != null) ? draft : text };
         this.setup();
@@ -74,13 +68,15 @@ export default class fTextAsset extends SupCore.data.base.Asset {
     });
   }
 
+  // called when it is time to write the asset on disk, not when the user save the asset from the editor
   save(assetPath: string, callback: (err: Error) => any) {
-    fs.writeFile(path.join(assetPath, "text.txt"), this.pub.text, { encoding: "utf8" }, (err) => {
+    fs.writeFile(path.join(assetPath, "ftext.txt"), this.pub.text, { encoding: "utf8" }, (err) => {
       if (err != null) { callback(err); return; }
 
       if (this.hasDraft) {
         fs.writeFile(path.join(assetPath, "draft.txt"), this.pub.draft, { encoding: "utf8" }, callback);
       } else {
+        // delete the draft.txt file if there is no draft to save and the file exists
         fs.unlink(path.join(assetPath, "draft.txt"), (err) => {
           if (err != null && err.code !== "ENOENT") { callback(err); return; }
           callback(null);
