@@ -2,7 +2,6 @@
 
 class fText extends Sup.Asset {
 
-  // (<any>window).fTextParsers is set in rutime/ftext.ts
   /**
   * Holds the following parsers :<br>
   * https://github.com/zaach/jsonlint <br>
@@ -11,6 +10,7 @@ class fText extends Sup.Asset {
   * https://github.com/evilstreak/markdown-js<br>
   * https://github.com/jadejs/jade<br>
   * https://github.com/stylus/stylus<br>
+  * https://github.com/nodeca/js-yaml
   */
   static parsers: {
     jsonlint: any,
@@ -19,7 +19,9 @@ class fText extends Sup.Asset {
     markdown: any,
     jade: any,
     stylus: any,
+    jsyaml: any
   } = (<any>window).fTextParsers;
+  // (<any>window).fTextParsers is set in rutime/ftext.ts
 
   /**
   * The set of instructions which can be found in the asset's content.
@@ -48,6 +50,7 @@ class fText extends Sup.Asset {
       md: "markdown",
       styl: "stylus",
       js: "javascript",
+      yml: "yaml",
     };
     let name = this.__inner.name; // 06/09/15 where does this.__inner.name come from ? is it the path ?
     // it comes from the runtime loadAsset() where entry
@@ -133,6 +136,9 @@ class fText extends Sup.Asset {
         case "stylus": 
           syntaxFn = ()=>{}; // special case
           break;
+        case "yaml": 
+          syntaxFn = fText.parsers.jsyaml.safeLoad;
+          break;
       }
       
       if (syntaxFn != null) {
@@ -172,7 +178,7 @@ class fText extends Sup.Asset {
     if (options.include === false)
       return parseFn();
     else {
-      if (syntax === "html" || syntax === "json" || syntax === "cson") {
+      if (syntax === "html" || syntax === "json" || syntax === "cson" || syntax === "yaml") {
         return parseFn(includeFn());
       }
       else

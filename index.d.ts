@@ -12,6 +12,7 @@ declare module "cson-parser" {}
 declare module "domify" {}
 declare module "jade" {}
 declare module "stylus" {}
+declare module "js-yaml" {}
 declare module "markdown" {
   export var markdown: any;
 }

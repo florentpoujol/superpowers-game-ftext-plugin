@@ -37,8 +37,8 @@
     "type": "fText"
   },
   {
-    "id": "14",
-    "name": "Script",
+    "id": "17",
+    "name": "Script2",
     "type": "script"
   },
   {
@@ -64,6 +64,16 @@
   {
     "id": "13",
     "name": "css.css",
+    "type": "fText"
+  },
+  {
+    "id": "15",
+    "name": "yaml.yml",
+    "type": "fText"
+  },
+  {
+    "id": "16",
+    "name": "xml.xml",
     "type": "fText"
   }
 ]

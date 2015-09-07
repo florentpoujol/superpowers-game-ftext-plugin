@@ -5,6 +5,7 @@ import * as domify from "domify";
 import * as markdown from "markdown";
 import * as jade from "jade";
 import * as stylus from "stylus";
+import * as jsyaml from "js-yaml";
 
 (<any>window).fTextParsers = {
   jsonlint: jsonlint,
@@ -13,6 +14,7 @@ import * as stylus from "stylus";
   markdown: markdown.markdown,
   jade: jade,
   stylus: stylus,
+  jsyaml: jsyaml,
 };
 
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {

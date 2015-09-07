@@ -12,12 +12,13 @@ declare class fText extends Sup.Asset {
   constructor(inner: {[key:string]: any;});
   
   static parsers: {
-    jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
-    csonparser: csonparser,       // https://github.com/groupon/cson-parser
+    jsonlint: any,                // https://github.com/zaach/jsonlint
+    csonparser: any,              // https://github.com/groupon/cson-parser
     domify: (text: string)=>any,  // https://github.com/component/domify
-    markdown: markdown,           // https://github.com/evilstreak/markdown-js
-    jade: jade,                   // https://github.com/jadejs/jade
+    markdown: any,                // https://github.com/evilstreak/markdown-js
+    jade: any,                    // https://github.com/jadejs/jade
     stylus: any,                  // https://github.com/stylus/stylus
+    jsyaml: any,                  // https://github.com/nodeca/js-yaml
   };
 
   instructions: { [key: string]: string|string[] };
@@ -28,20 +29,4 @@ declare class fText extends Sup.Asset {
   parse(options?: {
     include?: boolean,
   }): any;
-}
-
-interface jsonlint {
-  parse(text: string): string;
-}
-
-interface csonparser {
-  parse(text: string): string;
-}
-
-interface markdown {
-  toHTML(md: string): string;
-}
-
-interface jade {
-  compile(text: string): ()=>void;
 }

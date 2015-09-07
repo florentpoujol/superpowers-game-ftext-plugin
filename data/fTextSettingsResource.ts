@@ -16,7 +16,8 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     lint_jade: { type: "boolean", mutable: true },
     lint_stylus: { type: "boolean", mutable: true },
     lint_css: { type: "boolean", mutable: true },
-  }
+    lint_yaml: { type: "boolean", mutable: true },
+  };
 
   static defaultValues: any = {
     theme: "default",
@@ -34,8 +35,9 @@ export default class fTextSettingsResource extends SupCore.data.base.Resource {
     lint_javascript: true,
     lint_jade: true,
     lint_stylus: true,
-    lint_css: true
-  }
+    lint_css: true,
+    lint_yaml: true,
+  }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
 
   constructor(pub: any, serverData?: any) {
     super(pub, fTextSettingsResource.schema, serverData);

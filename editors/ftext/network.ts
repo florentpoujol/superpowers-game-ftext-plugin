@@ -147,6 +147,7 @@ let assetHandlers: any = {
       md: "markdown",
       styl: "stylus",
       js: "javascript",
+      yml: "yaml",
     };
     let name = data.projectClient.entries.getPathFromId(data.asset.id);
     let match = name.match(/\.[a-zA-Z]+$/gi);

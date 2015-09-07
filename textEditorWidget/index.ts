@@ -43,6 +43,8 @@ require("../codemirror-linters/cson-lint");
 require("../codemirror-linters/jade-lint");
 (<any>window).stylus = require("stylus");
 require("../codemirror-linters/stylus-lint");
+(<any>window).jsyaml = require("js-yaml");
+require("../codemirror-linters/yaml-lint");
 
 require("codemirror/keymap/emacs");
 require("codemirror/keymap/vim");
@@ -52,6 +54,7 @@ require("codemirror/mode/jade/jade");
 require("codemirror/mode/markdown/markdown"); // load xml
 require("codemirror/mode/coffeescript/coffeescript");
 require("codemirror/mode/stylus/stylus");
+require("codemirror/mode/yaml/yaml");
 // /added for fText plugin
 
 class fTextEditorWidget {

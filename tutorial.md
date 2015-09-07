@@ -49,7 +49,9 @@ You can configure the editor through the Settings tool :
   </tr>
   <tr>
     <td>Lint syntaxes</td>
-    <td>Enable/disable linting of the said syntaxes.</td>
+    <td>Enable/disable linting of the following syntaxes : <br>
+      json, javascript, cson, yaml, jade, stylus, css.
+    </td>
   </tr>
 </table>
 
@@ -68,17 +70,14 @@ The syntax of the asset defines the data-type of its content and thus change how
 To set a syntax, just add an extension at the end of the asset's name just like for any standard file.  
 Ie: `"styles/main.styl"`.
 
-Supported extensions are : `json`, `cson`, `xml`, `md`, `html`, `jade`, `css`, `styl`, `shader` and `js`.
-
-Linted extensions are : 
+Supported extensions (and syntaxes) are : `json`, `js` (javascript), `cson`, `yml` (Yaml), `md` (Markdown), `html`, `jade`, `css`, `styl` (stylus), `xml` and `shader`.
 
 
 ## Other features
 
 - Code folding
-- `json` supports standard `//` comments
 - Basic autocompletion via the `Ctrl/Cmd + Space` command.
-- Linting for the following syntaxes : `json`, `cson`, `js`, `jade`, `styl` and `css`.
+- `json` supports standard `//` comments
 
 ## Includes
 
@@ -125,35 +124,7 @@ Ie:
     // without the DOM plugin you can find at:
     // https://github.com/florentpoujol/superpowers-dom-plugin
 
-- `json` and `cson` are parsed to JS object.
+- `json`, `cson` and `yml` are parsed to JS object.
 - `jade` and `md` > HTML string
 - `html` > DOM object
 - `styl` > CSS string
-
-The `fText.parsers` static property has this definition :
-
-    static parsers: {
-      jsonlint: jsonlint,           // https://github.com/zaach/jsonlint
-      csonparser: csonparser,       // https://github.com/groupon/cson-parser
-      domify: (text: string)=>any,  // https://github.com/component/domify
-      markdown: markdown,           // https://github.com/evilstreak/markdown-js
-      jade: jade,                   // https://github.com/jadejs/jade
-      stylus: any,                  // https://github.com/stylus/stylus
-    };
-
-    interface jsonlint {
-      parse(text: string): string;
-    }
-
-    interface csonparser {
-      parse(text: string): string;
-    }
-
-    interface markdown {
-      toHTML(md: string): string;
-    }
-    
-    interface jade {
-      compile(text: string): ()=>void;
-    }
-

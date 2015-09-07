@@ -9,8 +9,6 @@
   },
   "author": "Florent Poujol <florent.poujol@gmail.com> (http://florentpoujol.fr)",
   "dependencies": {
-    "typescript": "1.5.x",
-    "browserify": "10.2.x",
     "codemirror": "5.3.x",
     "operational-transform": "0.2.x",
     "cson-parser": "1.1.x",
@@ -19,8 +17,16 @@
     "markdown": "0.5.x",
     "jsonlint": "1.6.x",
     "stylus": "0.51.x",
-    "file": "0.2.x",
-    "system": "0.1.x"
+    "js-yaml": "3.4.x",
+    "jshint": "2.8.x",
+    "csslint": "0.10.x",
+    "system": "0.1.x",
+    "file": "0.2.x"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "typescript": "1.5.x",
+    "browserify": "10.2.x"
   },
   "keywords": [
     "superpowers",
@@ -50,8 +56,5 @@
   "maintainers": [
     "Florent Poujol <florent.poujol@gmail.com>"
   ],
-  "license": "MIT",
-  "devDependencies": {
-    "gulp": "^3.9.0"
-  }
+  "license": "MIT"
 }
