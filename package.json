@@ -40,7 +40,8 @@
     "jade",
     "css",
     "stylus",
-    "shader"
+    "shader",
+    "yaml"
   ],
   "bugs": {
     "url": "https://github.com/florentpoujol/superpowers-ftext-plugin/issues"

@@ -1,0 +1,1 @@
+leave this file, just so that the "editors/fText" folder -which must exist- isn't empty

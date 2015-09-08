@@ -1,0 +1,2 @@
+# override the exception added in the .gitignore
+node_modules/operational-transform/
