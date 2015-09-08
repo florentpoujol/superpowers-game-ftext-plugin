@@ -28,3 +28,9 @@ The `project` folder contains a test/demo project.
 To run it, put the project folder `ftext` in Superpowers' projects folder, start the server, access the project then run it and open the console.
 
 On Window7, Superpowers' projects folder is typically in `C:\Users\[Your user name]\AppData\Roaming\Superpowers`.
+
+## Branches on Github
+
+The `master` branch (and the release Zips) contains only the files strictly necessary for the plugin to work in Superpowers.
+
+The `dev` branch contains all the files necessary for the development, minus the one that can be get or generated with the `npm install`, `gulp typescript` and `gulp` commands.
