@@ -1,7 +1,7 @@
 gitignore/
 
-node_modules/
-!node_modules/operational-transform/
+node_modules/*
+!node_modules/operational-transform
 
 project/*/builds/
 project/*/rooms/
