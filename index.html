@@ -1002,7 +1002,9 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 				</tr>
 				<tr>
 					<td>Lint syntaxes</td>
-					<td>Enable/disable linting of the said syntaxes.</td>
+					<td>Enable/disable linting of the following syntaxes : <br>
+						json, javascript, cson, yaml, jade, stylus, css.
+					</td>
 				</tr>
 			</table>
 			<h3 id="using-a-custom-theme">Using a custom theme</h3>
@@ -1012,17 +1014,15 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 			<h2 id="syntax">Syntax</h2>
 			<p>The syntax of the asset defines the data-type of its content and thus change how the syntactic coloration behave and how the asset&#39;s content is parsed and linted, if at all.</p>
 			<p>To set a syntax, just add an extension at the end of the asset&#39;s name just like for any standard file.<br>Ie: <code>&quot;styles/main.styl&quot;</code>.</p>
-			<p>Supported extensions are : <code>json</code>, <code>cson</code>, <code>xml</code>, <code>md</code>, <code>html</code>, <code>jade</code>, <code>css</code>, <code>styl</code>, <code>shader</code> and <code>js</code>.</p>
-			<p>Linted extensions are : </p>
+			<p>Supported extensions (and syntaxes) are : <code>json</code>, <code>js</code> (javascript), <code>cson</code>, <code>yml</code> (Yaml), <code>md</code> (Markdown), <code>html</code>, <code>jade</code>, <code>css</code>, <code>styl</code> (stylus), <code>xml</code> and <code>shader</code>.</p>
 			<h2 id="other-features">Other features</h2>
 			<ul>
 				<li>Code folding</li>
-				<li><code>json</code> supports standard <code>//</code> comments</li>
 				<li>Basic autocompletion via the <code>Ctrl/Cmd + Space</code> command.</li>
-				<li>Linting for the following syntaxes : <code>json</code>, <code>cson</code>, <code>js</code>, <code>jade</code>, <code>styl</code> and <code>css</code>.</li>
+				<li><code>json</code> supports standard <code>//</code> comments</li>
 			</ul>
 			<h2 id="includes">Includes</h2>
-			<p>You can include a text asset into another with the <code>include</code> instruction.<br>Just write in you asset :  </p>
+			<p>You can include a text asset&#39;s content into another with the <code>include</code> instruction.<br>Just write in your asset :  </p>
 			<pre><code>[<span class="hljs-string">ftext:</span> <span class="hljs-string">include:</span> path<span class="hljs-regexp">/to/</span>the/asset]
 </code></pre><p>Replace <code>path/to/the/asset</code> by the path to the asset to include inside this one.</p>
 			<p>The specified asset content will then be included when the asset is parsed with the <code>fText.parse()</code> method.</p>
@@ -1049,37 +1049,11 @@ document.body.appendChild( elt );
 <span class="hljs-comment">// without the DOM plugin you can find at:</span>
 <span class="hljs-comment">// https://github.com/florentpoujol/superpowers-dom-plugin</span>
 </code></pre><ul>
-				<li><code>json</code> and <code>cson</code> are parsed to JS object.</li>
+				<li><code>json</code>, <code>cson</code> and <code>yml</code> are parsed to JS object.</li>
 				<li><code>jade</code> and <code>md</code> &gt; HTML string</li>
 				<li><code>html</code> &gt; DOM object</li>
 				<li><code>styl</code> &gt; CSS string</li>
 			</ul>
-			<p>The <code>fText.parsers</code> static property has this definition :</p>
-			<pre><code><span class="hljs-keyword">static</span> parsers: {
-  jsonlint: jsonlint,           <span class="hljs-comment">// https://github.com/zaach/jsonlint</span>
-  csonparser: csonparser,       <span class="hljs-comment">// https://github.com/groupon/cson-parser</span>
-  domify: (text: <span class="hljs-built_in">string</span>)=&gt;<span class="hljs-built_in">any</span>,  <span class="hljs-comment">// https://github.com/component/domify</span>
-  markdown: markdown,           <span class="hljs-comment">// https://github.com/evilstreak/markdown-js</span>
-  jade: jade,                   <span class="hljs-comment">// https://github.com/jadejs/jade</span>
-  stylus: <span class="hljs-built_in">any</span>,                  <span class="hljs-comment">// https://github.com/stylus/stylus</span>
-};
-
-<span class="hljs-interface"><span class="hljs-keyword">interface</span> jsonlint </span>{
-  parse(text: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span>;
-}
-
-<span class="hljs-interface"><span class="hljs-keyword">interface</span> csonparser </span>{
-  parse(text: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span>;
-}
-
-<span class="hljs-interface"><span class="hljs-keyword">interface</span> markdown </span>{
-  toHTML(md: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span>;
-}
-
-<span class="hljs-interface"><span class="hljs-keyword">interface</span> jade </span>{
-  compile(text: <span class="hljs-built_in">string</span>): ()=&gt;<span class="hljs-built_in">void</span>;
-}
-</code></pre>
 		</div>
 		<div style="position:relative;"><a name="typedoc-main-index" class="tsd-anchor"></a></div>
 		<section class="tsd-panel-group tsd-index-group">
@@ -1117,7 +1091,7 @@ document.body.appendChild( elt );
 							<aside class="tsd-sources">
 								<p>Overwrites Asset.__constructor</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L32">fText.ts:32</a></li>
+									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L34">fText.ts:34</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1170,7 +1144,7 @@ document.body.appendChild( elt );
 					<div class="tsd-signature tsd-kind-icon">instructions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L27">fText.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L29">fText.ts:29</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -1204,7 +1178,7 @@ document.body.appendChild( elt );
 					<div class="tsd-signature tsd-kind-icon">syntax<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L32">fText.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L34">fText.ts:34</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -1235,13 +1209,16 @@ document.body.appendChild( elt );
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Holds the following parsers :<br>
-								<a href="https://github.com/zaach/jsonlint">https://github.com/zaach/jsonlint</a> <br>
-								<a href="https://github.com/groupon/cson-parser">https://github.com/groupon/cson-parser</a><br>
-								<a href="https://github.com/component/domify">https://github.com/component/domify</a><br>
-								<a href="https://github.com/evilstreak/markdown-js">https://github.com/evilstreak/markdown-js</a><br>
-								<a href="https://github.com/jadejs/jade">https://github.com/jadejs/jade</a><br>
-							<a href="https://github.com/stylus/stylus">https://github.com/stylus/stylus</a><br></p>
+							<p>Holds the following parsers :<br></p>
+							<ul>
+								<li><a href="https://github.com/zaach/jsonlint">https://github.com/zaach/jsonlint</a> <br></li>
+								<li><a href="https://github.com/groupon/cson-parser">https://github.com/groupon/cson-parser</a><br></li>
+								<li><a href="https://github.com/component/domify">https://github.com/component/domify</a><br></li>
+								<li><a href="https://github.com/evilstreak/markdown-js">https://github.com/evilstreak/markdown-js</a><br></li>
+								<li><a href="https://github.com/jadejs/jade">https://github.com/jadejs/jade</a><br></li>
+								<li><a href="https://github.com/stylus/stylus">https://github.com/stylus/stylus</a><br></li>
+								<li><a href="https://github.com/nodeca/js-yaml">https://github.com/nodeca/js-yaml</a></li>
+							</ul>
 						</div>
 					</div>
 					<div class="tsd-type-declaration">
@@ -1278,6 +1255,9 @@ document.body.appendChild( elt );
 								<h5>jsonlint<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
 							</li>
 							<li class="tsd-parameter">
+								<h5>jsyaml<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
+							</li>
+							<li class="tsd-parameter">
 								<h5>markdown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
 							</li>
 							<li class="tsd-parameter">
@@ -1292,7 +1272,7 @@ document.body.appendChild( elt );
 					<div class="tsd-signature tsd-kind-icon">text<span class="tsd-signature-symbol">:</span> </div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L97">fText.ts:97</a></li>
+							<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L100">fText.ts:100</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -1313,7 +1293,7 @@ document.body.appendChild( elt );
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L68">fText.ts:68</a></li>
+									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L71">fText.ts:71</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1337,7 +1317,7 @@ document.body.appendChild( elt );
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L108">fText.ts:108</a></li>
+									<li>Defined in <a href="https://github.com/florentpoujol/superpowers-ftext-plugin/blob/dev/api/fText.ts#L111">fText.ts:111</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
