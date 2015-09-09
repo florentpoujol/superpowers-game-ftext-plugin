@@ -10,27 +10,22 @@ You can also access it offline in Superpowers' client with the [docs browser](ht
 
 ## Installation
 
-[Download the latest release](https://github.com/florentpoujol/superpowers-ftext-plugin/releases), unzip it, rename the folder to `ftext`, move it inside `app/plugins/florentpoujol/` then restart your server.
-
-__Advanced:__
-
-Get it via `npm`:
-
-    npm install sup-ftext-plugin
-
-The name of the vendors or plugins in the `app/plugins/` folder don't matter.  
-So you can leave the plugin path as `node_modules/sup-ftext-plugin`.
+- [Download the latest release](https://github.com/florentpoujol/superpowers-ftext-plugin/releases),
+- unzip it then rename the folder to `ftext`,
+- delete the `project` folder if you want,
+- move it inside `app/plugins/florentpoujol/`,
+- then restart your server.
 
 ## Test/Demo project
 
 The `project` folder contains a test/demo project.  
 
-To run it, put the project folder `ftext` in Superpowers' projects folder, start the server, access the project then run it and open the console.
+To run it, put the project's `fText` folder in Superpowers' projects folder, and (re)start the server.
 
 On Window7, Superpowers' projects folder is typically in `C:\Users\[Your user name]\AppData\Roaming\Superpowers`.
 
 ## Branches on Github
 
-The `master` branch (and the release Zips) contains only the files strictly necessary for the plugin to work in Superpowers.
+The `master` branch (and the release Zips) contains only the files strictly necessary for the plugin to work in Superpowers, plus the demo project in the `project` folder.
 
-The `dev` branch contains all the files necessary for the development, minus the one that can be get or generated with the `npm install`, `gulp typescript` and `gulp` commands.
+The `dev` branch contains all the files necessary for the development, minus the one that can be get or generated with the `npm install`, `gulp typescript` then `gulp` commands.

@@ -4,13 +4,13 @@ class fText extends Sup.Asset {
 
   /**
   * Holds the following parsers :<br>
-  * https://github.com/zaach/jsonlint <br>
-  * https://github.com/groupon/cson-parser<br>
-  * https://github.com/component/domify<br>
-  * https://github.com/evilstreak/markdown-js<br>
-  * https://github.com/jadejs/jade<br>
-  * https://github.com/stylus/stylus<br>
-  * https://github.com/nodeca/js-yaml
+  * - https://github.com/zaach/jsonlint <br>
+  * - https://github.com/groupon/cson-parser<br>
+  * - https://github.com/component/domify<br>
+  * - https://github.com/evilstreak/markdown-js<br>
+  * - https://github.com/jadejs/jade<br>
+  * - https://github.com/stylus/stylus<br>
+  * - https://github.com/nodeca/js-yaml
   */
   static parsers: {
     jsonlint: any,

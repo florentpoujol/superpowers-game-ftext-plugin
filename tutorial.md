@@ -81,8 +81,8 @@ Supported extensions (and syntaxes) are : `json`, `js` (javascript), `cson`, `ym
 
 ## Includes
 
-You can include a text asset into another with the `include` instruction.  
-Just write in you asset :  
+You can include a text asset's content into another with the `include` instruction.  
+Just write in your asset :  
   
     [ftext: include: path/to/the/asset]
 
