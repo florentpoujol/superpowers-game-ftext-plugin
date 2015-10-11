@@ -1,3 +1,9 @@
 {
-  "behaviors": {}
+  "behaviors": {
+    "ScriptBehavior": {
+      "scriptId": "18",
+      "parentBehavior": null,
+      "properties": []
+    }
+  }
 }
