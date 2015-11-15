@@ -197,7 +197,7 @@ let assetHandlers: any = {
 // ----------------------------------------
 
 let entriesHandlers: any = {
-  onEntriesReceived: (entries: SupCore.data.Entries) => {
+  onEntriesReceived: (entries: SupCore.Data.Entries) => {
     entries.walk((entry: any) => {
       if (entry.type !== "fText") return;
       data.projectClient.subAsset(entry.id, "fText", assetHandlers);

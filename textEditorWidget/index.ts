@@ -112,16 +112,17 @@ class fTextEditorWidget {
     this.sendOperationCallback = options.sendOperationCallback;
     this.saveCallback = options.saveCallback;
 
-    this.codeMirrorInstance = CodeMirror.fromTextArea(textArea, {
+    let editorConfig: any = {
       // theme: "monokai",
       lineNumbers: true, matchBrackets: true, styleActiveLine: true, autoCloseBrackets: true,
       gutters: ["CodeMirror-linenumbers"],
-      indentWithTabs: false, indentUnit: 2, tabSize: 2, 
+      indentWithTabs: false, indentUnit: 2, tabSize: 2,
       extraKeys: extraKeys, keyMap: "sublime",
       viewportMargin: Infinity,
       mode: options.mode,
       readOnly: true
-    });
+    };
+    this.codeMirrorInstance = CodeMirror.fromTextArea(textArea, editorConfig);
 
     this.codeMirrorInstance.on("changes", <any>this.edit);
     this.codeMirrorInstance.on("beforeChange", this.beforeChange);

@@ -4,9 +4,9 @@ import * as path from "path";
 
 import fTextSettingsResource from "./fTextSettingsResource";
 
-export default class fTextAsset extends SupCore.data.base.Asset {
+export default class fTextAsset extends SupCore.Data.Base.Asset {
 
-  static schema = {
+  static schema: SupCore.Data.Base.Schema  = {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },

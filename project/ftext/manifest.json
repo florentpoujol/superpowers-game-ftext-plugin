@@ -1,5 +1,7 @@
 {
   "id": "DgFy",
   "name": "fText",
-  "description": ""
+  "description": "",
+  "formatVersion": 2,
+  "system": "supGame"
 }
