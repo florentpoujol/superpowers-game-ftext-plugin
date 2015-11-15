@@ -8,8 +8,9 @@ console.log(parsed);
 
 console.log("----------------------");
 
+console.log((<fText>Sup.get("yaml.yml")).parse());
 
-console.log(fText.parsers.domify(parsed));
+// console.log(fText.parsers.domify(parsed));
 /*
 console.log(Sup.get("afolder/include.jade",fText).text);
 console.log(Sup.get("afolder/include.jade",fText).parse());
@@ -22,3 +23,4 @@ console.log(styl.parse());
 // }
 // console.log("stylus 3", fText.parsers.stylus(styl.text).set("imports", []).render());
 */
+

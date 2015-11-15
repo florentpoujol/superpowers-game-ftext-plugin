@@ -1,6 +1,6 @@
 {
   "name": "sup-ftext-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generic text asset for Superpowers, the extensible HTML5 2D+3D game engine.",
   "homepage": "https://github.com/florentpoujol/superpowers-ftext-plugin",
   "repository": {
@@ -25,7 +25,7 @@
     "system": "0.1.x",
     "file": "0.2.x",
     "gulp": "^3.9.0",
-    "typescript": "1.5.x",
+    "typescript": "1.6.x",
     "browserify": "10.2.x"
   },
   "keywords": [
@@ -49,10 +49,10 @@
   "scripts": {
     "compilets": "tsc api/fText.ts --out /gitignore/fText.js --target ES6",
     "gendoc": "typedoc --out public/docs/ api/fText.ts --mode file --target ES6 --name \"fText plugin\" --readme tutorial.md --theme minimal",
-    "linksrcdev": "mklink /j \"../../app/plugins/florentpoujol/fText\" \"./\"",
-    "linksrcrelease": "mklink /j \"../../../release/app/plugins/florentpoujol/fText\" \"./\"",
-    "linkprojdev": "mklink /j \"../../data/projects/fText\" \"./project/fText\"",
-    "linkprojrelease": "mklink /j \"../../../localprojects/fText\" \"./project/fText\""
+    "linkplugindev": "mklink /j \"../../app/systems/supGame/plugins/florentpoujol/fText\" \"./\"",
+    "linkprojectdev": "mklink /j \"../../data/projects/fText\" \"./project/fText\"",
+    "linkpluginrelease": "mklink /j \"../../../release/app/systems/supGame/plugins/florentpoujol/fText\" \"./\"",
+    "linkprojectrelease": "mklink /j \"../../../release/data/fText\" \"./project/fText\""
   },
   "maintainers": [
     "Florent Poujol <florent.poujol@gmail.com>"
