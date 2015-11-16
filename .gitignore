@@ -10,8 +10,9 @@ public/*
 !public/docs
 public/editors/ftext
 !public/editors/ftext/icon.svg
+!public/editors/ftext/manifest.json
 !public/editors/ftext/codemirror-themes
-!public/editors/ftext/locale
+
 
 data/*.js
 !data/index.js
