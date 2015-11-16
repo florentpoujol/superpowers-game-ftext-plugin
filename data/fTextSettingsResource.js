@@ -56,5 +56,5 @@ var fTextSettingsResource = (function (_super) {
         lint_yaml: true,
     }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
     return fTextSettingsResource;
-})(SupCore.data.base.Resource);
+})(SupCore.Data.Base.Resource);
 exports.default = fTextSettingsResource;

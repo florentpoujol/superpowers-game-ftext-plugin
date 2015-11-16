@@ -121,5 +121,5 @@ var fTextAsset = (function (_super) {
         revisionId: { type: "integer" },
     };
     return fTextAsset;
-})(SupCore.data.base.Asset);
+})(SupCore.Data.Base.Asset);
 exports.default = fTextAsset;
