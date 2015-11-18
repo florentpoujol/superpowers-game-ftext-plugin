@@ -7,7 +7,6 @@ project/*/internals.json
 project/*/members.json
 
 
-
 data/*.js
 !data/index.js
 
