@@ -5,17 +5,3 @@ node_modules/*
 project/*/builds/
 project/*/internals.json
 project/*/members.json
-
-
-data/*.js
-!data/index.js
-
-editors/**/*.js
-
-runtime/*.js
-!runtime/index.js
-
-settingsEditors/*.js
-!settingsEditors/index.js
-
-textEditorWidget/*.js
