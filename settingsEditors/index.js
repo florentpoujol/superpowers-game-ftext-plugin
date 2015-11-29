@@ -1,3 +1,3 @@
 var fTextSettingsEditor = require("./fTextSettingsEditor");
 
-SupClient.registerSettingsEditorClass("fText", fTextSettingsEditor.default);
+SupClient.registerPlugin("settingsEditors", "fText", { namespace: "Editors", editor: fTextSettingsEditor.default });

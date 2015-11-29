@@ -371,6 +371,6 @@ exports.default = fTextSettingsEditor;
 },{"../data/fTextSettingsResource":1,"_process":2,"domify":3}],5:[function(require,module,exports){
 var fTextSettingsEditor = require("./fTextSettingsEditor");
 
-SupClient.registerSettingsEditorClass("fText", fTextSettingsEditor.default);
+SupClient.registerPlugin("settingsEditors", "fText", { namespace: "Editors", editor: fTextSettingsEditor.default });
 
 },{"./fTextSettingsEditor":4}]},{},[5]);

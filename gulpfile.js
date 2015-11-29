@@ -9,9 +9,10 @@ gulp.task("jade", function() {
 
 // Stylus
 var stylus = require("gulp-stylus");
+var cssimport = require("gulp-cssimport");
 gulp.task("stylus", function() {
-  gulp.src("./editors/**/index.styl").pipe(stylus()).pipe(gulp.dest("./public/editors"));
-  gulp.src("./textEditorWidget/index.styl").pipe(stylus()).pipe(gulp.dest("./public/textEditorWidget"));
+  gulp.src("./editors/**/index.styl").pipe(stylus()).pipe(cssimport()).pipe(gulp.dest("./public/editors"));
+  gulp.src("./textEditorWidget/index.styl").pipe(stylus()).pipe(cssimport()).pipe(gulp.dest("./public/textEditorWidget"));
 });
 
 // TypeScript
