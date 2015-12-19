@@ -2,6 +2,18 @@ gitignore/
 node_modules/*
 !node_modules/operational-transform
 
-project/*/builds/
-project/*/internals.json
-project/*/members.json
+public/
+!public/locales/
+!public/docs/manifest.json
+!public/editors/fText/codemirror-themes
+!public/editors/fText/icon.svg
+
+data/*.js
+!data/index.js
+
+editors/**/*.js
+
+runtime/*.js
+!runtime/index.js
+
+settingsEditor/fTextSettingsEditor.js

@@ -6,8 +6,8 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var fTextSettingsResource = (function (_super) {
     __extends(fTextSettingsResource, _super);
-    function fTextSettingsResource(pub, serverData) {
-        _super.call(this, pub, fTextSettingsResource.schema, serverData);
+    function fTextSettingsResource(id, pub, serverData) {
+        _super.call(this, id, pub, fTextSettingsResource.schema, serverData);
     }
     fTextSettingsResource.prototype.init = function (callback) {
         var pub = {};

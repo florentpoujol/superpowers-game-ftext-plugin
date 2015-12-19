@@ -39,8 +39,8 @@ export default class fTextSettingsResource extends SupCore.Data.Base.Resource {
     lint_yaml: true,
   }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
 
-  constructor(pub: any, serverData?: any) {
-    super(pub, fTextSettingsResource.schema, serverData);
+  constructor(id: string, pub: any, serverData?: any) {
+    super(id, pub, fTextSettingsResource.schema, serverData);
   }
 
   init(callback: Function) {
