@@ -16,4 +16,4 @@ editors/**/*.js
 runtime/*.js
 !runtime/index.js
 
-settingsEditor/fTextSettingsEditor.js
+settingsEditors/fTextSettingsEditor.js

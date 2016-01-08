@@ -1,7 +1,7 @@
 {
   "name": "sup-ftext-plugin",
   "version": "0.2.2",
-  "description": "Generic text asset for Superpowers, the extensible HTML5 2D+3D game engine.",
+  "description": "Generic text asset for the Superpowers Game system of Superpowers, the extensible HTML5 2D+3D game engine.",
   "homepage": "https://github.com/florentpoujol/superpowers-ftext-plugin",
   "repository": {
     "type": "git",

@@ -1,5 +1,3 @@
-# @ftextasset: syntax: cson
-
 # Comments!!!
 
 # An Array with no commas!

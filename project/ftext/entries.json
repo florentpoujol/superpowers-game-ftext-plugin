@@ -75,5 +75,10 @@
     "id": "16",
     "name": "xml.xml",
     "type": "fText"
+  },
+  {
+    "id": "19",
+    "name": "fText.cson",
+    "type": "fText"
   }
 ]
