@@ -227,6 +227,8 @@ function onWelcomed(clientId: number) {
 }
 
 // start
-socket = SupClient.connect(info.projectId);
-socket.on("welcome", onWelcomed);
-socket.on("disconnect", SupClient.onDisconnected);
+SupClient.i18n.load([{ root: `${window.location.pathname}/../..`, name: "ftextEditor" }], () => {
+  socket = SupClient.connect(SupClient.query.project);
+  socket.on("welcome", onWelcomed);
+  socket.on("disconnect", SupClient.onDisconnected);
+});

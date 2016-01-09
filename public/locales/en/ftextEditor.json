@@ -1,0 +1,10 @@
+{
+  "applyChanges": "Apply changes (Ctrl+S)",
+  "save": "Save",
+  "saved": "Saved",
+  "noError": "No error",
+  "error": "error",
+  "errors": "errors",
+  "clickToError": "Click to jump to the error",
+  "clickToFirstError": "Click to jump to the first error"
+}

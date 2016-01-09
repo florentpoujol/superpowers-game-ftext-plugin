@@ -67,11 +67,15 @@ ui.setupEditor = function(clientId: number) {
 }
 
 function onSendOperation(operation: OperationData) {
-  socket.emit("edit:assets", info.assetId, "editText", operation, data.asset.document.getRevisionId(), (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
+  socket.emit("edit:assets", info.assetId, "editText", operation, data.asset.document.getRevisionId(), (err: string) => {
+    if (err != null) { new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
+  });
 }
 
 function onSaveText() {
-  socket.emit("edit:assets", info.assetId, "saveText", (err: string) => { if (err != null) { alert(err); SupClient.onDisconnected(); }});
+  socket.emit("edit:assets", info.assetId, "saveText", (err: string) => {
+    if (err != null) { new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
+  });
 }
 
 // ----------------------------------------
@@ -86,12 +90,18 @@ ui.errorPaneInfo = <HTMLDivElement>ui.errorPaneStatus.querySelector(".errorInfo"
 ui.refreshErrors = function(errors?: Array<any>) { 
   let text = "";
   if (errors == null || errors.length === 0) {
-    ui.isAssetLinted === true ? text = "- No error": text = "";
+    ui.isAssetLinted === true ? text = "- "+SupClient.i18n.t("ftextEditor:noError"): text = "";
     ui.errorPaneInfo.textContent = text;
     ui.errorPaneStatus.classList.remove("has-errors");
   }
   else {
-    ui.errorPaneInfo.textContent = `- ${errors.length} error${errors.length > 1 ? "s - Click to jump to the first error" : " - Click to jump to the error"}`;
+    let text: string = " - "+errors.length;
+    if (errors.length > 1)
+      text += ` ${SupClient.i18n.t("ftextEditor:errors")} - ${SupClient.i18n.t("ftextEditor:clickToFirstError")}`;
+    else
+      text += ` ${SupClient.i18n.t("ftextEditor:error")} - ${SupClient.i18n.t("ftextEditor:clickToError")}`;
+    
+    ui.errorPaneInfo.textContent = text;
     ui.errorPaneStatus.classList.add("has-errors");
     (<any>ui.errorPaneStatus.dataset).line = errors[0].from.line;
     (<any>ui.errorPaneStatus.dataset).character = errors[0].from.ch;
@@ -121,12 +131,12 @@ function onErrorPanelClick(event: MouseEvent) {
 ui.hasDraft = function(hasDraft: boolean = true) {
   if (hasDraft === true) {
     ui.errorPaneStatus.classList.add("has-draft");
-    ui.saveButton.textContent = "Save ";
+    ui.saveButton.textContent = SupClient.i18n.t("ftextEditor:save");
     ui.saveButton.disabled = false;
   }
   else {
     ui.errorPaneStatus.classList.remove("has-draft");
-    ui.saveButton.textContent = "Saved";
+    ui.saveButton.textContent = SupClient.i18n.t("ftextEditor:saved");
     ui.saveButton.disabled = true;
   }
 }

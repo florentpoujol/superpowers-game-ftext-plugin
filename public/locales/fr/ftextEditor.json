@@ -1,0 +1,10 @@
+{
+  "applyChanges": "Enregistrer les changements (Ctrl+S)",
+  "save": "Enregistrer",
+  "saved": "Enregistré",
+  "noError": "Pas d'erreur",
+  "error": "erreur",
+  "errors": "erreurs",
+  "clickToError": "Cliquez pour aller à l'erreur",
+  "clickToFirstError": "Cliquez pour aller à la première erreur"
+}

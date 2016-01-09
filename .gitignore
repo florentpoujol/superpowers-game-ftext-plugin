@@ -2,11 +2,12 @@ gitignore/
 node_modules/*
 !node_modules/operational-transform
 
-public/
-!public/locales/
+public/*
 !public/docs/manifest.json
+public/editors/ftext/
 !public/editors/fText/codemirror-themes
 !public/editors/fText/icon.svg
+!public/locales/
 
 data/*.js
 !data/index.js

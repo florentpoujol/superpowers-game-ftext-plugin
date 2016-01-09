@@ -14,14 +14,13 @@ html
     .error-pane
       .status
         .draft
-          button(title="Apply changes (Ctrl+S)" disabled) Saved
+          button(title= t("ftextEditor:applyChanges") disabled)= t("ftextEditor:saved")
         .errorInfo 
 
     script(src="/SupCore.js")
     script(src="/SupClient.js")
     script(src="../../../../../SupEngine.js")
-    script(src="../../data.js")
-    script(src="../../api.js")
-    script(src="../../components.js")
+    script(src="../../bundles/data.js")
+    script(src="../../bundles/components.js")
     script(src="../../textEditorWidget/index.js")
     script(src="index.js")

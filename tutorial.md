@@ -1,8 +1,8 @@
-# Superpowers fText asset plugin
+# Superpowers Game fText asset plugin
 
-This plugin brings a generic text asset of type `fText` to [Superpowers, the extensible HTML5 2D+3D game engine](http://sparklinlabs.com).
+This plugin brings a generic text asset of type `fText` to the `Superpowers Game` system for [Superpowers, the extensible HTML5 2D+3D game engine](http://superpowers-html5.com).
 
-[Go back to the repository on Github.](https://github.com/florentpoujol/superpowers-ftext-plugin)
+[Go back to the repository on Github.](https://github.com/florentpoujol/superpowers-game-ftext-plugin)
 
 ## Creating a new asset
 
