@@ -2,6 +2,9 @@ gitignore/
 node_modules/*
 !node_modules/operational-transform
 
+project/**/*.js
+# those js files are created when the typescript gulp tasks run
+
 public/*
 !public/docs/manifest.json
 public/editors/ftext/

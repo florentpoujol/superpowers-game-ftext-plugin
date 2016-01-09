@@ -52,7 +52,7 @@
     "linkprojectdev": "mklink /j \"../../data/projects/fText\" \"./project/fText\"",
     "linkpluginrelease": "mklink /j \"../../../release/app/systems/supGame/plugins/florentpoujol/fText\" \"./\"",
     "linkprojectrelease": "mklink /j \"../../../release/data/fText\" \"./project/fText\"",
-    "build": "gulp --gulpfile=../../../../../scripts/pluginGulpfile.js --cwd=."
+    "build": "gulp --gulpfile=../../../../../scripts/pluginGulpfile.js --cwd=. && gulp"
   },
   "maintainers": [
     "Florent Poujol <florent.poujol@gmail.com>"
