@@ -325,7 +325,7 @@ var fTextAsset = (function (_super) {
     };
     fTextAsset.prototype.restore = function () {
         if (this.hasDraft)
-            this.emit("setDiagnostic", "draft", "info");
+            this.emit("setBadge", "draft", "info");
     };
     fTextAsset.prototype.destroy = function (callback) {
         callback();
@@ -389,7 +389,7 @@ var fTextAsset = (function (_super) {
         callback(null, operation.serialize(), this.document.getRevisionId() - 1);
         if (!this.hasDraft) {
             this.hasDraft = true;
-            this.emit("setDiagnostic", "draft", "info");
+            this.emit("setBadge", "draft", "info");
         }
         this.emit("change");
     };
@@ -405,7 +405,7 @@ var fTextAsset = (function (_super) {
         callback(null);
         if (this.hasDraft) {
             this.hasDraft = false;
-            this.emit("clearDiagnostic", "draft");
+            this.emit("clearBadge", "draft");
         }
         this.emit("change");
     };
