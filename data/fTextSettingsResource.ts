@@ -1,5 +1,5 @@
 export default class fTextSettingsResource extends SupCore.Data.Base.Resource {
-  static schema: SupCore.Data.Base.Schema = {
+  static schema: SupCore.Data.Schema = {
     theme: { type: "string", mutable: true },
     customTheme: { type: "string", mutable: true },
     tabSize: { type: "number", min: 1, max: 8, mutable: true },

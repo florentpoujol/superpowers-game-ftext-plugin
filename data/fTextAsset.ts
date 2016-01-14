@@ -6,7 +6,7 @@ import fTextSettingsResource from "./fTextSettingsResource";
 
 export default class fTextAsset extends SupCore.Data.Base.Asset {
 
-  static schema: SupCore.Data.Base.Schema  = {
+  static schema: SupCore.Data.Schema  = {
     text: { type: "string" },
     draft: { type: "string" },
     revisionId: { type: "integer" },
@@ -46,7 +46,7 @@ export default class fTextAsset extends SupCore.Data.Base.Asset {
   }
 
   restore() {
-    if (this.hasDraft) this.emit("setDiagnostic", "draft", "info");
+    if (this.hasDraft) this.emit("setBadge", "draft", "info");
   }
 
   destroy(callback: Function) {
@@ -101,7 +101,7 @@ export default class fTextAsset extends SupCore.Data.Base.Asset {
 
     if (!this.hasDraft) {
       this.hasDraft = true;
-      this.emit("setDiagnostic", "draft", "info");
+      this.emit("setBadge", "draft", "info");
     }
     this.emit("change");
   }
@@ -121,7 +121,7 @@ export default class fTextAsset extends SupCore.Data.Base.Asset {
 
     if (this.hasDraft) {
       this.hasDraft = false;
-      this.emit("clearDiagnostic", "draft");
+      this.emit("clearBadge", "draft");
     }
 
     this.emit("change");

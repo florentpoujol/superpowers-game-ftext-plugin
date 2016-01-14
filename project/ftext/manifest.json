@@ -2,6 +2,6 @@
   "id": "DgFy",
   "name": "fText",
   "description": "",
-  "formatVersion": 3,
-  "system": "supGame"
+  "formatVersion": 5,
+  "systemId": "game"
 }
