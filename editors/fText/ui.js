@@ -50,7 +50,7 @@ ui.setupEditor = function (clientId) {
 function onSendOperation(operation) {
     network_1.socket.emit("edit:assets", info_1.default.assetId, "editText", operation, network_1.data.asset.document.getRevisionId(), function (err) {
         if (err != null) {
-            new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
+            new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
             SupClient.onDisconnected();
         }
     });
@@ -58,7 +58,7 @@ function onSendOperation(operation) {
 function onSaveText() {
     network_1.socket.emit("edit:assets", info_1.default.assetId, "saveText", function (err) {
         if (err != null) {
-            new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
+            new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
             SupClient.onDisconnected();
         }
     });

@@ -1,9 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-require("./info");
-require("./ui");
-require("./network");
-
-},{"./info":6,"./network":7,"./ui":8}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -89,7 +84,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -176,13 +171,18 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":2,"./encode":3}],5:[function(require,module,exports){
+},{"./decode":1,"./encode":2}],4:[function(require,module,exports){
+require("./info");
+require("./ui");
+require("./network");
+
+},{"./info":6,"./network":7,"./ui":8}],5:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -251,7 +251,7 @@ var info = { projectId: qs.project, assetId: qs.asset, line: qs.line, ch: qs.ch 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = info;
 
-},{"querystring":4}],7:[function(require,module,exports){
+},{"querystring":3}],7:[function(require,module,exports){
 var info_1 = require("./info");
 var ui_1 = require("./ui");
 var fTextSettingsResource_1 = require("../../data/fTextSettingsResource");
@@ -494,7 +494,7 @@ ui.setupEditor = function (clientId) {
 function onSendOperation(operation) {
     network_1.socket.emit("edit:assets", info_1.default.assetId, "editText", operation, network_1.data.asset.document.getRevisionId(), function (err) {
         if (err != null) {
-            new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
+            new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
             SupClient.onDisconnected();
         }
     });
@@ -502,7 +502,7 @@ function onSendOperation(operation) {
 function onSaveText() {
     network_1.socket.emit("edit:assets", info_1.default.assetId, "saveText", function (err) {
         if (err != null) {
-            new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
+            new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
             SupClient.onDisconnected();
         }
     });
@@ -572,4 +572,4 @@ ui.saveButton.addEventListener("click", function (event) {
     onSaveText();
 });
 
-},{"./info":6,"./network":7}]},{},[1]);
+},{"./info":6,"./network":7}]},{},[4]);
