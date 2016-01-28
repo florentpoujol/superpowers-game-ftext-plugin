@@ -68,13 +68,13 @@ ui.setupEditor = function(clientId: number) {
 
 function onSendOperation(operation: OperationData) {
   socket.emit("edit:assets", info.assetId, "editText", operation, data.asset.document.getRevisionId(), (err: string) => {
-    if (err != null) { new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
+    if (err != null) { new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
   });
 }
 
 function onSaveText() {
   socket.emit("edit:assets", info.assetId, "saveText", (err: string) => {
-    if (err != null) { new SupClient.dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
+    if (err != null) { new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close")); SupClient.onDisconnected(); }
   });
 }
 
