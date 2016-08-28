@@ -1,3 +1,3 @@
-require("./info");
+"use strict";
 require("./ui");
 require("./network");

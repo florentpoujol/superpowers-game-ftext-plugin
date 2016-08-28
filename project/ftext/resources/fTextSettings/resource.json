@@ -1,18 +1,7 @@
 {
-  "theme": "monokai",
-  "keyMap": "sublime",
   "showTrailingSpace": true,
-  "tabSize": 2,
-  "indentWithTabs": true,
   "styleActiveLine": true,
   "autoCloseBrackets": true,
   "matchTags": true,
-  "highlightSelectionMatches": true,
-  "customTheme": "",
-  "lint_json": true,
-  "lint_cson": true,
-  "lint_javascript": true,
-  "lint_jade": true,
-  "lint_stylus": true,
-  "lint_css": true
+  "highlightSelectionMatches": true
 }

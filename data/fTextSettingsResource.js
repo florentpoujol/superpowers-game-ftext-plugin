@@ -1,60 +1,37 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var fTextSettingsResource = (function (_super) {
-    __extends(fTextSettingsResource, _super);
-    function fTextSettingsResource(id, pub, serverData) {
-        _super.call(this, id, pub, fTextSettingsResource.schema, serverData);
+var FTextSettingsResource = (function (_super) {
+    __extends(FTextSettingsResource, _super);
+    function FTextSettingsResource(id, pub, serverData) {
+        _super.call(this, id, pub, FTextSettingsResource.schema, serverData);
     }
-    fTextSettingsResource.prototype.init = function (callback) {
+    FTextSettingsResource.prototype.init = function (callback) {
         var pub = {};
-        for (var name_1 in fTextSettingsResource.defaultValues) {
-            pub[name_1] = fTextSettingsResource.defaultValues[name_1];
+        for (var name_1 in FTextSettingsResource.defaultValues) {
+            pub[name_1] = FTextSettingsResource.defaultValues[name_1];
         }
         this.pub = pub;
         _super.prototype.init.call(this, callback);
     };
-    fTextSettingsResource.schema = {
-        theme: { type: "string", mutable: true },
-        customTheme: { type: "string", mutable: true },
-        tabSize: { type: "number", min: 1, max: 8, mutable: true },
-        indentWithTabs: { type: "boolean", mutable: true },
-        keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
+    FTextSettingsResource.schema = {
         styleActiveLine: { type: "boolean", mutable: true },
         showTrailingSpace: { type: "boolean", mutable: true },
         autoCloseBrackets: { type: "boolean", mutable: true },
         matchTags: { type: "boolean", mutable: true },
         highlightSelectionMatches: { type: "boolean", mutable: true },
-        lint_json: { type: "boolean", mutable: true },
-        lint_cson: { type: "boolean", mutable: true },
-        lint_javascript: { type: "boolean", mutable: true },
-        lint_jade: { type: "boolean", mutable: true },
-        lint_stylus: { type: "boolean", mutable: true },
-        lint_css: { type: "boolean", mutable: true },
-        lint_yaml: { type: "boolean", mutable: true },
     };
-    fTextSettingsResource.defaultValues = {
-        theme: "default",
-        customTheme: "",
-        tabSize: 2,
-        indentWithTabs: true,
-        keyMap: "sublime",
+    FTextSettingsResource.defaultValues = {
         styleActiveLine: true,
         autoCloseBrackets: true,
         showTrailingSpace: true,
         matchTags: true,
         highlightSelectionMatches: true,
-        lint_json: true,
-        lint_cson: true,
-        lint_javascript: true,
-        lint_jade: true,
-        lint_stylus: true,
-        lint_css: true,
-        lint_yaml: true,
     }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
-    return fTextSettingsResource;
-})(SupCore.Data.Base.Resource);
+    return FTextSettingsResource;
+}(SupCore.Data.Base.Resource));
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = fTextSettingsResource;
+exports.default = FTextSettingsResource;

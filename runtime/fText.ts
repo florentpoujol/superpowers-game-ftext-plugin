@@ -4,22 +4,24 @@ import * as csonparser from "cson-parser";
 import * as domify from "domify";
 import * as markdown from "markdown";
 import * as jade from "jade";
+import * as pug from "pug";
 import * as stylus from "stylus";
 import * as jsyaml from "js-yaml";
 
-(<any>window).fTextParsers = {
+(window as any).fTextParsers = {
   jsonlint: jsonlint,
   csonparser: csonparser,
   domify: domify,
   markdown: markdown.markdown,
   jade: jade,
+  pug: pug,
   stylus: stylus,
   jsyaml: jsyaml,
 };
 
 export function createOuterAsset(player: SupRuntime.Player, asset: any) {
   // asset is the pub, the asset's properties
-  return new (<any>window).fText(asset);
+  return new (window as any).fText(asset);
 }
 
 export function init(player: any, callback: Function) {
@@ -33,13 +35,13 @@ export function start(player: any, callback: Function) {
 export function loadAsset(player: SupRuntime.Player, entry: any, callback: (err: Error, asset?: any) => any) {
   // entry has the Asset interface
   // app\system\SupRuntime\src\Player.ts:
-  player.getAssetData("assets/"+entry.storagePath+"/ftext.txt", "text", (err: Error, text: string) => {
+  player.getAssetData("assets/" + entry.storagePath + "/ftext.txt", "text", (err: Error, text: string) => {
     if (err) throw err;
 
     // in case the content is valid JSON, text is a JS object instead of a string
     if (text === Object(text))
       text = JSON.stringify(text);
-    
+
     entry.text = text;
     callback(null, entry);
   });

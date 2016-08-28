@@ -1,5 +1,6 @@
 /// <reference path="Sup.d.ts"/>
 
+/* tslint:disable:class-name */
 class fText extends Sup.Asset {
 
   /**
@@ -15,23 +16,24 @@ class fText extends Sup.Asset {
   static parsers: {
     jsonlint: any,
     csonparser: any,
-    domify: (text: string)=>any,
+    domify: (text: string) => any,
     markdown: any,
     jade: any,
+    pug: any,
     stylus: any,
     jsyaml: any
-  } = (<any>window).fTextParsers;
-  // (<any>window).fTextParsers is set in rutime/ftext.ts
+  } = (window as any).fTextParsers;
+  // (window as any).fTextParsers is set in runtime/fText.ts
 
   /**
   * The set of instructions which can be found in the asset's content.
   */
-  instructions: { [key: string]: string|string[] } = {};
+  private instructions: { [key: string]: string|string[] } = {};
 
   /**
   * The asset's syntax, defined by the extension (if any) found at the end of its name.
   */
-  syntax: string = "";
+  private syntax: string = "";
 
   // ----------------------------------------
 
@@ -40,13 +42,13 @@ class fText extends Sup.Asset {
   /**
   * @param inner - The asset's pub as defined in the asset's class.
   */
-  constructor(inner: {[key:string]: any;}) {
+  constructor(inner: {[key : string]: any; }) {
     super(inner); // sets inner as the value of this.__inner
 
     this._parseInstructions();
 
     // get asset's syntax
-    let _languagesByExtensions: any = {
+    let languagesByExtensions: any = {
       md: "markdown",
       styl: "stylus",
       js: "javascript",
@@ -57,8 +59,8 @@ class fText extends Sup.Asset {
     let match = name.match(/\.[a-zA-Z]+$/gi); // look for any letter after a dot at the end of the string
     if (match != null) {
       let syntax = match[0].replace(".", "");
-      if (_languagesByExtensions[syntax] != null)
-        syntax = _languagesByExtensions[syntax];
+      if (languagesByExtensions[syntax] != null)
+        syntax = languagesByExtensions[syntax];
       this.syntax = syntax;
     }
   }
@@ -69,9 +71,9 @@ class fText extends Sup.Asset {
   * Called once from the constructor
   */
   private _parseInstructions() {
-    let regex = /\[ftext\s*:\s*([a-zA-Z0-9\/+-]+)(\s*:\s*([a-zA-Z0-9\.\/+-]+))?\]/ig
+    let regex = /ftext:([a-zA-Z0-9\/+-]+)(:([a-zA-Z0-9\.\/+-]+))?/ig;
     let match: any;
-    let instructionsCount = (this.__inner.text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
+    let instructionsCount = (this.__inner.text.match(/ftext/ig) || []).length; // prevent infinite loop
     do {
       match = regex.exec(this.__inner.text);
       if (match != null && match[1] != null) {
@@ -81,7 +83,7 @@ class fText extends Sup.Asset {
         else value = "";
         if (name === "include") {
           if (this.instructions[name] == null) this.instructions[name] = [];
-          (<string[]>this.instructions[name]).push(value);
+          (this.instructions[name] as string[]).push(value);
         }
         else
           this.instructions[name] = value.trim().toLowerCase();
@@ -94,10 +96,9 @@ class fText extends Sup.Asset {
   // ----------------------------------------
 
   /**
-  * @readonly
-  * The raw content of the asset.
+  * Gets the raw content of the asset.
   */
-  get text(): string {
+  getText(): string {
     return this.__inner.text;
   }
 
@@ -133,14 +134,17 @@ class fText extends Sup.Asset {
         case "jade":
           syntaxFn = fText.parsers.jade.compile(text);
           break;
-        case "stylus": 
-          syntaxFn = ()=>{}; // special case
+        case "pug":
+          syntaxFn = fText.parsers.pug.compile(text);
           break;
-        case "yaml": 
+        case "stylus":
+          syntaxFn = () => { return; }; // special case
+          break;
+        case "yaml":
           syntaxFn = fText.parsers.jsyaml.safeLoad;
           break;
       }
-      
+
       if (syntaxFn != null) {
         try {
           if (syntax === "stylus")
@@ -149,7 +153,7 @@ class fText extends Sup.Asset {
             text = syntaxFn(text);
         }
         catch (e) {
-          console.error("fText.parse(): error parsing asset '"+this.__inner.name+"' :");
+          console.error("fText.parse(): error parsing asset '" + this.__inner.name + "' :");
           throw e;
         }
       }
@@ -162,10 +166,9 @@ class fText extends Sup.Asset {
 
       if (this.instructions["include"] != null) {
         for (let path of this.instructions["include"]) {
-          // console.log("fTextAsset.text path", path);
-          let asset = Sup.get(path, fText, {ignoreMissing: false});
-          // note: for some reason, the three arguments are needed here
-          let regexp = new RegExp("[<!/*#-]*\\[ftext\\s*:\\s*include\\s*:\\s*"+path.replace(".", "\\.")+"\\][>*/-]*", "i");
+          console.log("fTextAsset.text include path", path);
+          let asset = Sup.get(path, fText, {ignoreMissing: false}); // note: for some reason, the three arguments are needed here
+          let regexp = new RegExp("[<!/*#-]*ftext:include:" + path.replace(".", "\\.") + "[>*/-]*", "i");
           text = text.replace(regexp, asset.parse(options));
         }
       }
@@ -187,4 +190,4 @@ class fText extends Sup.Asset {
   }
 }
 
-(<any>window).fText = fText;
+(window as any).fText = fText;

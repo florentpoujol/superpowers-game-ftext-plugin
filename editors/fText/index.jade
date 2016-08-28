@@ -2,9 +2,9 @@ doctype html
 html
   head
     link(rel="stylesheet",href="/styles/reset.css")
-    link(rel="stylesheet",href="/styles/perfectResize.css")
+    link(rel="stylesheet",href="/styles/resizeHandle.css")
     link(rel="stylesheet",href="/styles/dialogs.css")
-    link(rel="stylesheet",href="../../textEditorWidget/index.css")
+    link(rel="stylesheet",href="../../../../common/textEditorWidget/widget.css")
     link(rel="stylesheet",href="index.css")
 
   body
@@ -14,13 +14,57 @@ html
     .error-pane
       .status
         .draft
-          button(title= t("ftextEditor:applyChanges") disabled)= t("ftextEditor:saved")
-        .errorInfo 
+          button(title= t("fTextEditor:applyChanges") disabled)= t("fTextEditor:saved")
+        .errorInfo
 
     script(src="/SupCore.js")
     script(src="/SupClient.js")
     script(src="../../../../../SupEngine.js")
     script(src="../../bundles/data.js")
     script(src="../../bundles/components.js")
-    script(src="../../textEditorWidget/index.js")
+    script(src="../../../../common/textEditorWidget/bundles/data.js")
+    script(src="../../../../common/textEditorWidget/widget.js")
+
+    //- load codemirror's modes
+    script(src="../../../../common/textEditorWidget/codemirror/mode/javascript/javascript.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/xml/xml.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/htmlmixed/htmlmixed.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/markdown/markdown.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/coffeescript/coffeescript.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/stylus/stylus.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/yaml/yaml.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/jade/jade.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/clike/clike.js")
+    script(src="../../codemirror/mode/pug/pug.js")
+
+    //- load the parsers
+    //- script(src="../../../node_modules/css-lint")
+    //- script(src="../../../node_modules/markdown")
+    //- script(src="../../../node_modules/jshint")
+    //- script(src="../../../node_modules/cson-parser")
+    //- script(src="../../jsonlint/lib/jsonlint.js")
+    //- script(src="../../../node_modules/jade")
+    //- script(src="../../../node_modules/pug")
+    //- script(src="../../../node_modules/stylus")
+    //- script(src="../../../node_modules/js-yaml")
+
+    //- load CM's linters
+    //- script(src="../../codemirror/custom-linters/lint.js")
+    //- script(src="../../codemirror/custom-linters/cson-lint.js")
+    //- script(src="../../codemirror/custom-linters/json-lint.js")
+    //- script(src="../../codemirror/custom-linters/jade-lint.js")
+    //- script(src="../../codemirror/custom-linters/pug-lint.js")
+    //- script(src="../../codemirror/custom-linters/stylus-lint.js")
+    //- script(src="../../codemirror/custom-linters/yaml-lint.js")
+
+    //- load otherr addons not load by the common textEditorWiddget
+    script(src="../../codemirror/addon/edit/closetag.js")
+    script(src="../../codemirror/addon/edit/matchtags.js")
+    script(src="../../codemirror/addon/edit/trailingspace.js")
+    script(src="../../codemirror/addon/fold/xml-fold.js")
+    script(src="../../codemirror/addon/fold/markdown-fold.js")
+    script(src="../../codemirror/addon/hint/anyword-hint.js")
+    script(src="../../codemirror/addon/search/match-highlighter.js")
+    script(src="../../codemirror/addon/selection/active-line.js")
+
     script(src="index.js")

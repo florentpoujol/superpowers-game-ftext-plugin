@@ -1,6 +1,6 @@
 .code-editor-container
   textarea(disabled).code-editor
-    //[fText: include: md.md]
+    //fText:include:md.md
 
 .error-pane
   .status

@@ -1,12 +1,6 @@
 // fText plugin
 // https://github.com/florentpoujol/superpowers-ftext-plugin
-// Adds a generic text asset of type fText
-
-// Documentation:
-// https://florentpoujol.github.io/superpowers-ftext-plugin
-
-// You can also access the documentation offline in the plugin's "public/docs" folder 
-// or via the "Docs browser" tool provided by the "Docs browser" plugin: https://github.com/florentpoujol/superpowers-docs-browser-plugin
+// Adds a generic text asset of type FText
 
 declare class fText extends Sup.Asset {
   constructor(inner: { [key: string]: any; });
@@ -21,12 +15,8 @@ declare class fText extends Sup.Asset {
     jsyaml: any,                  // https://github.com/nodeca/js-yaml
   };
 
-  instructions: { [key: string]: string | string[] };
-  syntax: string;
-
-  text: string; // get raw content, readonly
-
+  getText(): string;
   parse(options?: {
     include?: boolean,
-  }): any;  
+  }): any;
 }

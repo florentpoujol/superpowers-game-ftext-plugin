@@ -1,11 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var fTextSettingsResource = require("./fTextSettingsResource");
-var fTextAsset = require("./fTextAsset");
-
-SupCore.system.data.registerResource("fTextSettings", fTextSettingsResource.default);
-SupCore.system.data.registerAssetClass("fText", fTextAsset.default);
-
-},{"./fTextAsset":4,"./fTextSettingsResource":5}],2:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -233,38 +226,100 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":3}],3:[function(require,module,exports){
+},{"_process":2}],2:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+(function () {
+  try {
+    cachedSetTimeout = setTimeout;
+  } catch (e) {
+    cachedSetTimeout = function () {
+      throw new Error('setTimeout is not defined');
+    }
+  }
+  try {
+    cachedClearTimeout = clearTimeout;
+  } catch (e) {
+    cachedClearTimeout = function () {
+      throw new Error('clearTimeout is not defined');
+    }
+  }
+} ())
 var queue = [];
 var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
 
 function drainQueue() {
     if (draining) {
         return;
     }
+    var timeout = cachedSetTimeout.call(null, cleanUpNextTick);
     draining = true;
-    var currentQueue;
+
     var len = queue.length;
     while(len) {
         currentQueue = queue;
         queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
+        queueIndex = -1;
         len = queue.length;
     }
+    currentQueue = null;
     draining = false;
+    cachedClearTimeout.call(null, timeout);
 }
+
 process.nextTick = function (fun) {
-    queue.push(fun);
-    if (!draining) {
-        setTimeout(drainQueue, 0);
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        cachedSetTimeout.call(null, drainQueue, 0);
     }
 };
 
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
 process.title = 'browser';
 process.browser = true;
 process.env = {};
@@ -286,14 +341,14 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -302,15 +357,15 @@ var __extends = (this && this.__extends) || function (d, b) {
 var OT = require("operational-transform");
 
 var path = require("path");
-var fTextAsset = (function (_super) {
-    __extends(fTextAsset, _super);
+var FTextAsset = (function (_super) {
+    __extends(FTextAsset, _super);
     // called from the editor onAssetReceived() as well as on server startup
-    function fTextAsset(id, pub, serverData) {
-        _super.call(this, id, pub, fTextAsset.schema, serverData);
+    function FTextAsset(id, pub, server) {
+        _super.call(this, id, pub, FTextAsset.schema, server);
     }
     // called on asset creation
     // options contain the asset's name
-    fTextAsset.prototype.init = function (options, callback) {
+    FTextAsset.prototype.init = function (options, callback) {
         var defaultContent = "";
         this.pub = {
             text: defaultContent,
@@ -319,45 +374,46 @@ var fTextAsset = (function (_super) {
         };
         _super.prototype.init.call(this, options, callback);
     };
-    fTextAsset.prototype.setup = function () {
+    FTextAsset.prototype.setup = function () {
         this.document = new OT.Document(this.pub.draft, this.pub.revisionId);
         this.hasDraft = this.pub.text !== this.pub.draft;
     };
-    fTextAsset.prototype.restore = function () {
+    FTextAsset.prototype.restore = function () {
         if (this.hasDraft)
             this.emit("setBadge", "draft", "info");
     };
-    fTextAsset.prototype.destroy = function (callback) {
+    FTextAsset.prototype.destroy = function (callback) {
         callback();
     };
     // called on server startup
-    fTextAsset.prototype.load = function (assetPath) {
+    FTextAsset.prototype.load = function (assetPath) {
         // NOTE: We must not set this.pub with temporary values here, otherwise
         // the asset will be considered loaded by Dictionary.acquire
         // and the acquire callback will be called immediately
         var _this = this;
         fs.readFile(path.join(assetPath, "ftext.txt"), { encoding: "utf8" }, function (err, text) {
             fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, function (err, draft) {
-                _this.pub = { revisionId: 0, text: text, draft: (draft != null) ? draft : text };
-                _this.setup();
-                _this.emit("load");
+                var pub = { revisionId: 0, text: text, draft: (draft != null) ? draft : text };
+                // this.setup();
+                // this.emit("load");
+                _this._onLoaded(assetPath, pub);
             });
         });
     };
     // called when it is time to write the asset on disk, not when the user save the asset from the editor
-    fTextAsset.prototype.save = function (assetPath, callback) {
+    FTextAsset.prototype.save = function (outputPath, callback) {
         var _this = this;
-        fs.writeFile(path.join(assetPath, "ftext.txt"), this.pub.text, { encoding: "utf8" }, function (err) {
+        this.write(fs.writeFile, outputPath, function (err) {
             if (err != null) {
                 callback(err);
                 return;
             }
             if (_this.hasDraft) {
-                fs.writeFile(path.join(assetPath, "draft.txt"), _this.pub.draft, { encoding: "utf8" }, callback);
+                fs.writeFile(path.join(outputPath, "draft.txt"), _this.pub.draft, { encoding: "utf8" }, callback);
             }
             else {
                 // delete the draft.txt file if there is no draft to save and the file exists
-                fs.unlink(path.join(assetPath, "draft.txt"), function (err) {
+                fs.unlink(path.join(outputPath, "draft.txt"), function (err) {
                     if (err != null && err.code !== "ENOENT") {
                         callback(err);
                         return;
@@ -367,7 +423,13 @@ var fTextAsset = (function (_super) {
             }
         });
     };
-    fTextAsset.prototype.server_editText = function (client, operationData, revisionIndex, callback) {
+    FTextAsset.prototype.clientExport = function (outputPath, callback) {
+        this.write(SupApp.writeFile, outputPath, callback);
+    };
+    FTextAsset.prototype.write = function (writeFile, outputPath, callback) {
+        writeFile(path.join(outputPath, "ftext.txt"), this.pub.text, { encoding: "utf8" }, callback);
+    };
+    FTextAsset.prototype.server_editText = function (client, operationData, revisionIndex, callback) {
         if (operationData.userId !== client.id) {
             callback("Invalid client id");
             return;
@@ -386,21 +448,21 @@ var fTextAsset = (function (_super) {
         }
         this.pub.draft = this.document.text;
         this.pub.revisionId++;
-        callback(null, operation.serialize(), this.document.getRevisionId() - 1);
+        callback(null, null, operation.serialize(), this.document.getRevisionId() - 1);
         if (!this.hasDraft) {
             this.hasDraft = true;
             this.emit("setBadge", "draft", "info");
         }
         this.emit("change");
     };
-    fTextAsset.prototype.client_editText = function (operationData, revisionIndex) {
+    FTextAsset.prototype.client_editText = function (operationData, revisionIndex) {
         var operation = new OT.TextOperation();
         operation.deserialize(operationData);
         this.document.apply(operation, revisionIndex);
         this.pub.draft = this.document.text;
         this.pub.revisionId++;
     };
-    fTextAsset.prototype.server_saveText = function (client, callback) {
+    FTextAsset.prototype.server_applyDraftChanges = function (client, options, callback) {
         this.pub.text = this.pub.draft;
         callback(null);
         if (this.hasDraft) {
@@ -409,80 +471,63 @@ var fTextAsset = (function (_super) {
         }
         this.emit("change");
     };
-    fTextAsset.prototype.client_saveText = function () { this.pub.text = this.pub.draft; };
-    fTextAsset.schema = {
+    FTextAsset.prototype.client_applyDraftChanges = function () { this.pub.text = this.pub.draft; };
+    FTextAsset.schema = {
         text: { type: "string" },
         draft: { type: "string" },
         revisionId: { type: "integer" },
     };
-    return fTextAsset;
-})(SupCore.Data.Base.Asset);
+    return FTextAsset;
+}(SupCore.Data.Base.Asset));
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = fTextAsset;
+exports.default = FTextAsset;
 
-},{"operational-transform":9,"path":2}],5:[function(require,module,exports){
+},{"operational-transform":9,"path":1}],4:[function(require,module,exports){
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var fTextSettingsResource = (function (_super) {
-    __extends(fTextSettingsResource, _super);
-    function fTextSettingsResource(id, pub, serverData) {
-        _super.call(this, id, pub, fTextSettingsResource.schema, serverData);
+var FTextSettingsResource = (function (_super) {
+    __extends(FTextSettingsResource, _super);
+    function FTextSettingsResource(id, pub, serverData) {
+        _super.call(this, id, pub, FTextSettingsResource.schema, serverData);
     }
-    fTextSettingsResource.prototype.init = function (callback) {
+    FTextSettingsResource.prototype.init = function (callback) {
         var pub = {};
-        for (var name_1 in fTextSettingsResource.defaultValues) {
-            pub[name_1] = fTextSettingsResource.defaultValues[name_1];
+        for (var name_1 in FTextSettingsResource.defaultValues) {
+            pub[name_1] = FTextSettingsResource.defaultValues[name_1];
         }
         this.pub = pub;
         _super.prototype.init.call(this, callback);
     };
-    fTextSettingsResource.schema = {
-        theme: { type: "string", mutable: true },
-        customTheme: { type: "string", mutable: true },
-        tabSize: { type: "number", min: 1, max: 8, mutable: true },
-        indentWithTabs: { type: "boolean", mutable: true },
-        keyMap: { type: "enum", items: ["sublime", "vim", "emacs"], mutable: true },
+    FTextSettingsResource.schema = {
         styleActiveLine: { type: "boolean", mutable: true },
         showTrailingSpace: { type: "boolean", mutable: true },
         autoCloseBrackets: { type: "boolean", mutable: true },
         matchTags: { type: "boolean", mutable: true },
         highlightSelectionMatches: { type: "boolean", mutable: true },
-        lint_json: { type: "boolean", mutable: true },
-        lint_cson: { type: "boolean", mutable: true },
-        lint_javascript: { type: "boolean", mutable: true },
-        lint_jade: { type: "boolean", mutable: true },
-        lint_stylus: { type: "boolean", mutable: true },
-        lint_css: { type: "boolean", mutable: true },
-        lint_yaml: { type: "boolean", mutable: true },
     };
-    fTextSettingsResource.defaultValues = {
-        theme: "default",
-        customTheme: "",
-        tabSize: 2,
-        indentWithTabs: true,
-        keyMap: "sublime",
+    FTextSettingsResource.defaultValues = {
         styleActiveLine: true,
         autoCloseBrackets: true,
         showTrailingSpace: true,
         matchTags: true,
         highlightSelectionMatches: true,
-        lint_json: true,
-        lint_cson: true,
-        lint_javascript: true,
-        lint_jade: true,
-        lint_stylus: true,
-        lint_css: true,
-        lint_yaml: true,
     }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
-    return fTextSettingsResource;
-})(SupCore.Data.Base.Resource);
+    return FTextSettingsResource;
+}(SupCore.Data.Base.Resource));
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = fTextSettingsResource;
+exports.default = FTextSettingsResource;
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+var FTextSettingsResource = require("./fTextSettingsResource");
+var FTextAsset = require("./fTextAsset");
+
+SupCore.system.data.registerResource("fTextSettings", FTextSettingsResource.default);
+SupCore.system.data.registerAssetClass("fText", FTextAsset.default);
+},{"./fTextAsset":3,"./fTextSettingsResource":4}],6:[function(require,module,exports){
 var OT = require("./index");
 var Document = (function () {
     function Document(text, revisionId) {
@@ -966,4 +1011,4 @@ exports.Document = Document;
 var TextOperation = require("./TextOperation");
 exports.TextOperation = TextOperation;
 
-},{"./Document":6,"./TextOp":7,"./TextOperation":8}]},{},[1]);
+},{"./Document":6,"./TextOp":7,"./TextOperation":8}]},{},[5]);
