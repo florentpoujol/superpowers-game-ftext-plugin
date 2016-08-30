@@ -5,7 +5,7 @@ export default class FTextSettingsResource extends SupCore.Data.Base.Resource {
     autoCloseBrackets: { type: "boolean", mutable: true },
     matchTags: { type: "boolean", mutable: true },
     highlightSelectionMatches: { type: "boolean", mutable: true },
-    // lint: { type: "boolean", mutable: true }
+    lint: { type: "boolean", mutable: true }
   };
 
   static defaultValues: any = {
@@ -14,7 +14,7 @@ export default class FTextSettingsResource extends SupCore.Data.Base.Resource {
     showTrailingSpace: true,
     matchTags: true,
     highlightSelectionMatches: true,
-    // lint: true,
+    lint: true,
   }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
 
   constructor(id: string, pub: any, serverData?: any) {

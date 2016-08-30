@@ -6,7 +6,6 @@
 declare module "jsonlint" {}
 declare module "cson-parser" {}
 declare module "domify" {}
-declare module "jade" {}
 declare module "pug" {}
 declare module "stylus" {}
 declare module "js-yaml" {}

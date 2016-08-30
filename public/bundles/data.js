@@ -508,6 +508,7 @@ var FTextSettingsResource = (function (_super) {
         autoCloseBrackets: { type: "boolean", mutable: true },
         matchTags: { type: "boolean", mutable: true },
         highlightSelectionMatches: { type: "boolean", mutable: true },
+        lint: { type: "boolean", mutable: true }
     };
     FTextSettingsResource.defaultValues = {
         styleActiveLine: true,
@@ -515,6 +516,7 @@ var FTextSettingsResource = (function (_super) {
         showTrailingSpace: true,
         matchTags: true,
         highlightSelectionMatches: true,
+        lint: true,
     }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
     return FTextSettingsResource;
 }(SupCore.Data.Base.Resource));

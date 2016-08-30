@@ -24,6 +24,7 @@ var FTextSettingsResource = (function (_super) {
         autoCloseBrackets: { type: "boolean", mutable: true },
         matchTags: { type: "boolean", mutable: true },
         highlightSelectionMatches: { type: "boolean", mutable: true },
+        lint: { type: "boolean", mutable: true }
     };
     FTextSettingsResource.defaultValues = {
         styleActiveLine: true,
@@ -31,6 +32,7 @@ var FTextSettingsResource = (function (_super) {
         showTrailingSpace: true,
         matchTags: true,
         highlightSelectionMatches: true,
+        lint: true,
     }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
     return FTextSettingsResource;
 }(SupCore.Data.Base.Resource));
@@ -174,7 +176,7 @@ var FTextSettingsEditor = (function () {
         };
         this.projectClient = projectClient;
         // build the form from the html file
-        var html = "\n<div>\n  <p>\n    Check the documentation at <a href=\"https://github.com/florentpoujol/superpowers-game-ftext-plugin\" title=\"fText plugin documentation\">https://github.com/florentpoujol/superpowers-game-ftext-plugin</a> for more informations on the various settings you can find below.\n  </p>\n  <table>\n    <tr>\n      <th>Auto close brackets</th>\n      <td>\n        <input id=\"autoCloseBrackets\" type=\"checkbox\"/>\n      </td>\n    </tr>\n    <tr>\n      <th>Highlight</th>\n      <td>\n        <label>\n          <input id=\"styleActiveLine\" type=\"checkbox\"/>\n          active line\n        </label> <br>\n        <label>\n          <input id=\"showTrailingSpace\" type=\"checkbox\"/>\n          trailing spaces\n        </label> <br>\n        <label>\n          <input id=\"matchTags\" type=\"checkbox\"/>\n          matching tags (for HTML-like languages)\n        </label> <br>\n        <label>\n          <input id=\"highlightSelectionMatches\" type=\"checkbox\"/>\n          matching words (when selected)\n        </label>\n      </td>\n    </tr>\n    <!-- <tr>\n      <th>Linting</th>\n      <td>\n        <input id=\"lint\" type=\"checkbox\"/>\n      </td>\n    </tr> -->\n  </table>\n</div>\n";
+        var html = "\n<div>\n  <p>\n    Check the documentation at <a href=\"https://github.com/florentpoujol/superpowers-game-ftext-plugin\" title=\"fText plugin documentation\">https://github.com/florentpoujol/superpowers-game-ftext-plugin</a> for more informations on the various settings you can find below.\n  </p>\n  <table>\n    <tr>\n      <th>Auto close brackets</th>\n      <td>\n        <input id=\"autoCloseBrackets\" type=\"checkbox\"/>\n      </td>\n    </tr>\n    <tr>\n      <th>Highlight</th>\n      <td>\n        <label>\n          <input id=\"styleActiveLine\" type=\"checkbox\"/>\n          active line\n        </label> <br>\n        <label>\n          <input id=\"showTrailingSpace\" type=\"checkbox\"/>\n          trailing spaces\n        </label> <br>\n        <label>\n          <input id=\"matchTags\" type=\"checkbox\"/>\n          matching tags (for HTML-like languages)\n        </label> <br>\n        <label>\n          <input id=\"highlightSelectionMatches\" type=\"checkbox\"/>\n          matching words (when selected)\n        </label>\n      </td>\n    </tr>\n    <tr>\n      <th>Linting</th>\n      <td>\n        <input id=\"lint\" type=\"checkbox\"/>\n      </td>\n    </tr>\n  </table>\n</div>\n";
         container.appendChild(domify(html));
         // ----------------------------------------
         // build booleand settings

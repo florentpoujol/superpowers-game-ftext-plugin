@@ -3,7 +3,6 @@ var jsonlint = require("jsonlint");
 var csonparser = require("cson-parser");
 var domify = require("domify");
 var markdown = require("markdown");
-var jade = require("jade");
 var pug = require("pug");
 var stylus = require("stylus");
 var jsyaml = require("js-yaml");
@@ -12,7 +11,6 @@ window.fTextParsers = {
     csonparser: csonparser,
     domify: domify,
     markdown: markdown.markdown,
-    jade: jade,
     pug: pug,
     stylus: stylus,
     jsyaml: jsyaml,

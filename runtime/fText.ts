@@ -3,7 +3,6 @@ import * as jsonlint from "jsonlint";
 import * as csonparser from "cson-parser";
 import * as domify from "domify";
 import * as markdown from "markdown";
-import * as jade from "jade";
 import * as pug from "pug";
 import * as stylus from "stylus";
 import * as jsyaml from "js-yaml";
@@ -13,7 +12,6 @@ import * as jsyaml from "js-yaml";
   csonparser: csonparser,
   domify: domify,
   markdown: markdown.markdown,
-  jade: jade,
   pug: pug,
   stylus: stylus,
   jsyaml: jsyaml,

@@ -5,6 +5,7 @@
   "noError": "No error",
   "error": "error",
   "errors": "errors",
-  "clickToError": "Click to jump to the error",
+  "some-errors": "There are some errors",
+  "clickToError": "Click to jump",
   "clickToFirstError": "Click to jump to the first error"
 }

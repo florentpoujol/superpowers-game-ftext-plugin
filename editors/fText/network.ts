@@ -1,17 +1,43 @@
-import * as querystring from "querystring";
+// import * as querystring from "querystring";
 import ui from "./ui";
 import FTextAsset from "../../data/fTextAsset";
 import FTextSettingsResource from "../../data/fTextSettingsResource";
 
-export const data: {
-  projectClient?: SupClient.ProjectClient;
-  asset?: FTextAsset;
-  assetInstructions?: { [key: string]: any };
-  assetSyntax?: string; // set in assetSubscriber.onAsetReceived()
-  FTextSettingsResourcePub?: any; // set in onResourceReceived(), used in onfTextSettingsUpdated()
-} = {};
+/* tslint:disable */
+// expose the linter, used int he custom linters script
+(window as any).csonparser = require("cson-parser");
+(window as any).CSSLint = require("csslint");
+(window as any).JSHINT = require("jshint");
+(window as any).jsonlint = require("jsonlint");
+(window as any).pug = require("pug");
+(window as any).stylus = require("stylus");
+(window as any).jsyaml = require("js-yaml");
 
-export let socket: SocketIOClient.Socket;
+
+const data: {
+  projectClient?: SupClient.ProjectClient; // set in onWelcomed()
+  asset?: FTextAsset;
+  assetMode?: string; // set in assetSubscriber.onAsetReceived()
+  lintedModes: string[];
+  modesByExtensions: any;
+  FTextSettingsResourcePub?: any; // set in onResourceReceived(), used in onfTextSettingsUpdated()
+} = {
+  lintedModes: ["coffeescript"/* cson */, "application/json", "javascript", "css", "pug", "stylus", "yaml"],
+  modesByExtensions: { // only necessary when the extension doesn't match CM's mode
+    "cson": "coffeescript",
+    "json": "application/json",
+    "js": "javascript",
+    "styl": "stylus",
+    "yml": "yaml",
+    "md": "markdown",
+    "shader": "x-shader/x-fragment",
+    "html": "htmlmixed"
+  },
+};
+export default data;
+
+let socket: SocketIOClient.Socket;
+
 SupClient.i18n.load([{ root: `${window.location.pathname}/../..`, name: "fTextEditor" }], () => {
   socket = SupClient.connect(SupClient.query.project);
   socket.on("welcome", onWelcomed);
@@ -25,6 +51,7 @@ SupClient.i18n.load([{ root: `${window.location.pathname}/../..`, name: "fTextEd
 // used in assetSubscriber.onAssetReceive() when subscribing to the resource
 let resourceSubscriber: any = {
   onResourceReceived: (resourceId: string, resource: FTextSettingsResource) => {
+    // I suppose the resource is always received after the asset since the resource is subscribed at the end of onAssetreceived()
     data.FTextSettingsResourcePub = resource.pub;
     onFTextSettingsResourceUpdated();
   },
@@ -40,7 +67,6 @@ function onFTextSettingsResourceUpdated() {
   if (ui.editor != null) {
     const pub = data.FTextSettingsResourcePub;
     const defaultValues = FTextSettingsResource.defaultValues;
-    // const syntax: string = data.assetSyntax;
 
     for (let optionName in defaultValues) {
       let optionValue = (pub[optionName] != null) ? pub[optionName] : defaultValues[optionName];
@@ -48,12 +74,15 @@ function onFTextSettingsResourceUpdated() {
 
       if (optionValue !== ui.editor.codeMirrorInstance.getOption(optionName)) {
         if (optionName === "lint") {
-          optionValue = false; // quick fix while linting feature are being reimplemented
-          allowLinting(optionValue);
-          // allowLinting(optionValue);
+          /*if (data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
+            allowLinting(optionValue);*/
+          if (optionValue === false)
+            allowLinting(false);
+          else if (optionValue === true && data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
+            allowLinting(true);
         }
-
-        ui.editor.codeMirrorInstance.setOption(optionName, optionValue);
+        else
+          ui.editor.codeMirrorInstance.setOption(optionName, optionValue);
       }
     }
   }
@@ -61,8 +90,27 @@ function onFTextSettingsResourceUpdated() {
 
 // used in assetSubscriber.onAssetReceived() and onFTextSettingsResourceUpdated()
 function allowLinting(allow: boolean = true) {
-  // ui.isAssetLinted = false; // quick fix while linting feature are being reimplemented
-  ui.isAssetLinted = allow;
+  // allowLinting shouldn't be called if the mode is unknow or not lintable or if linting is disable, but just to be sure
+  if (
+    (data.assetMode != null && data.lintedModes.indexOf(data.assetMode) === -1) ||
+    (data.FTextSettingsResourcePub != null && data.FTextSettingsResourcePub.lint === false)
+  )
+    allow = false;
+
+  ui.editor.codeMirrorInstance.setOption("lint", allow);
+
+  let gutters = ui.editor.codeMirrorInstance.getOption("gutters");
+  if (allow === true && gutters.indexOf("CodeMirror-lint-markers") === -1) {
+    gutters = ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "CodeMirror-foldgutter"];
+    ui.editor.codeMirrorInstance.setOption("gutters", []);
+    ui.editor.codeMirrorInstance.setOption("gutters", gutters);
+    // note when the lint gutter is added again after being removed,
+    // the lint markers won't show up in the lint gutter until the asset tabs is reopened
+  }
+  else if (allow === false && gutters.indexOf("CodeMirror-lint-markers") !== -1) {
+    ui.editor.codeMirrorInstance.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
+  }
+
   if (allow === false)
     ui.refreshErrors([]);
 }
@@ -87,98 +135,36 @@ const assetSubscriber: SupClient.AssetSubscriber = {
   onAssetReceived: (id: string, asset: FTextAsset) => {
     if (id !== SupClient.query.asset) return;
 
+    SupClient.setEntryRevisionDisabled(false);
+
     data.asset = asset;
+    ui.setEditorContent(asset);
 
-    ui.hasDraft(asset.hasDraft);
-    ui.editor.setText(asset.pub.draft);
-
-    const qs = querystring.parse(window.location.search.slice(1));
-    const info = { line: qs.line, ch: qs.ch };
-    if (info.line != null && info.ch != null) {
-      ui.editor.codeMirrorInstance.getDoc().setCursor({ line: info.line, ch: info.ch });
-      console.log("set cursor", window.location.search, qs);
-    }
-
-    // ----------
-    // fText specific settings :
-
-    // read the asset's content then return a list of instructions and their values
-    // used to populate data.localEditorSettings
-    // called from onAssetReceived()
-    /*const parseInstructions = () => {
-      let regex = /ftext:([a-zA-Z0-9\/+-]+)(:([a-zA-Z0-9\.\/+-]+))?\]/ig;
-      let match: any;
-      let text = ui.editor.codeMirrorInstance.getDoc().getValue();
-      let instructionsCount = (text.match(/\[\s*ftext/ig) || []).length; // prevent infinite loop
-      let instructions: any = {};
-      do {
-        match = regex.exec(text);
-        if (match != null && match[1] != null) {
-          let name = match[1].trim().toLowerCase();
-          let value = match[3];
-          if (value != null) value = value.trim();
-          else value = "";
-          if (name === "include") {
-            if (instructions[name] == null) instructions[name] = [];
-            (instructions[name] as string[]).push(value);
-          }
-          else
-            instructions[name] = value.trim().toLowerCase();
-        }
-        instructionsCount--;
-      }
-      while (match != null && instructionsCount > 0);
-      return instructions;
-    };
-
-    // where the hell is it used ?
-    data.assetInstructions = parseInstructions();*/
-
-    // get asset syntax
-    data.assetSyntax = "";
-    const syntaxesByShortExtensions: any = { // when the extension doen't match the syntax name
-      md: "markdown",
-      styl: "stylus",
-      js: "javascript",
-      yml: "yaml",
-    };
-    const assetPath = data.projectClient.entries.getPathFromId(asset.id);
     // check for an extension at the end of the asset's path
+    const assetPath = data.projectClient.entries.getPathFromId(asset.id);
     const extensionMatches = assetPath.match(/\.[a-zA-Z]+$/gi);
-    if (extensionMatches != null) {
-      let syntax = extensionMatches[0].replace(".", "");
-      if (syntaxesByShortExtensions[syntax] != null)
-        syntax = syntaxesByShortExtensions[syntax];
-      data.assetSyntax = syntax;
-    }
+    let extension: string = null;
+    if (extensionMatches != null)
+      extension = extensionMatches[0].replace(".", "");
 
-    // set Codemirror's mode based on the asset's syntax
-    const syntax: string = data.assetSyntax;
-    if (syntax !== "") {
-      const modesBySyntaxes: any = { // whent the syntax name doesn't match CM's mode (or MIME-type)
-        cson: "coffeescript",
-        html: "htmlmixed",
-        json: "application/json",
-        shader: "x-shader/x-fragment",
-      };
-      const mode = modesBySyntaxes[syntax] || syntax;
+    // set Codemirror's mode
+    if (extension != null) {
+      const mode = data.modesByExtensions[extension] || extension;
+      data.assetMode = mode;
       ui.editor.codeMirrorInstance.setOption("mode", mode);
-    }
 
-    // if (FTextSettingsResource.defaultValues["lint_" + syntax] != null) {
-      // always put the lint gutter, because adding or removing it on the fly mess the other gutters
-      // const gutters = ui.editor.codeMirrorInstance.getOption("gutters");
-      // gutters.unshift("CodeMirror-lint-markers");
-      allowLinting(true); // this value may be modified when the resource is received, from onfTextSettingsUpdated()
-      // this mostly sets is asset linted
-    // }
+      // if (data.FTextSettingsResourcePub != null && data.FTextSettingsResourcePub.lint === true && data.lintedModes.indexOf(mode) !== -1)
+      //   allowLinting(true);
+      if (data.lintedModes.indexOf(mode) === -1)
+        allowLinting(false);
+    }
 
     data.projectClient.subResource("fTextSettings", resourceSubscriber);
   },
 
   onAssetEdited: (id: string, command: string, ...args: any[]) => {
     if (id !== SupClient.query.asset) return;
-    if (onAssetCommands[command] != null) onAssetCommands[command].apply(data.asset, args);
+    if (ui.selectedRevision === "current" && onAssetCommands[command] != null) onAssetCommands[command].apply(data.asset, args);
   },
 
   onAssetTrashed: (id: string) => {
@@ -186,6 +172,14 @@ const assetSubscriber: SupClient.AssetSubscriber = {
     ui.editor.clear();
     SupClient.onAssetTrashed();
   },
+
+  onAssetRestored: (id: string, asset: FTextAsset) => {
+    if (id === SupClient.query.asset) {
+      data.asset = asset;
+      if (ui.selectedRevision === "current")
+        ui.setEditorContent(data.asset);
+    }
+  }
 };
 
 // ----------------------------------------
@@ -204,12 +198,9 @@ const entriesSubscriber: any = {
   // onEntryTrashed: (id: string) => { return; }
 };
 
-// ----------------------------------------
-
 // called when the socket "welcome" event is emitted
 function onWelcomed(clientId: number) {
   data.projectClient = new SupClient.ProjectClient(socket, { subEntries: true });
   data.projectClient.subEntries(entriesSubscriber);
-  // data.projectClient.subResource("FTextSettings", resourceSubscriber); // done in onAssetReceived()
   ui.setupEditor(clientId);
 }

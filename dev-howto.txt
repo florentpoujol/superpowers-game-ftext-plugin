@@ -1,0 +1,49 @@
+
+
+How to add support for an extension/language/CM mode
+
+Nothing is needed if the extension is the same as the language name and the corresponding CodeMirror's
+
+If the extension is shorter than the language name, update the 'data.modesByExtensions' object in editors/fText/network.ts
+ie : .md and markdown
+
+
+
+
+------------------
+
+How to add lint for a language
+
+- require the linter or parser in editors/fText/network.ts
+ie :  (window as any).pug = require("pug");
+
+- add Codemirror's lint file for this language in the public folder
+ie: public/codemirror/addon/lint-custom
+
+- reference this file from editors/fText/index.jade
+ie :    script(src="../../codemirror/addon/lint-custom/pug-lint.js")
+
+- update the data.lintedModes
+
+
+
+
+parsers at runtime
+cson
+html
+json
+pug
+stylus
+yaml
+markdown
+
+
+lint
+cson
+css
+html
+javascript
+json
+pug
+stylus
+yaml

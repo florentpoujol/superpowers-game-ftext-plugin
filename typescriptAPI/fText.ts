@@ -9,7 +9,6 @@ class fText extends Sup.Asset {
   * - https://github.com/groupon/cson-parser<br>
   * - https://github.com/component/domify<br>
   * - https://github.com/evilstreak/markdown-js<br>
-  * - https://github.com/jadejs/jade<br>
   * - https://github.com/stylus/stylus<br>
   * - https://github.com/nodeca/js-yaml
   */
@@ -18,7 +17,6 @@ class fText extends Sup.Asset {
     csonparser: any,
     domify: (text: string) => any,
     markdown: any,
-    jade: any,
     pug: any,
     stylus: any,
     jsyaml: any
@@ -31,9 +29,9 @@ class fText extends Sup.Asset {
   private instructions: { [key: string]: string|string[] } = {};
 
   /**
-  * The asset's syntax, defined by the extension (if any) found at the end of its name.
+  * The asset's extension (if any) found at the end of its name.
   */
-  private syntax: string = "";
+  private extension: string = "";
 
   // ----------------------------------------
 
@@ -47,22 +45,11 @@ class fText extends Sup.Asset {
 
     this._parseInstructions();
 
-    // get asset's syntax
-    let languagesByExtensions: any = {
-      md: "markdown",
-      styl: "stylus",
-      js: "javascript",
-      yml: "yaml",
-    };
-    let name = this.__inner.name; // 06/09/15 where does this.__inner.name come from ? is it the path ?
-    // it comes from the runtime loadAsset() where entry
-    let match = name.match(/\.[a-zA-Z]+$/gi); // look for any letter after a dot at the end of the string
-    if (match != null) {
-      let syntax = match[0].replace(".", "");
-      if (languagesByExtensions[syntax] != null)
-        syntax = languagesByExtensions[syntax];
-      this.syntax = syntax;
-    }
+    // get asset's extension
+    let assetName = this.__inner.name; // 06/09/15 where does this.__inner.name come from ? is it the path ?  it comes from the runtime loadAsset() where entry
+    let extensionMatches = assetName.match(/\.[a-zA-Z]+$/gi); // look for any letter after a dot at the end of the string
+    if (extensionMatches != null)
+      this.extension = extensionMatches[0].replace(".", "");
   }
 
   /**
@@ -111,46 +98,43 @@ class fText extends Sup.Asset {
   */
   parse(options?: { include?: boolean }): any {
     options = options || {};
-    let syntax = this.syntax;
+    let extension = this.extension;
 
     let parseFn = (text?: string): string => {
       if (text == null)
         text = this.__inner.text;
 
-      let syntaxFn: Function;
-      switch (syntax) {
+      let parseFn: Function;
+      switch (extension) {
         case "json":
-          syntaxFn = fText.parsers.jsonlint.parse;
+          parseFn = fText.parsers.jsonlint.parse;
           break;
         case "cson":
-          syntaxFn = fText.parsers.csonparser.parse;
+          parseFn = fText.parsers.csonparser.parse;
           break;
         case "html":
-          syntaxFn = fText.parsers.domify;
+          parseFn = fText.parsers.domify;
           break;
-        case "markdown":
-          syntaxFn = fText.parsers.markdown.toHTML;
-          break;
-        case "jade":
-          syntaxFn = fText.parsers.jade.compile(text);
+        case "md":
+          parseFn = fText.parsers.markdown.toHTML;
           break;
         case "pug":
-          syntaxFn = fText.parsers.pug.compile(text);
+          parseFn = fText.parsers.pug.compile(text);
           break;
-        case "stylus":
-          syntaxFn = () => { return; }; // special case
+        case "styl":
+          parseFn = () => { return; }; // special case
           break;
-        case "yaml":
-          syntaxFn = fText.parsers.jsyaml.safeLoad;
+        case "yml":
+          parseFn = fText.parsers.jsyaml.safeLoad;
           break;
       }
 
-      if (syntaxFn != null) {
+      if (parseFn != null) {
         try {
-          if (syntax === "stylus")
+          if (extension === "styl")
             text = fText.parsers.stylus(text).set("imports", []).render();
           else
-            text = syntaxFn(text);
+            text = parseFn(text);
         }
         catch (e) {
           console.error("fText.parse(): error parsing asset '" + this.__inner.name + "' :");
@@ -166,7 +150,7 @@ class fText extends Sup.Asset {
 
       if (this.instructions["include"] != null) {
         for (let path of this.instructions["include"]) {
-          console.log("fTextAsset.text include path", path);
+          // console.log("fTextAsset.text include path", path);
           let asset = Sup.get(path, fText, {ignoreMissing: false}); // note: for some reason, the three arguments are needed here
           let regexp = new RegExp("[<!/*#-]*ftext:include:" + path.replace(".", "\\.") + "[>*/-]*", "i");
           text = text.replace(regexp, asset.parse(options));
@@ -181,7 +165,7 @@ class fText extends Sup.Asset {
     if (options.include === false)
       return parseFn();
     else {
-      if (syntax === "html" || syntax === "json" || syntax === "cson" || syntax === "yaml") {
+      if (extension === "html" || extension === "json" || extension === "cson" || extension === "yml") {
         return parseFn(includeFn());
       }
       else

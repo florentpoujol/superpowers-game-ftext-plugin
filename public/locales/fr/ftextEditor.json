@@ -5,6 +5,7 @@
   "noError": "Pas d'erreur",
   "error": "erreur",
   "errors": "erreurs",
-  "clickToError": "Cliquez pour aller à l'erreur",
+  "some-errors": "Il y a des erreurs",
+  "clickToError": "Cliquez pour y aller",
   "clickToFirstError": "Cliquez pour aller à la première erreur"
 }
