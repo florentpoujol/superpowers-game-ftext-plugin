@@ -1,6 +1,6 @@
 Sup.log("script loaded");
 
-let text = Sup.get("main.jade",fText);
+let text = Sup.get("pug.pug",fText);
 
 Sup.log(text.getText());
 

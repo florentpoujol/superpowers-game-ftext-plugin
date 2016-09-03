@@ -6,7 +6,7 @@ This plugin brings a generic text asset of type `fText` to the `Superpowers Game
 ## Installation
 
 - [Download the latest release](https://github.com/florentpoujol/superpowers-game-ftext-plugin/releases),
-- unzip it then rename the folder to `ftext`,
+- unzip it then rename the folder to `fText`,
 - delete the `project` folder if you want,
 - move it inside `core/systems/game/plugins/florentpoujol/`,
 - then restart your server.
@@ -40,26 +40,86 @@ fText introduce some other settings :
       - matching words: when a word is selected, this highlight all other occurrences in the document.
     </td>
   </tr>
-  <!-- <tr>
+  <tr>
     <td>Linting</td>
     <td>Enable/disable linting of the syntaxes (not all syntaxes can be linted)</td>
-  </tr> -->
+  </tr>
 </table>
 
 
-## Syntax
+## Syntactic coloration and linting
 
-The syntax of the asset defines the data-type of its content and thus change how the syntactic coloration behave and how the asset's content is parsed and linted, if at all.
+The syntactic coloration and linting kicks in when the asset's extension is recognized.
 
-To set a syntax, just add an extension at the end of the asset's name just like for any standard file.  
-Ie: `"styles/main.styl"`.
+The asset's extension can be any of CodeMirror's loaded modes or MIME type, some having standard short version.
 
-Supported extensions (and syntaxes) are : `json`, `js` (javascript), `cson`, `yml` (Yaml), `md` (Markdown), `html`, `jade`, `pug` (the new name of `jade`), `css`, `styl` (stylus), `xml` and `shader`.
+Supported modes and extensions are :
 
+<table>
+  <tr>
+    <th>Mode</th>
+    <th>Short extension</th>
+    <th>is linted</th>
+  </tr>
+  <tr>
+    <td>javascript</td>
+    <td>js <br> 
+    json (application/json MIME type)</td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>coffeescript</td>
+    <td>cson</td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>yaml</td>
+    <td>yml</td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>xml</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>htmlmixed</td>
+    <td>html</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>pug</td>
+    <td></td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>css</td>
+    <td></td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>stylus</td>
+    <td>styl</td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>markdown</td>
+    <td>md</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>clike</td>
+    <td>shader (x-shader/x-fragment MIME type)</td>
+    <td></td>
+  </tr>
+</table>
 
-## Other features
+Examples of asset name :
 
-- `json` supports standard `//` comments
+    changelog.md
+    data.cson
+    template.pug
+
 
 ## Includes
 
@@ -74,6 +134,8 @@ Replace `path/to/the/asset` by the path to the asset to include inside this one.
 The specified asset content will then be included when the asset is parsed with the `fText.parse()` method.
 
 Since assets are usually parsed before the inclusion is performed, it is best to have comment characters _immediately_ before the command.
+
+Ie:
 
     //ftext:include:path/to/the/asset
 
@@ -107,7 +169,7 @@ Ie:
     // https://github.com/florentpoujol/superpowers-dom-plugin
 
 - `json`, `cson` and `yml` are parsed to JS object.
-- `jade` and `md` > HTML string
+- `pug` and `md` > HTML string
 - `html` > DOM object
 - `styl` > CSS string
 

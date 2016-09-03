@@ -1,5 +1,5 @@
 {
-  "nextEntryId": 21,
+  "nextEntryId": 23,
   "nodes": [
     {
       "id": "0",
@@ -23,7 +23,7 @@
       "children": [
         {
           "id": "1",
-          "name": "include.jade",
+          "name": "include.pug",
           "type": "fText"
         }
       ]
@@ -31,11 +31,6 @@
     {
       "id": "2",
       "name": "style.styl",
-      "type": "fText"
-    },
-    {
-      "id": "4",
-      "name": "main.jade",
       "type": "fText"
     },
     {
@@ -59,13 +54,13 @@
       "type": "fText"
     },
     {
-      "id": "11",
-      "name": "json.json",
+      "id": "21",
+      "name": "c.clike",
       "type": "fText"
     },
     {
-      "id": "12",
-      "name": "cson2.cson",
+      "id": "11",
+      "name": "json.json",
       "type": "fText"
     },
     {
@@ -81,11 +76,6 @@
     {
       "id": "16",
       "name": "xml.xml",
-      "type": "fText"
-    },
-    {
-      "id": "19",
-      "name": "fText.cson",
       "type": "fText"
     }
   ]

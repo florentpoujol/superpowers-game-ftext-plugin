@@ -5,7 +5,7 @@ html
     link(rel="stylesheet",href="/styles/resizeHandle.css")
     link(rel="stylesheet",href="/styles/dialogs.css")
     link(rel="stylesheet",href="../../../../common/textEditorWidget/widget.css")
-    link(rel="stylesheet",href="../../codemirror/addon/lint-custom/lint.css")
+    link(rel="stylesheet",href="../../codemirror/addon/lint/lint.css")
     link(rel="stylesheet",href="index.css")
 
   body
@@ -27,26 +27,27 @@ html
     script(src="../../../../common/textEditorWidget/widget.js")
 
     //- load codemirror's modes
-    script(src="../../../../common/textEditorWidget/codemirror/mode/javascript/javascript.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/xml/xml.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/htmlmixed/htmlmixed.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/markdown/markdown.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/coffeescript/coffeescript.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/stylus/stylus.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/yaml/yaml.js")
-    script(src="../../../../common/textEditorWidget/codemirror/mode/jade/jade.js")
     script(src="../../../../common/textEditorWidget/codemirror/mode/clike/clike.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/coffeescript/coffeescript.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/css/css.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/htmlmixed/htmlmixed.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/javascript/javascript.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/markdown/markdown.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/stylus/stylus.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/xml/xml.js")
+    script(src="../../../../common/textEditorWidget/codemirror/mode/yaml/yaml.js")
     script(src="../../codemirror/mode/pug/pug.js")
 
     //- load CM's linters
     script(src="../../codemirror/addon/lint-custom/lint.js")
     script(src="../../codemirror/addon/lint-custom/cson-lint.js")
-    script(src="../../codemirror/addon/lint-custom/css-lint.js")
-    script(src="../../codemirror/addon/lint-custom/javascript-lint.js")
     script(src="../../codemirror/addon/lint-custom/json-lint.js")
     script(src="../../codemirror/addon/lint-custom/pug-lint.js")
     script(src="../../codemirror/addon/lint-custom/stylus-lint.js")
-    script(src="../../codemirror/addon/lint-custom/yaml-lint.js")
+
+    script(src="../../codemirror/addon/lint/css-lint.js")
+    script(src="../../codemirror/addon/lint/javascript-lint.js")
+    script(src="../../codemirror/addon/lint/yaml-lint.js")
 
     //- load otherr addons not load by the common textEditorWiddget
     script(src="../../codemirror/addon/edit/closetag.js")

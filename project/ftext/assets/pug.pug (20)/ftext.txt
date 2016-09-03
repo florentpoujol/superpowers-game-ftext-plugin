@@ -2,4 +2,4 @@ body#include-div
 	//ftext:include:style.styl
 
 	div
-		//ftext:include:afolder/include.jade
+		//ftext:include:afolder/include.pug

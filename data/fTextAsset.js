@@ -122,6 +122,7 @@ var FTextAsset = (function (_super) {
         this.emit("change");
     };
     FTextAsset.prototype.client_applyDraftChanges = function () { this.pub.text = this.pub.draft; };
+    FTextAsset.prototype.client_unload = function () { return; }; // called when an asset is trashed
     FTextAsset.schema = {
         text: { type: "string" },
         draft: { type: "string" },

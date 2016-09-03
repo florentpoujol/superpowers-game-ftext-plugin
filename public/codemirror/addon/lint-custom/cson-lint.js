@@ -17,15 +17,9 @@
 
 CodeMirror.registerHelper("lint", "coffeescript", function(text) {
   var found = [];
-/*  var parseError = function(err) {
-    var loc = err.lineNumber;
-    found.push({from: CodeMirror.Pos(loc-1, 0),
-                to: CodeMirror.Pos(loc, 0),
-                severity: err.level,
-                message: err.message});
-  };*/
   try {
-    csonparser.parse(text);
+    consparser.compile(text);
+    // csonparser is actually coffee-script
   } catch(e) {
     console.error(e);
     var location = e.location || {};

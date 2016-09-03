@@ -1,0 +1,8 @@
+.code-editor-container
+  textarea(disabled).code-editor
+    //ftext:include:md.md
+
+.error-pane
+  .status
+    .info Loading...
+     button.toggle

@@ -150,7 +150,6 @@ class fText extends Sup.Asset {
 
       if (this.instructions["include"] != null) {
         for (let path of this.instructions["include"]) {
-          // console.log("fTextAsset.text include path", path);
           let asset = Sup.get(path, fText, {ignoreMissing: false}); // note: for some reason, the three arguments are needed here
           let regexp = new RegExp("[<!/*#-]*ftext:include:" + path.replace(".", "\\.") + "[>*/-]*", "i");
           text = text.replace(regexp, asset.parse(options));

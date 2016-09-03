@@ -5,9 +5,9 @@ import FTextSettingsResource from "../../data/fTextSettingsResource";
 
 /* tslint:disable */
 // expose the linter, used int he custom linters script
-(window as any).csonparser = require("cson-parser");
-(window as any).CSSLint = require("csslint");
-(window as any).JSHINT = require("jshint");
+(window as any).consparser = require("coffee-script"); // used to parse CSON. Neither https://github.com/groupon/cson-parser nor https://github.com/bevry/cson
+(window as any).CSSLint = require("csslint").CSSLint;
+(window as any).JSHINT = require("jshint").JSHINT;
 (window as any).jsonlint = require("jsonlint");
 (window as any).pug = require("pug");
 (window as any).stylus = require("stylus");
@@ -74,8 +74,6 @@ function onFTextSettingsResourceUpdated() {
 
       if (optionValue !== ui.editor.codeMirrorInstance.getOption(optionName)) {
         if (optionName === "lint") {
-          /*if (data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
-            allowLinting(optionValue);*/
           if (optionValue === false)
             allowLinting(false);
           else if (optionValue === true && data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
@@ -153,8 +151,6 @@ const assetSubscriber: SupClient.AssetSubscriber = {
       data.assetMode = mode;
       ui.editor.codeMirrorInstance.setOption("mode", mode);
 
-      // if (data.FTextSettingsResourcePub != null && data.FTextSettingsResourcePub.lint === true && data.lintedModes.indexOf(mode) !== -1)
-      //   allowLinting(true);
       if (data.lintedModes.indexOf(mode) === -1)
         allowLinting(false);
     }

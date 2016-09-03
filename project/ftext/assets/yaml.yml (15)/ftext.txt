@@ -6,7 +6,7 @@
 
 map:
   # Unordered set of key: value pairs.
-  Block style:: !!map
+  Block style: !!map
     Clark : Evans
     Ingy  : döt Net
     Oren  : Ben-Kiki

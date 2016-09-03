@@ -4,9 +4,9 @@ var ui_1 = require("./ui");
 var fTextSettingsResource_1 = require("../../data/fTextSettingsResource");
 /* tslint:disable */
 // expose the linter, used int he custom linters script
-window.csonparser = require("cson-parser");
-window.CSSLint = require("csslint");
-window.JSHINT = require("jshint");
+window.consparser = require("coffee-script"); // used to parse CSON. Neither https://github.com/groupon/cson-parser nor https://github.com/bevry/cson
+window.CSSLint = require("csslint").CSSLint;
+window.JSHINT = require("jshint").JSHINT;
 window.jsonlint = require("jsonlint");
 window.pug = require("pug");
 window.stylus = require("stylus");
@@ -57,12 +57,10 @@ function onFTextSettingsResourceUpdated() {
             // can't do 'pub[optionName] || defaultValues[optionName]' because if pub[optionName] == false, the defautl optionValue is always chosen.
             if (optionValue !== ui_1.default.editor.codeMirrorInstance.getOption(optionName)) {
                 if (optionName === "lint") {
-                    /*if (data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
-                      allowLinting(optionValue);*/
                     if (optionValue === false)
                         allowLinting(false);
                     else if (optionValue === true && data.assetMode != null && data.lintedModes.indexOf(data.assetMode) !== -1)
-                        allowLinting(true); // this is actually rather useless since the lint markers won't show up in the lint gutter until the asset tabs is reopened
+                        allowLinting(true);
                 }
                 else
                     ui_1.default.editor.codeMirrorInstance.setOption(optionName, optionValue);
@@ -120,8 +118,6 @@ var assetSubscriber = {
             var mode = data.modesByExtensions[extension] || extension;
             data.assetMode = mode;
             ui_1.default.editor.codeMirrorInstance.setOption("mode", mode);
-            // if (data.FTextSettingsResourcePub != null && data.FTextSettingsResourcePub.lint === true && data.lintedModes.indexOf(mode) !== -1)
-            //   allowLinting(true);
             if (data.lintedModes.indexOf(mode) === -1)
                 allowLinting(false);
         }

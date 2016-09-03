@@ -137,4 +137,6 @@ export default class FTextAsset extends SupCore.Data.Base.Asset {
   }
 
   client_applyDraftChanges(): void { this.pub.text = this.pub.draft; }
+
+  client_unload(): void { return; } // called when an asset is trashed
 }
