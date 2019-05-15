@@ -1,4 +1,6 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+
+},{}],2:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -226,9 +228,8 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":2}],2:[function(require,module,exports){
+},{"_process":3}],3:[function(require,module,exports){
 // shim for using process in browser
-
 var process = module.exports = {};
 
 // cached from whatever global is present so that test runners that stub it
@@ -239,22 +240,84 @@ var process = module.exports = {};
 var cachedSetTimeout;
 var cachedClearTimeout;
 
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
 (function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
     }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
     }
-  }
 } ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
 var queue = [];
 var draining = false;
 var currentQueue;
@@ -279,7 +342,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = cachedSetTimeout.call(null, cleanUpNextTick);
+    var timeout = runTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -296,7 +359,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    cachedClearTimeout.call(null, timeout);
+    runClearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -308,7 +371,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        cachedSetTimeout.call(null, drainQueue, 0);
+        runTimeout(drainQueue);
     }
 };
 
@@ -336,6 +399,10 @@ process.off = noop;
 process.removeListener = noop;
 process.removeAllListeners = noop;
 process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
@@ -347,73 +414,66 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var OT = require("operational-transform");
-
-var path = require("path");
-var FTextAsset = (function (_super) {
-    __extends(FTextAsset, _super);
+Object.defineProperty(exports, "__esModule", { value: true });
+const OT = require("operational-transform");
+const fs = require("fs");
+const path = require("path");
+class FTextAsset extends SupCore.Data.Base.Asset {
     // called from the editor onAssetReceived() as well as on server startup
-    function FTextAsset(id, pub, server) {
-        _super.call(this, id, pub, FTextAsset.schema, server);
+    constructor(id, pub, server) {
+        super(id, pub, FTextAsset.schema, server);
     }
     // called on asset creation
     // options contain the asset's name
-    FTextAsset.prototype.init = function (options, callback) {
-        var defaultContent = "";
+    init(options, callback) {
+        let defaultContent = "";
         this.pub = {
             text: defaultContent,
             draft: defaultContent,
             revisionId: 0,
         };
-        _super.prototype.init.call(this, options, callback);
-    };
-    FTextAsset.prototype.setup = function () {
+        super.init(options, callback);
+    }
+    setup() {
         this.document = new OT.Document(this.pub.draft, this.pub.revisionId);
         this.hasDraft = this.pub.text !== this.pub.draft;
-    };
-    FTextAsset.prototype.restore = function () {
+    }
+    restore() {
         if (this.hasDraft)
             this.emit("setBadge", "draft", "info");
-    };
-    FTextAsset.prototype.destroy = function (callback) {
+    }
+    destroy(callback) {
         callback();
-    };
+    }
     // called on server startup
-    FTextAsset.prototype.load = function (assetPath) {
+    load(assetPath) {
         // NOTE: We must not set this.pub with temporary values here, otherwise
         // the asset will be considered loaded by Dictionary.acquire
         // and the acquire callback will be called immediately
-        var _this = this;
-        fs.readFile(path.join(assetPath, "ftext.txt"), { encoding: "utf8" }, function (err, text) {
-            fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, function (err, draft) {
-                var pub = { revisionId: 0, text: text, draft: (draft != null) ? draft : text };
+        fs.readFile(path.join(assetPath, "ftext.txt"), { encoding: "utf8" }, (err, text) => {
+            fs.readFile(path.join(assetPath, "draft.txt"), { encoding: "utf8" }, (err, draft) => {
+                let pub = { revisionId: 0, text, draft: (draft != null) ? draft : text };
                 // this.setup();
                 // this.emit("load");
-                _this._onLoaded(assetPath, pub);
+                this._onLoaded(assetPath, pub);
             });
         });
-    };
+    }
     // called when it is time to write the asset on disk, not when the user save the asset from the editor
-    FTextAsset.prototype.save = function (outputPath, callback) {
-        var _this = this;
-        this.write(fs.writeFile, outputPath, function (err) {
+    save(outputPath, callback) {
+        this.write(fs.writeFile, outputPath, (err) => {
             if (err != null) {
                 callback(err);
                 return;
             }
-            if (_this.hasDraft) {
-                fs.writeFile(path.join(outputPath, "draft.txt"), _this.pub.draft, { encoding: "utf8" }, callback);
+            if (this.hasDraft) {
+                fs.writeFile(path.join(outputPath, "draft.txt"), this.pub.draft, { encoding: "utf8" }, callback);
             }
             else {
                 // delete the draft.txt file if there is no draft to save and the file exists
-                fs.unlink(path.join(outputPath, "draft.txt"), function (err) {
+                fs.unlink(path.join(outputPath, "draft.txt"), (err) => {
                     if (err != null && err.code !== "ENOENT") {
                         callback(err);
                         return;
@@ -422,19 +482,19 @@ var FTextAsset = (function (_super) {
                 });
             }
         });
-    };
-    FTextAsset.prototype.clientExport = function (outputPath, callback) {
+    }
+    clientExport(outputPath, callback) {
         this.write(SupApp.writeFile, outputPath, callback);
-    };
-    FTextAsset.prototype.write = function (writeFile, outputPath, callback) {
+    }
+    write(writeFile, outputPath, callback) {
         writeFile(path.join(outputPath, "ftext.txt"), this.pub.text, { encoding: "utf8" }, callback);
-    };
-    FTextAsset.prototype.server_editText = function (client, operationData, revisionIndex, callback) {
+    }
+    server_editText(client, operationData, revisionIndex, callback) {
         if (operationData.userId !== client.id) {
             callback("Invalid client id");
             return;
         }
-        var operation = new OT.TextOperation();
+        let operation = new OT.TextOperation();
         if (!operation.deserialize(operationData)) {
             callback("Invalid operation data");
             return;
@@ -454,15 +514,15 @@ var FTextAsset = (function (_super) {
             this.emit("setBadge", "draft", "info");
         }
         this.emit("change");
-    };
-    FTextAsset.prototype.client_editText = function (operationData, revisionIndex) {
-        var operation = new OT.TextOperation();
+    }
+    client_editText(operationData, revisionIndex) {
+        let operation = new OT.TextOperation();
         operation.deserialize(operationData);
         this.document.apply(operation, revisionIndex);
         this.pub.draft = this.document.text;
         this.pub.revisionId++;
-    };
-    FTextAsset.prototype.server_applyDraftChanges = function (client, options, callback) {
+    }
+    server_applyDraftChanges(client, options, callback) {
         this.pub.text = this.pub.draft;
         callback(null);
         if (this.hasDraft) {
@@ -470,67 +530,58 @@ var FTextAsset = (function (_super) {
             this.emit("clearBadge", "draft");
         }
         this.emit("change");
-    };
-    FTextAsset.prototype.client_applyDraftChanges = function () { this.pub.text = this.pub.draft; };
-    FTextAsset.prototype.client_unload = function () { return; }; // called when an asset is trashed
-    FTextAsset.schema = {
-        text: { type: "string" },
-        draft: { type: "string" },
-        revisionId: { type: "integer" },
-    };
-    return FTextAsset;
-}(SupCore.Data.Base.Asset));
-Object.defineProperty(exports, "__esModule", { value: true });
+    }
+    client_applyDraftChanges() { this.pub.text = this.pub.draft; }
+    client_unload() { return; } // called when an asset is trashed
+}
+FTextAsset.schema = {
+    text: { type: "string" },
+    draft: { type: "string" },
+    revisionId: { type: "integer" },
+};
 exports.default = FTextAsset;
 
-},{"operational-transform":9,"path":1}],4:[function(require,module,exports){
+},{"fs":1,"operational-transform":10,"path":2}],5:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var FTextSettingsResource = (function (_super) {
-    __extends(FTextSettingsResource, _super);
-    function FTextSettingsResource(id, pub, serverData) {
-        _super.call(this, id, pub, FTextSettingsResource.schema, serverData);
+Object.defineProperty(exports, "__esModule", { value: true });
+class FTextSettingsResource extends SupCore.Data.Base.Resource {
+    constructor(id, pub, serverData) {
+        super(id, pub, FTextSettingsResource.schema, serverData);
     }
-    FTextSettingsResource.prototype.init = function (callback) {
-        var pub = {};
-        for (var name_1 in FTextSettingsResource.defaultValues) {
-            pub[name_1] = FTextSettingsResource.defaultValues[name_1];
+    init(callback) {
+        let pub = {};
+        for (let name in FTextSettingsResource.defaultValues) {
+            pub[name] = FTextSettingsResource.defaultValues[name];
         }
         this.pub = pub;
-        _super.prototype.init.call(this, callback);
-    };
-    FTextSettingsResource.schema = {
-        styleActiveLine: { type: "boolean", mutable: true },
-        showTrailingSpace: { type: "boolean", mutable: true },
-        autoCloseBrackets: { type: "boolean", mutable: true },
-        matchTags: { type: "boolean", mutable: true },
-        highlightSelectionMatches: { type: "boolean", mutable: true },
-        lint: { type: "boolean", mutable: true }
-    };
-    FTextSettingsResource.defaultValues = {
-        styleActiveLine: true,
-        autoCloseBrackets: true,
-        showTrailingSpace: true,
-        matchTags: true,
-        highlightSelectionMatches: true,
-        lint: true,
-    }; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
-    return FTextSettingsResource;
-}(SupCore.Data.Base.Resource));
-Object.defineProperty(exports, "__esModule", { value: true });
+        super.init(callback);
+    }
+}
+FTextSettingsResource.schema = {
+    styleActiveLine: { type: "boolean", mutable: true },
+    showTrailingSpace: { type: "boolean", mutable: true },
+    autoCloseBrackets: { type: "boolean", mutable: true },
+    matchTags: { type: "boolean", mutable: true },
+    highlightSelectionMatches: { type: "boolean", mutable: true },
+    lint: { type: "boolean", mutable: true }
+};
+FTextSettingsResource.defaultValues = {
+    styleActiveLine: true,
+    autoCloseBrackets: true,
+    showTrailingSpace: true,
+    matchTags: true,
+    highlightSelectionMatches: true,
+    lint: true,
+}; // note 07/09/15 for some reason, not having a coma after the last entry would cause the defaultValues not to be read in the settings editor...
 exports.default = FTextSettingsResource;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var FTextSettingsResource = require("./fTextSettingsResource");
 var FTextAsset = require("./fTextAsset");
 
 SupCore.system.data.registerResource("fTextSettings", FTextSettingsResource.default);
 SupCore.system.data.registerAssetClass("fText", FTextAsset.default);
-},{"./fTextAsset":3,"./fTextSettingsResource":4}],6:[function(require,module,exports){
+},{"./fTextAsset":4,"./fTextSettingsResource":5}],7:[function(require,module,exports){
 var OT = require("./index");
 var Document = (function () {
     function Document(text, revisionId) {
@@ -562,7 +613,7 @@ var Document = (function () {
 })();
 module.exports = Document;
 
-},{"./index":9}],7:[function(require,module,exports){
+},{"./index":10}],8:[function(require,module,exports){
 var TextOp = (function () {
     function TextOp(type, attributes) {
         this.type = type;
@@ -572,7 +623,7 @@ var TextOp = (function () {
 })();
 module.exports = TextOp;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var OT = require("./index");
 var TextOperation = (function () {
     function TextOperation(userId) {
@@ -1006,7 +1057,7 @@ var TextOperation = (function () {
 })();
 module.exports = TextOperation;
 
-},{"./index":9}],9:[function(require,module,exports){
+},{"./index":10}],10:[function(require,module,exports){
 var TextOp = require("./TextOp");
 exports.TextOp = TextOp;
 var Document = require("./Document");
@@ -1014,4 +1065,4 @@ exports.Document = Document;
 var TextOperation = require("./TextOperation");
 exports.TextOperation = TextOperation;
 
-},{"./Document":6,"./TextOp":7,"./TextOperation":8}]},{},[5]);
+},{"./Document":7,"./TextOp":8,"./TextOperation":9}]},{},[6]);

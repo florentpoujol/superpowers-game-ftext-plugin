@@ -10,5 +10,5 @@ declare module "pug" {}
 declare module "stylus" {}
 declare module "js-yaml" {}
 declare module "markdown" {
-  export var markdown: any;
+  export let markdown: any;
 }

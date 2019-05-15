@@ -1,11 +1,12 @@
 "use strict";
-var jsonlint = require("jsonlint");
-var csonparser = require("cson-parser");
-var domify = require("domify");
-var markdown = require("markdown");
-var pug = require("pug");
-var stylus = require("stylus");
-var jsyaml = require("js-yaml");
+Object.defineProperty(exports, "__esModule", { value: true });
+const jsonlint = require("jsonlint");
+const csonparser = require("cson-parser");
+const domify = require("domify");
+const markdown = require("markdown");
+const pug = require("pug");
+const stylus = require("stylus");
+const jsyaml = require("js-yaml");
 window.fTextParsers = {
     jsonlint: jsonlint,
     csonparser: csonparser,
@@ -31,7 +32,7 @@ exports.start = start;
 function loadAsset(player, entry, callback) {
     // entry has the Asset interface
     // app\system\SupRuntime\src\Player.ts:
-    player.getAssetData("assets/" + entry.storagePath + "/ftext.txt", "text", function (err, text) {
+    player.getAssetData("assets/" + entry.storagePath + "/ftext.txt", "text", (err, text) => {
         if (err)
             throw err;
         // in case the content is valid JSON, text is a JS object instead of a string

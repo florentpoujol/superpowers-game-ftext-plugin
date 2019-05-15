@@ -1,30 +1,30 @@
 "use strict";
-var network_1 = require("./network");
-var ui = {
+Object.defineProperty(exports, "__esModule", { value: true });
+const network_1 = require("./network");
+const ui = {
     selectedRevision: "current",
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ui;
-var errorPane = document.querySelector(".error-pane");
+const errorPane = document.querySelector(".error-pane");
 // the top bar of the error pane with the save button
 // can have the has-draft class - sets from the onAssetCommands functions in network.ts
 // can have the has-errors class - sets in ui.refreshErrors()
-var errorPaneStatus = errorPane.querySelector(".status");
+const errorPaneStatus = errorPane.querySelector(".status");
 // the part of the errorPaneStatus with the text
-var errorPaneInfo = errorPaneStatus.querySelector(".errorInfo");
-var saveButton = errorPane.querySelector(".error-pane button");
+const errorPaneInfo = errorPaneStatus.querySelector(".errorInfo");
+const saveButton = errorPane.querySelector(".error-pane button");
 // ----------------------------------------
 // focus the editor
-window.addEventListener("message", function (event) {
+window.addEventListener("message", (event) => {
     if (event.data.type === "setRevision")
         onSelectRevision(event.data.revisionId);
     else if (event.data.type === "activate")
         ui.editor.codeMirrorInstance.focus();
     else if (event.data.type === "setState") {
-        var line = parseInt(event.data.state.line, 10);
-        var ch = parseInt(event.data.state.ch, 10);
+        let line = parseInt(event.data.state.line, 10);
+        let ch = parseInt(event.data.state.ch, 10);
         if (ui.editor != null)
-            ui.editor.codeMirrorInstance.getDoc().setCursor({ line: line, ch: ch });
+            ui.editor.codeMirrorInstance.getDoc().setCursor({ line, ch });
     }
 });
 function onSelectRevision(revisionId) {
@@ -42,7 +42,7 @@ function onSelectRevision(revisionId) {
         ui.setEditorContent(network_1.default.asset);
     }
     else {
-        network_1.default.projectClient.getAssetRevision(SupClient.query.asset, "fText", ui.selectedRevision, function (id, asset) {
+        network_1.default.projectClient.getAssetRevision(SupClient.query.asset, "fText", ui.selectedRevision, (id, asset) => {
             ui.setEditorContent(asset);
         });
     }
@@ -55,35 +55,35 @@ ui.setEditorContent = function (asset) {
         ui.editor.codeMirrorInstance.setOption("readOnly", true);
 };
 // Add a context menu on Right-Click when using NodeWebkit
-var nwDispatcher = window.nwDispatcher;
+const nwDispatcher = window.nwDispatcher;
 if (nwDispatcher != null) {
-    var gui_1 = nwDispatcher.requireNwGui();
-    var menu_1 = new gui_1.Menu();
-    menu_1.append(new gui_1.MenuItem({ label: "Cut (Ctrl-X)", click: function () { document.execCommand("cut"); } }));
-    menu_1.append(new gui_1.MenuItem({ label: "Copy (Ctrl-C)", click: function () { document.execCommand("copy"); } }));
-    menu_1.append(new gui_1.MenuItem({ label: "Paste (Ctrl-V)", click: function () { document.execCommand("paste"); } }));
-    document.querySelector(".text-editor-container").addEventListener("contextmenu", function (event) {
+    const gui = nwDispatcher.requireNwGui();
+    const menu = new gui.Menu();
+    menu.append(new gui.MenuItem({ label: "Cut (Ctrl-X)", click: () => { document.execCommand("cut"); } }));
+    menu.append(new gui.MenuItem({ label: "Copy (Ctrl-C)", click: () => { document.execCommand("copy"); } }));
+    menu.append(new gui.MenuItem({ label: "Paste (Ctrl-V)", click: () => { document.execCommand("paste"); } }));
+    document.querySelector(".text-editor-container").addEventListener("contextmenu", (event) => {
         event.preventDefault();
-        menu_1.popup(event.screenX - gui_1.Window.get().x, event.screenY - gui_1.Window.get().y);
+        menu.popup(event.screenX - gui.Window.get().x, event.screenY - gui.Window.get().y);
         return false;
     });
 }
 // called from network.ts/onWelcomed()
 ui.setupEditor = function (clientId) {
-    var textArea = document.querySelector(".text-editor");
+    const textArea = document.querySelector(".text-editor");
     ui.editor = new TextEditorWidget(network_1.default.projectClient, clientId, textArea, {
         mode: "",
         extraKeys: {
-            "Ctrl-S": function () { applyDraftChanges(); },
-            "Cmd-S": function () { applyDraftChanges(); },
+            "Ctrl-S": () => { applyDraftChanges(); },
+            "Cmd-S": () => { applyDraftChanges(); },
             "Ctrl-Space": "autocomplete",
             "Cmd-Space": "autocomplete",
             "Cmd-J": "toMatchingTag",
             "Ctrl-J": "toMatchingTag"
         },
-        editCallback: function (text, origin) { return; },
-        sendOperationCallback: function (operation) {
-            network_1.default.projectClient.editAsset(SupClient.query.asset, "editText", operation, network_1.default.asset.document.getRevisionId(), function (err) {
+        editCallback: (text, origin) => { return; },
+        sendOperationCallback: (operation) => {
+            network_1.default.projectClient.editAsset(SupClient.query.asset, "editText", operation, network_1.default.asset.document.getRevisionId(), (err) => {
                 if (err != null) {
                     new SupClient.Dialogs.InfoDialog(err, SupClient.i18n.t("common:actions.close"));
                     SupClient.onDisconnected();
@@ -92,7 +92,7 @@ ui.setupEditor = function (clientId) {
         }
     });
     // always set lint gutter here, because if it's removed and put back later, the lint markers do not show up anymore in the gutter
-    var gutters = ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "CodeMirror-foldgutter"];
+    const gutters = ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "CodeMirror-foldgutter"];
     ui.editor.codeMirrorInstance.setOption("gutters", []);
     ui.editor.codeMirrorInstance.setOption("gutters", gutters);
     // the lint gutter is removed in two cases :
@@ -104,19 +104,18 @@ ui.setupEditor = function (clientId) {
 // ----------------------------------------
 // Error pane
 // capture the click event on the error pane to set the cursor on the clicked error
-errorPaneStatus.addEventListener("click", function (event) {
+errorPaneStatus.addEventListener("click", (event) => {
     if (errorPaneStatus.classList.contains("has-errors") === false)
         return;
-    var line = errorPaneStatus.dataset.line;
-    var character = errorPaneStatus.dataset.character;
+    const line = errorPaneStatus.dataset.line;
+    const character = errorPaneStatus.dataset.character;
     if (line != null) {
         ui.editor.codeMirrorInstance.getDoc().setCursor({ line: parseInt(line, 10), ch: parseInt(character, 10) });
         ui.editor.codeMirrorInstance.focus();
     }
 });
 // called from network.ts/assetCommands/editText() and applyDraftChanges()
-ui.hasDraft = function (hasDraft) {
-    if (hasDraft === void 0) { hasDraft = true; }
+ui.hasDraft = function (hasDraft = true) {
     if (hasDraft === true) {
         errorPaneStatus.classList.add("has-draft");
         saveButton.textContent = SupClient.i18n.t("fTextEditor:save");
@@ -131,22 +130,22 @@ ui.hasDraft = function (hasDraft) {
 // a reference of this function is set to  ui.editor.codeMirrorInstance.refreshErrors
 // so that it can be called from Codemirror's main lint script "public/codemirror/custom-linters/lint.js"
 ui.refreshErrors = function (errors) {
-    var text = "";
+    let text = "";
     if (errors == null || errors.length === 0) {
-        var allowLint = ui.editor.codeMirrorInstance.getOption("lint");
+        const allowLint = ui.editor.codeMirrorInstance.getOption("lint");
         allowLint === true ? text = "- " + SupClient.i18n.t("fTextEditor:noError") : text = "";
         errorPaneInfo.textContent = text;
         errorPaneStatus.classList.remove("has-errors");
     }
     else {
-        text = "- " + SupClient.i18n.t("fTextEditor:some-errors") + " - " + SupClient.i18n.t("fTextEditor:clickToError");
+        text = `- ${SupClient.i18n.t("fTextEditor:some-errors")} - ${SupClient.i18n.t("fTextEditor:clickToError")}`;
         errorPaneInfo.textContent = text;
         errorPaneStatus.classList.add("has-errors");
         errorPaneStatus.dataset.line = errors[0].from.line;
         errorPaneStatus.dataset.character = errors[0].from.ch;
     }
 };
-saveButton.addEventListener("click", function (event) {
+saveButton.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
     applyDraftChanges();
@@ -154,7 +153,7 @@ saveButton.addEventListener("click", function (event) {
 // Save
 // called when clicking Ctrl+S or the save button
 function applyDraftChanges() {
-    network_1.default.projectClient.editAssetNoErrorHandling(SupClient.query.asset, "applyDraftChanges", {}, function (err) {
+    network_1.default.projectClient.editAssetNoErrorHandling(SupClient.query.asset, "applyDraftChanges", {}, (err) => {
         if (err != null) {
             new SupClient.Dialogs.InfoDialog(err);
             SupClient.onDisconnected();
